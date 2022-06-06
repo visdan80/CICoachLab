@@ -14,18 +14,18 @@ To install the CICOachLab-framework download source code in any directory.
 Install python with its standard packages and PyQt5.
 
 CICoachlab depends on 
-    - Python 3.8 or higher
-    - PyQt5
-    - Windows 7 or Windows10 if the bitlocker mode is used.
+- Python 3.8 or higher
+- PyQt5
+- Windows 7 or Windows10 if the bitlocker mode is used.
 
 External dependencies:
-    - ffmpeg
-    - doxygen
-    - pip
-    - awk                     on Linux machines only
-    - amixer                  on Linux machines only
-    - find                    on Linux machines only
-    - bash                    on Linux machines only
+- ffmpeg
+- doxygen
+- pip
+- awk                     on Linux machines only
+- amixer                  on Linux machines only
+- find                    on Linux machines only
+- bash                    on Linux machines only
 
 
 Second party python package dependencies:
@@ -42,10 +42,9 @@ The file lib/archive/Linux/CITrainerRequirements.txt or lib/archive/Linux/CITrai
 Please update and commit the file CITrainerRequirements.txt or provide feedback if you find any version of packages which breaks the application.
 
 How to  setup CICOachLab ?
-    a) rename the template file ciCoachLab.in to ciCoachLab.ini and edit it according to the local setup. Take a look at the template file for further information.
-    b) optionally rename the template file filter.in to filter.ini and edit it according to the local setup, for an easy start the usage of filter.ini can be ignored.
-    filter.ini can be used to translate the exercise names and to define the exercise user access. The template file provides information about the usage of this file.
-    c) if you want use the  bitlock mode to provide some data protection of the stored data see bitlocker.py for the usage and setup.
+a) rename the template file ciCoachLab.in to ciCoachLab.ini and edit it according to the local setup. Take a look at the template file for further information.
+b) optionally rename the template file filter.in to filter.ini and edit it according to the local setup, for an easy start the usage of filter.ini can be ignored. filter.ini can be used to translate the exercise names and to define the exercise user access. The template file provides information about the usage of this file.
+c) if you want use the  bitlock mode to provide some data protection of the stored data see bitlocker.py for the usage and setup.
     the bitlocker mode requires windows 10
 
 Run CICOachLab:
