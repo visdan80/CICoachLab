@@ -94,5 +94,4 @@ Any contribution is welcome
 
 ## License:
 CICoachLab is released under the [General Public License v3.0](license/GPLv3_license.txt)
-[Contribution guidelines for this project](docs/CONTRIBUTING.md)
 
