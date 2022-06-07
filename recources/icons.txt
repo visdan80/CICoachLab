@@ -1,0 +1,1 @@
+convert -define 'icon:auto-resize=16' logo.svg logo16.ico

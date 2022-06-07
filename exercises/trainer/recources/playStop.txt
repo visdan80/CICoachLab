@@ -1,0 +1,4 @@
+ 
+From kde-oxygen icon set:
+play.png
+stop.png

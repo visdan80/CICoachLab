@@ -1,5 +1,5 @@
 # CICoachLab
-CICoachLab was developed to provide a graphical user interface for the conduction of listening exercises. 
+CICoachLab provides a graphical user interface for the conduction of listening exercises at our facility where Cochlear Implant users attend rehabilitation programms.
 
 
 The exercises can be used to obtain information about the user, e.g. listening performance and its testing circumstances.  Alternatively,  the exercises may be used to train the listening abilities of the user.  The user should be able to conduct the exercises independently after a  short introduction. 

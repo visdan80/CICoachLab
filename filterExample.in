@@ -1,0 +1,141 @@
+#############################################################################
+# In this file the exercises and settings can be provided with labels and filtering
+# The filtering defines if the items are visibles in general and/or dependent on the difficulty level of the user.
+# 
+# The setting XXX in CICoachLab defines if settings, which are not defined in filter.ini will be visibles.
+# 
+# If the visibility of an item (e.g. exercise) is set to visibless = False and the visibility of a subitem is set to True
+# the subitem (its setting) will not be displayed
+# The dificulties of the exercises and settings of the exercise define the difficulty from 1 (very easy) to 5 (difficult)
+# The information in infos can bes provided for example as short discription in a  tooltip while hovering over selection
+# The fields names, labels, difficulties, infos, visibless are mandatory
+# The modules which are define as py files in CI Trainer but are not listed in filter.ini will not be displayed
+# Even if the module is not displayed to the user the item can be called by CICoachLab (e.g. by an setlist).
+# Boolean value have to be assigned as True or False
+# infos have to be provided in the format as follows: infos = "example1","example2","example3"
+# If a single item is entered the item has to be closed with a semicolon. If two or more items are entered the final colon
+# should be entered but can be skipped.
+#
+# A single item example
+# [[settings]]
+# [[[playAudio]]]
+# names = playAudio1,
+# labels = Grundeinstellung,
+# difficulties = 1,
+# infos = "Grundeinstellung der Standard-Audio-Ausgabe des Rechners",
+# visibless = True,
+#
+#
+# The field names should be close with a colon, even empty entrie, e.g.:
+# [[settings]]
+# [[[playAudio]]]
+# names = ,
+# labels = ,
+# difficulties = ,
+# infos = ,
+# visibles = , 
+#
+#############################################################################
+
+[exercises]
+[[main]]
+names = questionaire, quiz, trainer, scaling,
+labels = Questionaire, CICoachLab quiz, Play audio, Skaling,
+difficulties = 1, 5, 1, 1,
+infos = "Questionaire.","A quiz where you listen to audio and you will answer some questions. Some kind of hints will be given if required. Either acoustically or as text.", "You can play back some audio.", "Skalierung",
+visibles = True, True, True, True,
+
+
+[[settings]]
+[[[questionaire]]]
+names = slider, studyInstruction,
+labels = 'Slider Demo', "Some simple question.",
+difficulties = 1, 4,
+infos = This is a single slider setting., "This settings asks a simple yes or no question. Hey, this colon requires quotation marks in filter.ini.",
+visibles = True, True,
+
+[[[quiz]]]
+names = exercise2Setting1, exercise2Setting2, exercise2Setting3,
+labels = Label of example setting, Label of example setting 2, Label of example setting 3,
+difficulties = 3, 4, 5,
+infos = "Some more information about setting1 of exercise 2.","Some more information about setting1 of exercise 1", "Some more information about setting3 of exercise 1",
+visibles = True, True, True,
+
+[[[scaling]]]
+names = Ermüdung, hiddenSetting, fatigue
+labels = "Scaling fatigue (german; The default values use the translation files)", "You cannot see this label","Scaling fatigue (english; The default values use the translation files)"
+difficulties = 3, 1, 3
+infos = "Some more information about this setting. You can scale your fatigue in german", "This is just (another) hidden setting which is doing nothing. A hidden setting may be called in set- or masterlist providing results for a previously run exercise..", "You can scale your listening fatigue in english"
+visibles = True, False, True
+
+[[[trainer]]]
+names = shorterSetting, shortestSetting, noRealSetting, simpleAudioSetting
+labels = Shorter setting than the default, "Hey, Shortest setting", This is no setting, Another audio setup
+difficulties = 1, 1, 1, 1
+infos = "Just two audio signals.", "Just one audio signals.", This is no other setting than the default setting which is loaded as the base of every setting., This setup uses sounddevice instead of QtMultimedia for playback.
+visibles = True, True, True, True
+
+
+[generators]
+[[main]]
+names = genWavreader,
+labels = Reading audio file,
+difficulties = 1,
+infos = "A simple generator reading audio files (mp3/wav).",
+visibles = True,
+
+[[settings]]
+[[[genWavreader]]]
+names = wavreader1,
+labels = "You cannot see this label",
+difficulties = 1,
+infos = "This generator setting just prints a message to the prompt. Thus just the default settings will be set.",
+visibles = False,
+
+[preprocessors]
+[[main]]
+names = preAudioEffects,
+labels = "preAudioEffects",
+difficulties = 1,
+infos = "This preprocessor can normalize the audio so far.",
+visibles = True,
+
+[[settings]]
+[[[preAudioEffects]]]
+names = normalizePeaks,
+labels = Normalize to peak,
+difficulties = 1,
+infos = "Normalize to peak to prevent distortions",
+visibles = True,
+
+[player]
+[[main]]
+names = playAudio, playQtAudio
+labels = "Simple Audio player", "Qt Audio player"
+difficulties = 1, 1
+infos = "Simple Audio player", "More sophisticated Audio player"
+visibles = True, True
+
+[[settings]]
+[[[playAudio]]]
+names = ,
+labels = ,
+difficulties = ,
+infos = ,
+visibles = , 
+
+[[[playQtAudio]]]
+names = lowLevel,
+labels = Low level,
+difficulties = 1,
+infos = The level is set 55 instead of 65,
+visibles = True,
+
+
+[setlists]
+[[main]]
+names = ,
+labels = ,
+difficulties = ,
+infos = ,
+visibles = ,

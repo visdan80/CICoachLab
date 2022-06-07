@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+*.directory
+/.sync.ffs_db
+*.cid
+/debugfile.txt
+/filter.ini
+/.idea/

@@ -1,0 +1,8 @@
+Title: 0011_Banjo.mp3
+
+Copyright: Sebastian Mielau
+
+This audio sample is part of the "CIC-Hörspiel" (https://www.cic-rheinmain.de/cic-aktiv/cic-hoerspiel/)
+The author of the audio sample allowed the usage within and distribution alongside the CICoachLab framework.
+If you want to use the audio file outside the CICoachLab framework please contact Sebastian Mielau to ask for permision.
+

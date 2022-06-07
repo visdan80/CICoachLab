@@ -1,0 +1,35 @@
+# separate the entries by colons
+# default settings can be defined by by an empty value or 'default'
+#
+# If the same exercise, generator, preProc, or player are used for different 
+# settings respectively it is sufficient to  define a single name. Otherwise  
+# ensure that the number of items in name and settings are the same within the
+# sections.# The entries of preProcs can be empty since the use of preProcs is
+# not mandatory. Otherwise enter None, if no preProc should be used, especially 
+# if in one instance of settings a preProc should be used and in other 
+# instances no preProc is used.
+#
+# Attention!
+# If a preProcessor is defined in the exercise setting the exercise setttings
+# overrule the definitions in the set list.
+# The same applies for the  generator and player settings.
+##############################################################################
+
+[exercises]
+names = presenter, questionaire, confusionMatrix, questionaire, presenter
+settings = cleanQtMedia, aSetting, ShortCM, FASorig, vocoder
+
+[generators]
+names = genQtAudio, None, genWavreader, None, genWavreader
+settings = default, None, default, None, default 
+
+[preProcs]
+names = None, None, None, None, preVocoder
+settings = None, default, None, None, default
+
+[player]
+names = playQtAudio, None, playAudio, None, playAudio
+settings = default, default, playAudio1.py, default, default 
+
+['description']
+short = Trainingsphase,  Fragebogen, Verwechslungen, Fragebogen Ende, Abschlussphase

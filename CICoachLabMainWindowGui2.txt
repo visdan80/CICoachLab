@@ -1,0 +1,3 @@
+Created with QT Designer
+Converted via console 
+pyuic5 CICoachLabMainWindowGui2.ui -o CICoachLabMainWindowGui2.py

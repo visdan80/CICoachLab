@@ -1,0 +1,140 @@
+#################################################################################################################################
+# 
+# This file  can be used to translate the exercise names and to define the exercise user access in CICoachLab.
+# The user access defines if the items are visibles in general and/or dependent on the difficulty level of the user.
+# The labels can be used to provide telling names instead of the programmers python script names. The labels can also be used 
+# to provide translations or group specific names for the exercise and settings names.
+# 
+# The setting/field 'ignoreFilterFile' in CICoachLab.ini defines if this file will be ignored.
+# 
+# If the visibility of an item (e.g. exercise) is set to visibless = False and the visibility of a subitem is set to True
+# the subitem (its setting) will not be displayed
+# The dificulties of the exercises and settings of the exercise define the difficulty from 1 (very easy) to 5 (difficult)
+# The information in infos can bes provided for example as short discription in a  tooltip while hovering over selection
+# The fields names, labels, difficulties, infos, visibless are mandatory
+# The modules which are define as py files in CI Trainer but are not listed in filter.ini will not be displayed
+# Even if the module is not displayed to the user the item can be called by CICoachLab (e.g. by an setlist).
+# Boolean value have to be assigned as True or False
+# infos have to be provided in the format as follows: infos = "example1","example2","example3"
+# If a single item is entered the item has to be closed with a semicolon. If two or more items are entered the final colon
+# should be entered but can be skipped.
+#
+# A single item example
+# [[settings]]
+# [[[playAudio]]]
+# names = playAudio1,
+# labels = Grundeinstellung,
+# difficulties = 1,
+# infos = "Grundeinstellung der Standard-Audio-Ausgabe des Rechners",
+# visibless = True,
+# 
+#
+# Trouble shooting:
+# filter.ini cannt be read
+# 1) Check if the field names are defined corecctly
+# 2) check the usage of colons.
+#       The field names should be close with a colon, even empty entrie, e.g.:
+#       [[settings]]
+#       [[[playAudio]]]
+#       names = ,
+#       labels = ,
+#       difficulties = ,
+#       infos = ,
+#       visibles = , 
+# 3) If colons are used within definitions the labels/information have to be be enclosed in quoatation marks.
+#
+# The exercise or setting is not displayed although it is defined in filter.ini
+# 1) Check the predefined difficulty and difficulty level. If the difficulty level in the user dialog is lower than the 
+#       difficulty defined in filter.ini the item won't be displayed.
+#
+#############################################################################
+# Copy this template file filter.in to filter.ini to make it accessible in CICoachLab.
+# Adjust the entries according to your local setup.
+#################################################################################################################################
+
+[exercises]
+[[main]]
+names = exercise1, exercise2,
+labels = Label of exercise1, Label of exercise2,
+difficulties = 1, 2,
+infos = "Some more information about exercise1.","Some more information about exercise1.",
+visibles = True, True,
+
+[[settings]]
+[[[example1]]]
+names = exercise1Setting1, exercise1Setting2,
+labels = Label of example setting, Label of example setting 2,
+difficulties = 3, 4,
+infos = "Some more information about setting1 of exercise 1.","Some more information about setting1 of exercise 1",
+visibles = True, True,
+
+[[[example2]]]
+names = exercise2Setting1, exercise2Setting2, exercise2Setting3,
+labels = Label of example setting, Label of example setting 2, Label of example setting 3,
+difficulties = 3, 4, 5,
+infos = "Some more information about setting1 of exercise 2.","Some more information about setting1 of exercise 1", "Some more information about setting3 of exercise 1",
+visibles = True, True, True,
+
+[generators]
+[[main]]
+names = generator1,
+labels = reading wav files,
+difficulties = 1,
+infos = "The generator can geneate audio by loading wav files",
+visibles = True,
+
+[[settings]]
+[[[generator1]]]
+names = generatorSetting1,
+labels = Default setting,
+difficulties = 1,
+infos = "Default setting of generator1",
+visibles = True,
+
+[preprocessors]
+[[main]]
+names = preprocessor1,
+labels = Label of preprocessor1,
+difficulties = 5,
+infos = "The output will be preprocessed by preprocessor",
+visibles = True,
+
+[[settings]]
+[[[preprocessor1]]]
+names = preprocessor1Setting,
+labels = Fancy preproceissing,
+difficulties = 5,
+infos = "E.g.: Some distortion of the output.",
+visibles = True,
+
+[player]
+[[main]]
+names = player1, player2,
+labels = Label of player1, Label of player2,
+difficulties = 1, 1,
+infos = "Some kind of output. E.G.: audio output.", "Another kind of output. May be visual/tactile/midi output.",
+visibles = True, True,
+
+[[settings]]
+[[[player1]]]
+names = settingOfPlayer1,
+labels = Default setting,
+difficulties = 1,
+infos = "Any kind of setting of player1",
+visibles = True,
+
+[[[player2]]]
+names = player2,
+labels = Default setting of player2,
+difficulties = 5,
+infos = "Any kind of setting of player2",
+visibles = True,
+
+
+[setlists]
+[[main]]
+names = setlist1, setlist1,
+labels = A setlist, Another setlist,
+difficulties = 3, 1,
+infos = "Dieses Beispiel präsentiert eine Übungsabfolge mit CI Simulation der Audio-Darbietung.","Dieses Beispiel präsentiert eine Übungsabfolge.",
+visibles = True, True,

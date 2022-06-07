@@ -1,0 +1,10 @@
+Introduction of pipenv for handling of dependencies? 
+
+Introduce example scripts/settings for conditions
+
+Introduce set- and master lists
+
+Introduce xlsx export function
++create chosen non-existing file or append to existing file
+
+Introduce multiuser setup? Up to now only a single user is expected to run CICoachLab at one PC/Laptop.

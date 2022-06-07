@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UserDataDialog</class>
+ <widget class="QDialog" name="UserDataDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>704</width>
+    <height>780</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>User data</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QHBoxLayout" name="personalData">
+     <item>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="lbLastname">
+         <property name="text">
+          <string>Family name</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lastname"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lbForname">
+         <property name="text">
+          <string>Forname</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="forname"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="lbPatientID">
+         <property name="toolTip">
+          <string extracomment="Patienten-ID as used in the patients records in the clinical setup"/>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Patient-ID</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="patientID"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="lbGender">
+         <property name="toolTip">
+          <string extracomment="Official forms of gender are &quot;Female&quot;, &quot;Male&quot; and &quot;Divers&quot;"/>
+         </property>
+         <property name="text">
+          <string>Gender</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="gender">
+         <item>
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Female</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Male</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Diverse</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="lbBirthday">
+         <property name="toolTip">
+          <string extracomment="Format of birthdate: [day.month.year/DD.MM.YYYY] Possible birthdates lie between 01.01.1900 and 01.01.2022"/>
+         </property>
+         <property name="text">
+          <string>Birthday</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QDateEdit" name="birthday">
+         <property name="maximumDate">
+          <date>
+           <year>2020</year>
+           <month>12</month>
+           <day>31</day>
+          </date>
+         </property>
+         <property name="minimumDate">
+          <date>
+           <year>1900</year>
+           <month>1</month>
+           <day>1</day>
+          </date>
+         </property>
+         <property name="displayFormat">
+          <string>dd.MM.yyyy</string>
+         </property>
+         <property name="calendarPopup">
+          <bool>true</bool>
+         </property>
+         <property name="date">
+          <date>
+           <year>1900</year>
+           <month>1</month>
+           <day>1</day>
+          </date>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="anamnese">
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="4" column="0">
+        <widget class="QLabel" name="lbTinnitus">
+         <property name="text">
+          <string>Tinnitus</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="lbVertigo">
+         <property name="text">
+          <string>Vertigo</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="deafReason">
+         <item>
+          <widget class="QComboBox" name="left_deafReason">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Unknown</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Meningitis</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Sudden hearing loss</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Genetical</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Inner ear inflammation</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Congenital</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="right_deafReason">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Unknown</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Meningitis</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Sudden hearing loss</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Genetical</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Inner ear inflammation</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Connate</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="lbDeafBeforeCI">
+         <property name="text">
+          <string>Duration of deafness  before CI Treatment</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="lbDeafeningProgress">
+         <property name="text">
+          <string>Type of deafness</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="lbDeafReason">
+         <property name="text">
+          <string>Reason of deafness</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QComboBox" name="left_tinnitus">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yes</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>No</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="right_tinnitus">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Yes</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>No</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="deafBeforeCI">
+         <item>
+          <widget class="QComboBox" name="left_deafBeforeCI">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>&lt; 1 year</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1 to 4 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5 to 10 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>11 to 20 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>21 to 30 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>&gt; 31 years</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="right_deafBeforeCI">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>&lt; 1 year</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1 to 4 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5 to 10 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>11 to 20 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>21 to 30 years</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>&gt; 31 years</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QComboBox" name="left_deafeningProgress">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Progredient</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Sudden</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="right_deafeningProgress">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Progredient</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Sudden</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QComboBox" name="vertigo">
+         <item>
+          <property name="text">
+           <string/>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Yes</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>No</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="treatment">
+         <item>
+          <widget class="QComboBox" name="left_treatment">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Untreated</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Hearing aid</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Cochlear Implant</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Bone conduction hearing aid</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Middle ear implant</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="right_treatment">
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Untreated</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Hearing aid</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Cochlear Implant</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Bone conduction hearing aid</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Middle ear implant</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="lbTreatment">
+         <property name="text">
+          <string>Treatment</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="subjectID"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lbSubjectId">
+       <property name="toolTip">
+        <string extracomment="Subject-ID if participant takes part in a study"/>
+       </property>
+       <property name="text">
+        <string>Subject ID</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lbStudyCheck">
+       <property name="toolTip">
+        <string extracomment="Checkmark if subject allows usage of data for studies"/>
+       </property>
+       <property name="text">
+        <string>General study agreement</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="studyCheck">
+       <property name="text">
+        <string>Yes</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Minimum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>17</width>
+       <height>37</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="difficultyGrade">
+     <item>
+      <widget class="QLabel" name="lbDifficulty">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Degree of difficulty &lt;/p&gt;&lt;p&gt;1 (very easy) - 5 (very hard)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="difficulty">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="lbComment">
+     <property name="text">
+      <string>Comment:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="comment"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttons">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <widget class="QPushButton" name="pbClear">
+       <property name="text">
+        <string>Delete</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbSave">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>lastname</tabstop>
+  <tabstop>forname</tabstop>
+  <tabstop>patientID</tabstop>
+  <tabstop>birthday</tabstop>
+  <tabstop>left_treatment</tabstop>
+  <tabstop>left_deafBeforeCI</tabstop>
+  <tabstop>left_deafReason</tabstop>
+  <tabstop>left_deafeningProgress</tabstop>
+  <tabstop>right_treatment</tabstop>
+  <tabstop>right_deafBeforeCI</tabstop>
+  <tabstop>right_deafReason</tabstop>
+  <tabstop>right_deafeningProgress</tabstop>
+  <tabstop>pbSave</tabstop>
+  <tabstop>pbCancel</tabstop>
+  <tabstop>comment</tabstop>
+  <tabstop>pbClear</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

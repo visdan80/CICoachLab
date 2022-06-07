@@ -1,0 +1,118 @@
+# Boolean value can be assigned as True, yes, on, 1   or   False, no, off, 0
+#############################################################################
+# The fieds in [DynamicSettings] saves some states of CICoachLab when the programm is closed
+# A manual setting of the fields is not required.
+[DynamicSettings]
+lastSavingPath = 
+lastExercise = 
+lastExerciseSettings = 
+lastGenerator = 
+lastGeneratorSettings = 
+lastPreprocessor =
+lastPreprocessorSettings =
+lastPlayer = 
+lastPlayerSettings = 
+lastSetlist = 
+lastRunEndTime = 1990-01-01
+dailyCumulatedRunTime = 0
+maxDailyCumulatedRunTime = 86400
+currentSessionStartTime = 0
+#############################################################################
+
+
+[system]
+autoBackupResults = True
+dualScreen = 0
+# in the patientmode the user data is automatically loaded  from lastSavingFile and saved.
+# The menues for saving and loading are removed.
+patientMode = True
+# in the coachmode the user data is automatically loaded  from lastSavingFile and the coach is 
+# asked if the data should be backuped to the specified path defined in coachBackupPath. The data won't be written back in the patientMode.
+coachMode = False
+# path were backup data will be saved if patient data is loaded in the coach mode
+coachBackupPath =
+# experimental flag which allows to use the settings from loaded data
+useSettingsFromLoadedData = False
+# allows the usage of py-file settings, in py-presets you should be knowing what you are doing
+expertSettingsMode = True
+# in the expert mode extra features are available: The expert menu:
+# It allows the the calibration of the system level and the calibration of the reaction 
+# time delay of an exercise. It provides a link to the source code documentation. It provides
+# a menu entry for guiding through the translation process.
+expertMode = True
+# file which is used to save the exercise data
+patientSavingFile = patient.cid
+# in the bitlock mode a bitlocked partition is used as storage for sensible data of of patients results or sensible exercise data.
+bitlockerMode = False
+# path/device/memory stick which is bitlocked
+bitlockerDevice = 
+# linux: data path which contains unlocked bitlocked data
+bitlockerPathClear = 
+# linux: mounting path of encrypted data where the encrypted data of the bitlocker device/data is mounted to
+bitlockerPathEncrypt = 
+# In the study mode the subject is asked to enter personal information which allows to recognize the user.
+studyMode = False
+masterlistFile = masterlists/masterlist.lst
+masterlistStart = False
+exerciseFrameGeometry = 
+mainFramegeometry = 
+# localization file of CICoachLab is defined in the locales directory.
+# locales-folders can be defined in the exercises folders for the exercise modules
+localization = en_de
+# if fixMasterVolume is set to True the master volume will be set to 
+fixMasterVolume = False
+# setting the master volume to masterVolume in %
+masterVolumeValue = 100
+# ignoring filter.ini, no filter.ini file is required)
+ignoreFilterFile = False
+
+#############################################################################
+[debug]
+# if debug mode is set to True the feedback which can be found in the console is written to the debug file as well, if the debuggingFile is defined as well
+# in the debug mode not all security checks are implemented as the usage of an encrypted USBStick 
+mode = True
+verbosityThreshold = 2
+# if a debug file is defined the feedback which can be found in the console is written to the a debug file as well
+# The debug information is written to a temporary debug file at first. At closing down CICoachLab the temporary file is moved to the final destination.
+# This allows efficient logging (in memory without sata access) and higher data protection level if the logging data is moved to a bitlocked partition at the end of CICoachLab.
+# If the debuggingFile is an empty string no temporary file will be written.
+# If debuggingFile is defined  and debuggingTempFile, debuggingTempFile  is set to debuggingFile.
+debuggingTempFile = 
+# The final debug file
+debuggingFile = CICoachLabDebug.txt
+# a demo mode of CICoachLab is not implemented yet
+demoMode = False
+
+#############################################################################
+# Calibration of system
+[calibration]
+[[frameWork]]
+[[[level]]]
+# hardware system specific calibration, the lower the level, the softer is the output
+level = 60.0
+unit = dB
+stdDev = ,
+iterations = ,
+settingsName = ,
+resultFile = ,
+date = ,
+info = Calibration parameters of frameWork level.
+
+#############################################################################
+# dynamically/manually generated sections, depending on the installed modules
+# generator, player, exercises
+#############################################################################
+# module system specific calibration, the higher the level, the softer is the output
+[[playAudio]]
+[[[level]]]
+level = 0
+
+#############################################################################
+# dynamically/manually generated section, depending on the installed exercise
+[[confusionMatrix]]
+settings = 
+time = 0.0002
+
+
+# dynamically/manually generated section, depending on the installed exercises
+# exercise

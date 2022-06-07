@@ -1,0 +1,53 @@
+The CICoachLab framework is licensed under the GPL version 3 or later.
+See "GPLv3_license.txt" for the license text.
+
+
+The used python language, the QT gui framework and its python binding PyQt5 and imported python moduls or other required dependencies are licensed under different licences as shown below. 
+
+license of dependencies:
+    
+    licences used in CICoach framework
+        Qt                      LGPL-3.0-only,          https://www.qt.io/licensing/
+        PyQt5                   GPL-3.0-only,           https://www.riverbankcomputing.com/software/pyqt/
+        def clickable(widget):  GPL-2.0-or-later,       https://wiki.python.org/moin/PyQt/Making%20non-clickable%20widgets%20clickable    
+        def reconnect()         CC-BY-SA-3.0            https://stackoverflow.com/questions/21586643/pyqt-widget-connect-and-disconnect             17.08.2017
+        def mathTexToQPixmap    CC-BY-SA-3.0            https://stackoverflow.com/questions/32035251/displaying-latex-in-pyqt-pyside-qtablewidget   23.05.2017
+        def clearLayout         CC-BY-SA-3.0            https://stackoverflow.com/questions/4528347/clear-all-widgets-in-a-layout-in-pyqt           08.04.2012
+        LabeledSlider           CC-BY-SA-4.0            https://stackoverflow.com/questions/47494305/python-pyqt4-slider-with-tick-labels,          22.03 2019
+        class Worker and        BSD-2-Clause            https://www.pythonguis.com/legal/
+        class WorkerSignals     BSD-2-Clause            https://www.pythonguis.com/legal/ https://www.pythonguis.com/tutorials/multithreading-pyqt-applications-qthreadpool/
+        python                  PSF-2.0                 https://docs.python.org/3/license.html
+    
+    licenses of imported second party python packages:
+        matplotlib              PSF-2.0                 https://matplotlib.org/stable/users/project/license.html
+        pandas                  BSD-3-Clause            https://github.com/pandas-dev/pandas/blob/main/LICENSE
+        pyCaw 		            MIT                     https://github.com/AndreMiras/pycaw/commit/231341005d81b20d8adbecb2348e8eeaa26f3c63
+        configobj 	            individuell		        https://github.com/DiffSK/configobj/blob/master/LICENSE
+        audio2numpy             MIT                     https://github.com/wiccy46/audio2numpy/blob/master/LICENSE
+        librosa                 ISC                     https://github.com/librosa/librosa/blob/main/LICENSE.md
+        numpy                   BSD-3-Clause            https://github.com/numpy/numpy/blob/main/LICENSE.txt
+        psutil                  BSD-3-Clause            https://github.com/giampaolo/psutil/blob/master/LICENSE
+        scipy                   BSD-3-Clause            https://github.com/scipy/scipy/blob/main/LICENSE.txt
+        sounddevice             MIT                     https://github.com/spatialaudio/python-sounddevice/blob/master/LICENSE
+        SoundFile               BSD-3-Clause            https://pysoundfile.readthedocs.io/en/latest/
+
+    licences of other exernal dependencies
+        ffmpeg			GPL-3.0-or-later	https://www.ffmpeg.org/download.html, https://github.com/BtbN/FFmpeg-Builds/releases
+        doxygen         LGPL-3.0-only       https://www.doxygen.nl/index.html      
+        awk             LGPL-3.0-only       https://www.invisible-island.net/mawk/
+        amixer          MIT                 https://github.com/JiriSko/amixer-webui/blob/master/LICENSE
+        BASH            GPL-3.0-or-later    https://www.gnu.org/software/bash/
+        pip             MIT                 https://github.com/pypa/pip/blob/main/LICENSE.txt
+        find            GPL-3.0-or-later    man page
+        
+    
+Within CICoachLab framework the code spdx https://spdx.org/licenses/ tokens are used to mark the used/imported code snippets. The licenses texts are provided alongside this licence information
+and have been downloaded from https://spdx.org/licenses/.
+
+
+License compatibility:
+The code of CICoachLab, licensed under GPL3 can be combined with the licenses of the imported or integrated 
+code. MIT-, LGPL-,  and BSD-licences (two- and three clause) are GPL compatible. Their Code can be used in GPL code.
+CC BY-SA and GPLv3 are compatible as well.
+Source: wikipedia.og
+
