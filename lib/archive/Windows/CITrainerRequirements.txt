@@ -1,0 +1,38 @@
+Package, version: required by module
+
+ python: 3.8.10 (default, Nov 26 2021, 20:14:08) 
+[GCC 9.3.0]: CITrainer
+
+soundfile, 0.10.3.post1: genWavReader
+audio2numpy, 0.1.2: genWavReader
+sounddevice, 0.4.1: playAudio
+ffmpeg, 1.4: genWavReader
+PyQt5, 5.14.1: CITrainer
+datetime, NaN: CITrainer
+inspect, 1.17.4: CITrainer
+bz2, NaN: CITrainer
+copy, 1.17.4: CITrainer
+functools, 1.17.4: soundcheck
+importlib, NaN: CITrainer
+io, 1.17.4: playQtAudio
+librosa, 0.8.0: ConfusionMatrix
+matplotlib, 3.1.2: CITrainer
+multiprocessing, 1.17.4: quiz
+numpy, 1.17.4: confusionMatrix
+os, NaN: CITrainer
+pandas, 1.3.3: ConfusionMatrix
+pickle, NaN: CITrainer
+platform, #102-Ubuntu SMP Fri Nov 5 16:31:28 UTC 2021: CITrainer
+psutil, 5.8.0: CITrainer
+py_compile, 1.17.4: CITrainer
+re, 2.2.1: CITrainer
+scipy, 1.3.3: genHarmXdBPerOct
+shutil, NaN: CITrainer
+sounddevice, 0.4.1: genHarmXdBPerOct
+subprocess, NaN: CITrainer
+sys, 3.8.10 (default, Nov 26 2021, 20:14:08) [GCC 9.3.0]: CITrainer
+time, NaN: CITrainer
+traceback, NaN: CITrainer
+webbrowser, NaN: CITrainer
+windows_tools.bitlocker, 1.0.1: CITrainer
+pkg_resources, NaN: CITrainer
