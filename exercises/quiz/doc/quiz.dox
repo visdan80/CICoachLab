@@ -1,0 +1,9 @@
+/**  \addtogroup grp_exercises Exercises
+
+\section sec_introductionQuiz quiz
+
+In this exercise the user will play back audio signals and is asked to answer some individual questions for each audio signal.
+If the user cannot answer the questions hints can be requested by the user. 
+The correctness of the answers is provided.
+
+ */ 

@@ -41,8 +41,7 @@ license of dependencies:
         find            GPL-3.0-or-later    man page
         
     
-Within CICoachLab framework the code spdx https://spdx.org/licenses/ tokens are used to mark the used/imported code snippets. The licenses texts are provided alongside this licence information
-and have been downloaded from https://spdx.org/licenses/.
+Within CICoachLab framework the code spdx https://spdx.org/licenses/ tokens are used to mark the used/imported code snippets. The licenses texts are provided alongside this licence information in the subdirectory submodulesLicenses and have been downloaded from https://spdx.org/licenses/.
 
 
 License compatibility:

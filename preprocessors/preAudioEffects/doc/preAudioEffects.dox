@@ -1,0 +1,5 @@
+/**  \addtogroup grp_preprocessors Preprocessors
+
+\section sec_introductionPreAudioEffects preAudioEffects
+This simple preprocessor normalizes a provided audio signal to either its maximum or its RMS value.
+ */ 

@@ -790,7 +790,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = mainpage.dox lib/testDocuExercise.dox player/playQtAudio/doc/playQtAudio.dox player/playAudio/doc/playAudio.dox exercises/trainer/doc/trainer.dox exercises/quiz/doc/quiz.dox exercises/scaling/doc/scaling.dox exercises/questionaire/doc/questionaire.dox generators/genWavreader/doc/genWavreader.dox generators/genSin/doc/genSin.dox preprocessors/preAudioEffects/doc/preAudioEffects.dox lib/exerciseBase/doc/exerciseBase.dox
+INPUT                  = . mainpage.dox
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

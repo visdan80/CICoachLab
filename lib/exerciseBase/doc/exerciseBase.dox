@@ -1,0 +1,36 @@
+/** 
+\addtogroup grp_exercises Exercises 
+@{
+
+\section sec_execerciseBase ExecerciseBase
+\subsection sec_exerciseBaseClassDescription Description
+
+ The exercise base provides the basic functions and logic of the CICoachLab exercise class and should be used as base for new exercises.
+ If the exercise base class is inherited in most cases 
+ the inherited functions should be overwritten and the inherited should be called explicitly called at the beginning 
+ of the overwritten function. e.g.:
+ \code{.em}
+ def setDefaultSettings(self):
+     exerciseName = 'scaling'
+     super().setDefaultSettings(exerciseName)
+
+     # ... some exercise specific added code  
+ \endcode
+
+ \subsection sec_execerciseBaseFunctions Functions
+ The provided functions of exercise base class are:
+- \_\_init\_\_()
+- \_\_exit\_\_()
+- prepareRun()
+- iniPath()
+- setDefaultSettings()
+- startRun()
+- runButton()
+- quitRun() (cancels run without marked accomplishment, if a run is accomplished a set/ or masterlist will continue)
+- finishRun() (cancels run with marked accomplishment, if a run is accomplished a set/ or masterlist will continue)
+- eraseExerciseGui()
+- closePath()
+- loadSettings()
+
+ @} 
+*/

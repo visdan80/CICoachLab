@@ -1,0 +1,6 @@
+/**  \addtogroup grp_generators Generators
+
+\section sec_introductionGenSin genSin
+This simple generator provides sinuoisod of defined duration and frequency.
+
+ */ 

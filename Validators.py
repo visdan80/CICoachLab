@@ -12,7 +12,7 @@ class NumberValidator(QtGui.QValidator):
     """
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
-    def __init__(self, inputRange, convertFunc, comboStyle):
+    def __init__(self, inputRange, convertFunc, comboStyle, sysname=None):
         """!
         The init function defines the valid range which can be set.
         The conversion function can be the functions float or int.
@@ -28,7 +28,7 @@ class NumberValidator(QtGui.QValidator):
             raise TypeError
 
         self.comboStyle = comboStyle
-
+        self.sysname = sysname
 
     def setRange(self, inputRange):
         """!
@@ -62,9 +62,12 @@ class NumberValidator(QtGui.QValidator):
             try:
                 # setting locale to the found locale, without this locale.localeconv()['decimal_point'] won't return the
                 # separator
-                locale.setlocale(locale.LC_ALL, locale.getlocale())
+                if self.sysname == 'Windows':
+                    locale.setlocale(locale.LC_ALL, locale.getlocale()[0])
+                else:
+                    locale.setlocale(locale.LC_ALL, locale.getlocale())
                 if locale.localeconv()['decimal_point'] == ',':
-                    string = string.replace(',','.')
+                    string = string.replace(',', '.')
 
                 self.convertFunc(string)
                 # first check passed
@@ -125,7 +128,7 @@ class NumberListValidator(NumberValidator):
     """
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
-    def __init__(self, inputRange, convertFunc, comboStyle):
+    def __init__(self, inputRange, convertFunc, comboStyle, sysname=None):
         """!
         inputRange:          defines the minimum and maximum number for the input value
         convertFunc:    defines the function int or float for the conversion from string to the number
@@ -142,7 +145,7 @@ class NumberListValidator(NumberValidator):
             raise TypeError
 
         self.comboStyle = comboStyle
-
+        self.sysname = sysname
 
     def setRange(self, inputRange):
         """!
@@ -194,7 +197,7 @@ class StringValidator(QtGui.QValidator):
     """
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
-    def __init__(self, inputRange):
+    def __init__(self, inputRange, sysname=None):
         QtGui.QValidator.__init__(self)
         """!
         The init function defines the range which has to be fullfilled.
@@ -202,6 +205,8 @@ class StringValidator(QtGui.QValidator):
         """
 
         self.range = inputRange
+        self.sysname = sysname
+
 
     def validate(self, string, index):
         """!
@@ -272,12 +277,11 @@ class BoolValidator(StringValidator):
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
 
-    def __init__(self):
+    def __init__(self, sysname=None):
         """!
         The ini function defines the possible range of strings ['True', 'False']
         """
-        super().__init__(inputRange=['True', 'False'])
-
+        super().__init__(inputRange=['True', 'False'], sysname=sysname)
         #self.range = ['True', 'False']
 
 
@@ -300,14 +304,14 @@ class StringListValidator(StringValidator):
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
 
-    def __init__(self, inputRange):
-        super().__init__(self)
-        QtGui.QValidator.__init__(self)
+    def __init__(self, inputRange, sysname=None):
         """!
         The init function defines the range which has to be fullfilled.
         range can define a list of possible words or a string which defines the possible symbols.
         """
 
+        super().__init__(self, sysname=sysname)
+        QtGui.QValidator.__init__(self)
         self.range = inputRange
 
 
@@ -362,11 +366,11 @@ class BoolListValidator(StringListValidator):
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
 
-    def __init__(self):
+    def __init__(self, sysname=None):
         """!
         The ini function defines the possible range of strings ['True', 'False']
         """
-        super().__init__(inputRange=['True', 'False'])
+        super().__init__(inputRange=['True', 'False'], sysname=sysname)
 
         self.range = ['True', 'False']
 
@@ -400,7 +404,7 @@ class AnyValidator(NumberValidator, BoolValidator, StringValidator):
     validationChanged = QtCore.pyqtSignal(QtGui.QValidator.State)
 
 
-    def __init__(self, type, listStyle=None, inputRange=None, convertFunc=None, comboStyle=None):
+    def __init__(self, type, listStyle=None, inputRange=None, convertFunc=None, comboStyle=None, sysname=None):
         """!
         type:                   defines the type of validator which has to be run.
                                 tpye can be defined as a string or a list of strings as defined in settingsLimits.
@@ -425,6 +429,7 @@ class AnyValidator(NumberValidator, BoolValidator, StringValidator):
         self.rangeAny = inputRange
         self.convertFunc = convertFunc
         self.comboStyle = comboStyle
+        self.sysname = sysname
 
 
     def validate(self, string, index):

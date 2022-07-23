@@ -134,8 +134,8 @@ visibles = True,
 
 [setlists]
 [[main]]
-names = ,
-labels = ,
-difficulties = ,
-infos = ,
-visibles = ,
+names = demo,
+labels = Demo,
+difficulties = 1,
+infos = This is a demo setlist which calls some demo exercise of CICoachLab,
+visibles = True,

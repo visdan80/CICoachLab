@@ -1,0 +1,9 @@
+/**  \addtogroup grp_player Player
+
+\section sec_introductionPlayQtAudio playQtAudio
+This audio player uses th QT5 interface to play back the audio signal.
+The control of the player allows to the start, pause, stopp the audio signal. The position within the audio signal can be provided and can be set.
+
+The progress in the software flow defaults to waiting until the audio signal is played back but can be set otherwise.
+
+ */ 

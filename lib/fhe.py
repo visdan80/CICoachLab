@@ -11,17 +11,21 @@ import os
 from numpy.core.multiarray import zeros
 
 
-def getListOfDirectories(searchPath='/', depthOfDir=1):
+def getListOfDirectories(searchPath='/', depthOfDir=1, fullPath=False):
     """!
     This function returns a list of directories and subdirectories that
     are found in 'searchPath'.
 
+
+                default
     input
-    searchPath      = string determines the path of directories
-    depthOfDir      = provides the depth of the subdirectories that can be
-                        checked
+    searchPath   '/'      = string determines the path of directories
+    depthOfDir   1        = provides the depth of the subdirectories that can be
+                                checked
+    fullPath     False    = The returned directories are provided with the full path
+
     output
-    listOfDirs      = list of folders
+    listOfDirs    []      = list of folders
     """
 
     listOfDirs = []
@@ -30,7 +34,10 @@ def getListOfDirectories(searchPath='/', depthOfDir=1):
         return listOfDirs
 
     try:
+
         listOfDirs = [f for f in os.listdir(searchPath) if os.path.isdir(os.path.join(searchPath, f))]
+        if fullPath:
+            listOfDirs = [searchPath + os.path.sep + i for i in listOfDirs]
     except:
         # no files have been found
         listOfDirs = []
@@ -42,7 +49,10 @@ def getListOfDirectories(searchPath='/', depthOfDir=1):
         for directory in listOfDirsThisLevel:
             # print directory
             try:
-                nextLevel = getListOfDirectories(os.path.join(searchPath, directory), nextDepthOfDir)
+                if fullPath:
+                    nextLevel = getListOfDirectories(directory, nextDepthOfDir, fullPath)
+                else:
+                    nextLevel = getListOfDirectories(os.path.join(searchPath, directory), nextDepthOfDir, fullPath)
                 if len(nextLevel) > 0:
                     for subDirs in nextLevel:
                         # print 'subdir:'+subDirs
@@ -65,14 +75,14 @@ def getListOfFiles(searchPath='/', depthOfDir=2, namePart=[], nameIgnore=[], ful
     subdirectories of 'search_path'. To find all subdirectories the function
     GetListOfDirectories(searchPath, depthOfDir) is used.
 
-    input  :
-        searchPath      string that gives the path of files whose list will
-                            be compiled
-        depthOfDir      number of subdirectories, 1 means no
-                            subdirectories
-        namePart         list of strings or string that shall be part of the filename
-        nameIgnore       list of strings or string that shall not be part of the filename
-        fullPath         flag which defines if the returned file names should provide the full path
+    input  :        default
+        searchPath   '/'        string that gives the path of files whose list will
+                                be compiled
+        depthOfDir              number of subdirectories, 1 means no
+                      2         subdirectories
+        namePart      []        list of strings or string that shall be part of the filename
+        nameIgnore    []        list of strings or string that shall not be part of the filename
+        fullPath      False     flag which defines if the returned file names should provide the full path
 
     output :
         listOfFiles      list of matching files in path.
@@ -129,7 +139,7 @@ def getListOfFiles(searchPath='/', depthOfDir=2, namePart=[], nameIgnore=[], ful
     # getting all subdirectories
     listOfSubdirs = []
     if depthOfDir > 1:
-        listOfSubdirs = getListOfDirectories(searchPath, depthOfDir - 1)
+        listOfSubdirs = getListOfDirectories(searchPath, depthOfDir - 1, fullPath=True)
 
     # Searching the subdirectories for more files, corresponding to
     # 'depthOfDir' and 'namePart'

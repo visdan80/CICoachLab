@@ -1,0 +1,14 @@
+/**  \addtogroup grp_exercises Exercises
+
+\section sec_introductionQuestionaire questionaire
+In this exercise the user answers some questions. Depending on the settings the input formats the answers are provided as
+- singleChoice
+- dropdown menu
+- slider
+- text filed (long and short)
+- int
+- float
+
+The user can end a questionarei with or without the check of the input. If the questionaire is checked the user is asked to fill out required fields.
+If data is put in a number field, the input is checked acccording to the settings for the input format (int/float) and its range.
+ */ 

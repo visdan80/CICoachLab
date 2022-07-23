@@ -1,538 +1,570 @@
 /*! \mainpage Introduction
- *
- * \image html logo.svg "" width=200
- *
- *
- * \tableofcontents
- *
- * \section introduction Introduction to CICoachLab
- * CICoachLab was developed to provide a graphical user interface for the conduction of listening exercises.
- * The exercises can be used to obtain information about the user, e.g. listening performance and its testing circumstances.
- * Alternatively,
- * the exercises may be used to train the listening abilities of the user.
- * The user should be able to conduct the exercises independently after a
- * short introduction.
- *
- * CICoachLab provides the framework functions like saving and backuping data, the gui framework, the settings dialog.
- * \ref preconditions can be defined which have to be fulfilled before a specific excercise or setting can be run. 
- *
- * The field of application of CICoachLab depends on the implemented or available exercises, generators, preprocessors and players  and the provided settings and is not restricted to the field of listening.
- * Please note that the exerises and settings which are provided in the CICoachLab repository
- * just might be a basic subset of exercises and settings so far. The amount of exercise might increase in the future.
- * If you want to contribute any exercises or code feel free to contact me under < visdan at web.de >
- *
- * CICoachLab is distributed under the <a href=../licenses/GPLv3_license.txt>GPL license</a>.
- *
- * \section organization Organization
- * 
- * \subsection exercises Exercises
- * 
- * An exercise provides a bundle of functionalities.
- * It provides the algorithm which handles the presentation of the signal, gui, settings, display function of results, additional tools for the analysis or preparation of the run. 
- * The additionaly tools are organized as python scripts which can be called by the exercise gui or the exercise menu entries.
- * The exericise may add menu entries.
- * The data of the selected exercise is displayed in the run display box. The selected run may be displayed by the exercise display function.
- *
- * For more details see \ref exercisesAdvanced.
- *
- *
- * \subsection submodules Player, preprocessors and generators
- *
- * The exercises, also called modules, can make use of generators, preprocessors and player which can be applied in different exercises. 
- * These submodules provide functions for the generation, preprocessing or playback of signals respectively. In case of the audio player some interaction might 
- * be  required between the gui of the exercise and the available functions of the player, though.
- * The handled signals will commonly be of type audio but can be visual signals or other types of signals as well as long as the the interaction betweent exercise and the submodules
- * especially  and especially the interaction between player and generator can interact with each other.
- * In some cases (e.g. questionaires) only the gui elemnts may be required without any signal handling. In such cases no submodules have to be defined.
- *
- * Generators may be used for reading audio files or generating synthesized signals.
- *
- * Preprocessor may be implemented to normalize audio signals in level or to simulate different kinds of hearing loss
- * or CIpreprocessing.
- * 
- * Player may be used to play back the signal where different kind of user interactions are allowed.
- * Different types of player may be useful for the provision of single audio output or simultaneously played signals.
- *
- * For more details see \ref submodulesAdvanced.
- *
- * \subsection settings Settings 
- * 
- * The settings define the set of parameters which allow to control or change the behaviour of the exercise or
- * the behaviour of the generator, preprocessor and player.
- * For each module and submodule independent settings can be defined.
- * The setting of an exercise can define which submodules are required and which settings of the submodules will be
- * loaded with this specific exercise setting.
- *
- * The settings can be provided as a python file or can be produced with the settings dialog to some extend.
- * An exercise  should provide reasonable default settings to demonstrate the abilities of the exercise.
- * The settings dialog is described in \ref settingsDialog.
- * 
- * For more details see \ref settingsAdvanced.
- * 
- * For framework specific settings see also section \ref ciTrainerSetup.
- *
- * 
- * \subsection preconditions Preconditions
- * Preconditions can be defined which have to be fulfilled before a specific excercise or setting can be run. This is usually done by the administrator which defines the exercises and settings.
- *
- * One Precondition is defined by the setting of the users performance level which is defined in the user dialog \ref userDialog and can be changed by the user.
- * \n
- * Other preconditions can be defined in the exercise settings.
- * This allows to run a setlist which is a series of exercises and settings as long as some predefined conditions in the exercise settings are met.
- * \n
- * Preconditions can alse be checked during a run of a masterlist. A masterlist defines a list of items wich can be single exercise items with the a specified settings and or a setlist item.
- * Whether the preconditions are defined in the exercise settings or in the masterlist the preconditions can be checked at the start or the end of the respective item.
- * The preconditions can be set in the exercise setttings or in the masterlist.
- *
- * \subsection setlists Setlists 
- * Setlists allow to run a  set of single exercises with defined settings and in a defined order.
- * Setlist have to be defined in the setlist directory as files  with the extension *.lst
- * 
- * Form more details see \ref setlistsAdvanced.
- * 
- * \subsection masterlists Masterlists
- * Masterlists can be defined to run a set of single exercises or setlist items which will be run automatically at the start of CICoachLab.
- * For each masterlist item pre- and post conditions can be defined which can be used to interrupt or pause the processing of masterlist at the specified 
- * item until the conditions (e.g. a predefined time window) are met at the next start of the masterlist.
- * If a pre- or postcondition of an item is not met this item will processed at the next start of the masterlist until the required condition ist met and the next item can be 
- * processed.
- *
- * The masterlists are defined in the masterlist directory.
- *
- * Form more details see \ref masterlistsAdvanced.
- * 
- * \subsection filterIni filter.ini:
- * The file filter.ini is used to define which modules, submodules, settings  and setlists are displayed in the CICoachLab main window (\ref mainWindow) and in the settings dialog (\ref settingsDialog).
- * Filter.ini can provide additional, detailed information of the elemen which  is displayed if the mouse hovers over the exercise or setting list items displayed in the main 
- * window. 
- * In filter.ini the level of the hearing status can be defined for each modules, submodules, settings  and setlists which is required to be able to see and access the respective 
- * element in the framework gui.
- * Filter.ini can be used to provide translations for the technical exercise names.
- *
- * For the translation of dialog and other gui labels and text see section \ref translations.
- *  
- * If you don't want to provide filter.ini or all settings within filter.ini should be ignored you can achieve this by setting <VAR>ignoreFilterFile</VAR> in CICoachLab.ini to <VAR>True</VAR>.
- * 
- * \subsection ciTrainerSetup Setup of CICoachLab
- * The setup of CICoachLab is handled by CICoachLab.ini. It provides basic framework settings and the status of the CICoachLab framework at
- * the last closing of CICoachLab. A valid CICoachLab.ini is required for the launch of CICoachLab.
- * The file is read at the startup of CICoachLab and some fields will be updated during the application of CICoachLab (e.g. lastSavingName, accumulatedRunTime, ...).
- * Changes in CICoachLab.ini which are added, when CICoachLab is oppened might be dicarded.
- * 
- * For the documentation of the field entries and a template of an CICoachLab.ini see CICoachLab.in.
- * 
- * For the handling of exercise specific settings see \ref settings.
- * 
- * \section gui Graphical user interface
- * \subsection mainWindow Main window
- * In the  main window of CICoachLab the user can select the available exersices and  settings. The button which initializes or starts the exercise is found here. In this window the 
- * exercise gui will be
- * generated.
- *
- * In the menu bar of the CICoachLab Framework the entries "File", "Exercise", "Generator", "Preprocessor", "Player", "Setlist", "Help" and, depending on the settings in CICoachLab.ini, "Expert Tools" may be found.
- * In the entry "File" the user data can be entered vie the "User data" entry. Data of results can be loaded or saved. The saving and loading entry may be disabled according to CICoachLab.ini.
- *
- * The  menu entries of "Exercise", "Generator", "Preprocessor", "Player" and "Setlist" are generated dynamically according to the selected modules. Here, the first entries represent the available settings. The subsequent entries 
- * represent provided scripts for the analysis of data, or other scripts which might be helpfull for the respective module. The presets of scripts can be selected/run from within this menu bar entry.
- *
- * A list of loaded or carried out runs is provided and the results may be displayed if the exercise provides a display function.
- *
- * The status bar may provid information about the status of the exercise (e.g.progress of loading data, progress of exercise) status of playback, or errors while loading data.
- * 
- * \image html CICoachLab.png "The Main window of CICoachLab" width=600
- * 
- * \subsection settingsDialog Settings dialog
- * In the settings dialog the user can define or change the settings of the exercises, the generator, preprocessor, player if the Expert Mode is made available in CICoachLab.ini.
- * Not all settings parameters might be available. Which parameters can be changed by a user graphically is defined by the author of the exercise or module.
- * 
- * \image html SettingsDialog.png "Settings dialog" width=400 .
- * 
- * \subsection userDialog User dialog
- * The user dialog is accessed via the file-menu.
- * In the User dialog the personal data of the user can be provided (e.g.: surname, forname, birthdate, status of hearing... ). Furthermore the user can provide a general consent that the anonymized results can be used in 
- * studies.
- * 
- * The level of hearing abilities of the subject can be entered here, which defines which exercises and settings can be accessed by the user. If the difficulty level is set to 5 every exercise and setting should be accessible by 
- * the user. With lower levels only exercises with the respevtively defined difficulty can be accessed.
- * The levels of dificulties of the exercises and their settings have to be defined in filter.ini
- * 
- * \image html UserdataDialog.png "The users data dialog." width=400
- * 
- * \subsection expertMenu Expert menu
- * In this menu entries are defined which are required by programmers and administrators of CICoachLab. More information is yet to come.
- * 
- * \page page2 Detailed information for programmers and administrators
- * \tableofcontents
- * 
- * \section installattion Installation
- * For the installation and basic setup of CICoachLab check the  <a href=../readme.txt>readme.txt</a> 
- * 
- * \section requirements Requirements
- * 
- * \subsection implementation Implementation of CICoachLab
- * The functions of CICoachLab are implemented as python code because it allows the most flexible adaptation and extention of the code bases according to the individual needs.
- * Single python files of the code can be provided by the administrator to the user as needed, though. E.g. to hide critical code parts from the user.
- *
- * A compiled version of CICoachLab has nott been tested so far.
- * 
- * \subsection requiredDirectories Required directories
- * 
- * CICoachLab provides and requires the following directories.
- * - html:\n
- *   The directory provides the source code documentation which may be helpfull to get an overview of the CICoachLab
- *   Framework.
- * - exercises:\n
- * - generators:\n
- * - lib:\n
- * - licenses:\n
- *   The license text for the CICoachLab framework is provided  in <a href=../licenses/GPLv3_license.txt>GPLv3_license.txt</a> . Additionatlly the license information of the most commonly imported modules and other dependencies are given in 
- *   the  file <a href=../licenses/license_info.txt>license_info.txt</a>
- * - locales:\n
- *   The default language in CICoachLab gui elements is englisch. In most exercises generators, preprocessors, player A german translation file is provided with en_de.qm in the directory locales, if gui elements are implemented in the modules or submodules.
- * - masterlists\n
- * - player\n
- * - preprocessors\n
- * - recources:\n
- * - setlists\n
- *  
- * 
- *  \subsection systemRequirements System requirements
- * \subsubsection hardwareRequirements Hardware requirements
- * \verbatim
- * Monitor Resolution:  recommended are 1920*1080, untested so far
- * CPU: untested so far
- * \endverbatim
- * \subsubsection softwareRequirementsWindows Windows  Software requirements and recomendations
- * \verbatim
- * - winpython (this should contain the most common python standard packages, other python setups are valid as well)
- * - numpy (recomended)
- * - pandas (recomended)
- * - audio2numpy (pip install audio2numpy, external dependencies for mp3 handling: ffmpeg)
- * - configObj (pip install conofigObj)
- * - sounddevice (pip install sounddevice)
- * - soundfile (pip install soundfile)
- * - psutil
- * - pycaw
- * \endverbatim
- \subsubsection softwareRequirementsLinux Linux   Software requirements and recomendations
- * \verbatim
- * - audio2numpy (pip install audio2numpy, external dependencies for mp3 handling: ffmpeg)
- * - sounddevice (pip install sounddevice)
- * - soundfile (pip install soundfile)
- * - additional ubuntu packages used : \n
- *   sudo apt install python3-numpy python3-matplotlib python3-pandas python3-pip python3-configobj 
- *   (ubuntu is one of the great number of linux distributions and should not be considered as recomendation but as my favorit, in other distribution search for the corresponding
- *   package names)
- * - additional ubuntu packages used for development of CICoachLab:
- *   sudo apt install pyqt5-dev-tools doxygen graphviz
- *   sudo apt install qt5-default libpcap-dev libncurses5-dev libprocps-dev libxtst-dev
- *   sudo apt install libxcb-util0-dev qttools5-dev-tools libdtkwidget-dev libdtkwm-dev pkg-config
- * \endverbatim .
- * \section moreAbout More about the code
- * \subsection exercisesAdvanced Exercises advanced
- * Exercises are organized as classes which contains the algorithms/code for running the exercise.
- * 
- * The exercise main/python file defines the name of the exercise and points to the exercise directory with the same name as the python
- * file without the .py extension. In the exercise directory the following obligatory subdirectories have to be provided:
- * presets, locales, results.
- * Other subdirectories may be e.g.  analysis, data, signalFiles or any other subdirectories.
- * 
- * presets:\n
- * Apart from the 'default' settings the directory contains the saved settings of the function.
- * locales:\n
- * translations of user dialog messages will be saved here.
- * results:\n
- * backup results will be saved in the results directory.
- * 
- * The main exercise file may be supported by other source code files which have to be provided in exercise folder or have to be handled by the exercise main
- * file otherwise.
- *
- * A template directory which contains mandatory subdirectories of an exercise directory can be found in the directory lib. 
- * Additionally lib contains the template exercise class 'exerciseBase' which can be used to inherit common parts of most exercises. 
- * 'exerciseBase' provides the functions:
- * - \_\_init\_\_()
- * - \_\_exit\_\_()
- * - prepareRun()
- * - iniPath()
- * - setDefaultSettings()
- * In the provided sample exercises these 'exerciseBase' functions  are inherited in 'scaling' and 'quiz'.
- *
- * Furthermore sample functions are provided for:
- * - startRun()
- * - runButton()
- * - quitRun()
- * - eraseExerciseGui()
- * - closePath()
- * - loadSettings()
- *
- * Since the code is shorter the inheritance of 'exerciseBase' is encouraged for coding new exercises.
- *
- * \subsubsection exerciseFunctions Exercise functions
- * 
- * The function of CICoachLab and exercises interact.
- * 
- * The obligatory functions have have to be linked to CICoachLab via the definition in
- * - self.parHandle.curExercise['functions']['settingsLoading']
- * - self.parHandle.curExercise['functions']['settingsDefault']
- * - self.parHandle.curExercise['functions']['destructor'] 
- * - self.parHandle.curExercise['functions']['eraseExerciseGui']
- * 
- * Other possible functions may be:
- * - self.parHandle.curExercise['functions']['displayResults']
- * - self.parHandle.curExercise['functions']['settingsGui']
- * - self.parHandle.curExercise['functions']['checkConditions']
- * - self.parHandle.curExercise['functions']['calibration']
- * 
- * CICoachLab functions usually called by the exercises:
- * - self.loadSettings()
- * - self.closeDownRun()
- * - self.addingPath()
- * - self.closePath()
- * - self.dPrint()
- * 
- * Further use cases might require the calling of:
- * - self.measureReactionTime()
- * - elf.checkParameters()
- * 
- * \subsubsection calibration Calibration
- * The time delay between signal presentation and the user input can be calibrated to measure reaction times.
- * For this case a calibration function has to be provided with self.parHandle.curExercise['functions']['calibration']
- * which is used to start a simulated run
- * 
- * Further information on the calibration:
- * To be done
- * 
- * \subsubsection exerciseRequirements Exercise requirements
- * A main exercise files is required which handles the path to the main exercise directory and its subdirectories. The main exercise directory should have
- * the same name as the main exercise python file, disregarding the file extension.
- *
- * Obligatory subdirectories are the follwing:
- * - locales 
- * - presets
- * - results
- *
- *
- * See also the obligatroy functions described in section \ref exerciseFunctions
- *
- *
- * \subsection settingsAdvanced Settings 
- * The settings can be saved as py-files which are a mighty approach of saving the settings because the py files have
- * access to the inner parts of the CICoachLab variables by the.
- * The settings in the set-files can be managed with the Settings dialog.
- * In special cases of settings, the exercise might have to provide an additional gui-Dialog to handle the
- * the exerise settings.
- * 
- * The default settings are provdided by the obligatory exercise function setDefaultSettings.
- * The Default settings are set at startup of the exercise, if no other specific settings are provided at the
- * intialization of the exercise class. The Settings can be provided as the filename of the .set- or .py file or
- * by passing a dictionary wich contains the setting fields as keys with their accroding values.
- * If not all setting fields are provided the remaining fields are set to the default values.
- *
- *
- *
- * \subsection submodulesAdvanced Player, preprocessors and generators
- *
- * Exercises are called modules and submodules in CICoachLab.
- * Since the generators, preprocessors and players are handled and called by the exercise they are called submodules as well.
- * 
- * The used generators, preprocessors and players in an exercise have to rely on the same signal structure of the provided data.
- * CICoachLab is able to handle/provide all types of signals an does not care about the signal structure.
- * So far CICoachLab has been tested only with generators, preprocessors, and player handling audio signals only
- * but other types of data should be handled as well.
- * 
- * The preprocessors are applied while running the player.
- * 
- * Audio signals require the following signal structure:
- * - signal['audio']
- * - signal['fs']
- * 
- * Obligatory subdirectories are the follwing:
- * - locales
- * - presets
- *
- * \image html SettingsDialogPlayer.png "The dynamically generated tab of the players settings dialog." widht=400
- *
- * \subsection setlistsAdvanced Setlists 
- * The field entries of the setlist file are:
- * 
- * - [exercises]
- *   - names = exercise1, exercise2, exercise3
- *   - settings = exercise1Setting, exercise2Setting, exercise3Setting
- *   .
- * - [generators]
- *   - names = None, generator, generator
- *   - settings = None, generatorSetting1, generatorSetting2
- *   .
- * - [preprocessors]
- *   - names = None, None, preprocessor
- *   - settings = None, None, None, default
- *   .
- * - [player]
- *   - names = None, player, player
- *   - settings = None, default, playerSetting
- *   .
- * - ['description']
- *   - short = First item, another item, last item
- *   .
- * .
- * To be selectable by the user the available setlists have to be defined in filter.ini
- * With the setlists exampleList1.lst and exampleList2.lst the entries within filter.in can be:
- * ...
- * - [setlists]
- *  - [[main]]
- *      - names = exampleList1, exampleList1
- *      - labels = A setlist title, Another setlist title
- *      - difficulties = 3, 1,
- *         use "info1","info2" to enclose infos,
- *         other wise '''info 1''','''info2''' can be used. this is more tricky and not recomended.
- *      - infos = "Dieses Beispiel präsentiert eine Übungsabfolge mit CI Simulation der Audio-Darbietung.",""Dieses Beispiel präsentiert eine Übungsabfolge."
- *      - visibles = True, True
- *      .
- * ...
- * 
- * - names: defines the name(s) (without the extension ".lst") of the displayed setlist
- * - labels: the labels define the setlist entries in the gui list, which are presented to the user for the selection of the setlist.
- * - difficulties: the difficulties define which minimum level of difficulty the user has to reach to be able to see
- *                  and select the setlist. The difficulty of the user can be checked and defined in the user menu.
- * - infos: a longer information text can be provided, which is displayed if the user hovers the mouse pointer above
- *         the entry in the setlist selection list box.
- * - visibles: define if the entry should be be visible for the user.
- * \verbatim
- * An example can be found in demo.ls.
- * Rename the file extension and adjust the entries accordingly.
- * 
- * exampleList1.lst might be defined as follows:
- * 
- * setname: exampleList1
- * information = Some general information
- * 
- * \endverbatim
- * 
- * For all fields valid entries have to be provided.
- * If a submodule does not have to be defined, None should be provided as entry.
- * as settings the name of a valid settings preset should be provided.
- * Each setlist exercise must have a short description.
- * The short description is taken for the labeling of the entries in the setlist progress box. In the
- * setlist progress box the progress within the setlist is indicated by highlighting the current exercise.
- * 
- * setname and information won't be used within the gui and may be considerer as a description  for developers
- * only. The information which is displayd in the gui is defined in filter.ini.
- *
- * If CICoachLab finds an exercise which is not defined in filter.ini CICoachLab won't start.
- * If an availabelbe exercises code is found but not entry in filter.ini is found the exercise won't be displayed.
- *
- * \subsection masterlistsAdvanced Masterlists
- *
- * If the masterlist mode is set with the 'masterlistStart' field in the '[system]' section of CICoachLab.ini the
- * respective item is run according to masterlist field 'lastItemIDX'.
- * 
- * In the masterlist the fields 'name' and 'information' provide some general information as string about the masterlist.
- * The field 'lastItemIDX' saves the index of provides the index of the last run masterlist item. This field is updated
- * during the run of the masterlist.
- * 
- * The field entries are:
- * - items = setlist1, singleRun1, setlist2
- * - settings = None, singleRunSetting1, None
- * - runmode = setlist, singleRun, setlist
- * - preconditions = None, None, None
- * - preconditionMessages = '''''','''''',''''''
- * - postconditions = None, None, None
- * - postconditionMessages = '''''','''''',''''''
- * - description = '''One, two and three as a short description.''','''Second description''','''Third description'''
- * 
- * An example masterlist can be found in /masterlists with the file masterlist.ls
- *
- * \subsection translations Translations
- * All dialog messages which are presented to the user are provided in english as default.
- * Other translations may be provided as well if it is supported by the implemented modules. 
- * The used localization is defined in CICoachLab.ini with the variable <VAR>localization.</VAR>
- * A german translation is provided which is activated with <VAR>localization = en_de.</VAR>
- * 
- * If <VAR>localization</VAR> is set to an unknown localization the default language will be used and new translation files will be generated if <VAR>Translate CICoachLab</VAR> in the expert menu (\ref expertMemnu) is called.
- * <VAR>Translate CICoachLab</VAR> will guide the programmer through the translation process.
- * This translation function assumes that CICoachLab, each exercise, generator, preprocessor, player provides a 'locales' directory for the the saving and application of the 
- * translations. If no locales directory is defined the translation process of this item will be canceled.
- * 
- * 
- * These are the steps used for the translations in CICoachLab:
- * -# The code is parsed for the translation entries (_translate() ) with pylupdate5
- * -# linguist is opened with the generated file for a gui guided translation
- * -# The translation file is generated with lrelease and put into the locales directory of CITrainier or the
- * respective modules or submodules.
- * 
- *
- * \subsection guiGeneration Gui generation
-The frameworkgui CICoachLabMainWindowGui.ui can be changed with qtdesigner. The ui file can be converted into pycode by":
-\code{.em}
-pyuic5 CICoachLabMainWindowGui.ui -o CICoachLabMainWindowGui.py
-\endcode
-The exercise guis can be integrated in the same way as the CICoachLabMainWindowGui.ui/CICoachLabMainWindowGui.py gui.
-Most often it is easier and more flexible to generate the gui with source code according to the settings.
+
+ \image html logo.svg "" width=200
+
+
+ \tableofcontents
+
+ \section sec_introductionCICL Introduction to CICoachLab
+ CICoachLab was developed to provide a graphical user interface for the conduction of listening exercises.
+ The exercises can be used to obtain information about the user, e.g. listening performance and its testing circumstances.
+ Alternatively,
+ the exercises may be used to train the listening abilities of the user.
+ The user should be able to conduct the exercises independently after a
+ short introduction.
+
+ CICoachLab provides the framework functions like saving and backuping data, the gui framework, the settings dialog.
+ \ref sec_preconditionsCICL can be defined which have to be fulfilled before a specific excercise or setting can be run. 
+
+ The field of application of CICoachLab depends on the implemented or available exercises, generators, preprocessors and players  and the provided settings and is not restricted to the field of listening.
+ Please note that the exerises and settings which are provided in the CICoachLab repository
+ just might be a basic subset of exercises and settings so far. The amount of exercise might increase in the future.
+ If you want to contribute any exercises or code feel free to contact me under < visdan at web.de >
+
+ CICoachLab is distributed under the <a href=../licenses/GPLv3_license.txt>GPL license</a>.
+
+ \section sec_organizationCICL Organization
+ 
+ \subsection sec_exercisesCICL Exercises
+ 
+ An exercise provides a bundle of functionalities.
+ It provides the algorithm which handles the presentation of the signal, gui, settings, display function of results, additional tools for the analysis or preparation of the run. 
+ The additionaly tools are organized as python scripts which can be called by the exercise gui or the exercise menu entries.
+ The exericise may add menu entries.
+ The data of the selected exercise is displayed in the run display box. The selected run may be displayed by the exercise display function.
+
+ For more details see \ref sec_exercisesAdvancedCIC.
+
+
+ \subsection sec_submodulesCICL Player, preprocessors and generators
+
+ The exercises, also called modules, can make use of generators, preprocessors and player which can be applied in different exercises. 
+ These submodules provide functions for the generation, preprocessing or playback of signals respectively. In case of the audio player some interaction might 
+ be  required between the gui of the exercise and the available functions of the player, though.
+ The handled signals will commonly be of type audio but can be visual signals or other types of signals as well as long as the the interaction betweent exercise and the submodules
+ especially  and especially the interaction between player and generator can interact with each other.
+ In some cases (e.g. questionaires) only the gui elemnts may be required without any signal handling. In such cases no submodules have to be defined.
+
+ Generators may be used for reading audio files or generating synthesized signals.
+
+ Preprocessor may be implemented to normalize audio signals in level or to simulate different kinds of hearing loss
+ or CIpreprocessing.
+ 
+ Player may be used to play back the signal where different kind of user interactions are allowed.
+ Different types of player may be useful for the provision of single audio output or simultaneously played signals.
+
+ For more details see \ref sec_submodulesAdvancedCIC.
+
+ \subsection sec_settingsCICL Settings 
+ 
+ The settings define the set of parameters which allow to control or change the behaviour of the exercise or
+ the behaviour of the generator, preprocessor and player.
+ For each module and submodule independent settings can be defined.
+ The setting of an exercise can define which submodules are required and which settings of the submodules will be
+ loaded with this specific exercise setting.
+
+ The settings can be provided as a python file or can be produced with the settings dialog to some extend.
+ An exercise  should provide reasonable default settings to demonstrate the abilities of the exercise.
+ The settings dialog is described in \ref sec_settingsDialogCIC.
+ 
+ For more details see \ref sec_settingsAdvancedCIC.
+ 
+ For framework specific settings see also section \ref sec_ciTrainerSetupCIC.
+
+ 
+ \subsection sec_preconditionsCICL Preconditions
+ Preconditions can be defined which have to be fulfilled before a specific excercise or setting can be run. This is usually done by the administrator which defines the exercises and settings.
+
+ One Precondition is defined by the setting of the users performance level which is defined in the user dialog \ref sec_userDialogCICL and can be changed by the user.
+ \n
+ Other preconditions can be defined in the exercise settings.
+ This allows to run a setlist which is a series of exercises and settings as long as some predefined conditions in the exercise settings are met.
+ \n
+ Preconditions can alse be checked during a run of a masterlist. A masterlist defines a list of items wich can be single exercise items with the a specified settings and or a setlist item.
+ Whether the preconditions are defined in the exercise settings or in the masterlist the preconditions can be checked at the start or the end of the respective item.
+ The preconditions can be set in the exercise setttings or in the masterlist.
+
+ \subsection sec_setlistsCICL Setlists 
+ Setlists allow to run a  set of single exercises with defined settings and in a defined order.
+ Setlist have to be defined in the setlist directory as files  with the extension.lst
+ 
+ Form more details see \ref sec_setlistsAdvancedCIC.
+ 
+ \subsection sec_masterlistsCICL Masterlists
+ Masterlists can be defined to run a set of single exercises or setlist items which will be run automatically at the start of CICoachLab.
+ For each masterlist item pre- and post conditions can be defined which can be used to interrupt or pause the processing of masterlist at the specified 
+ item until the conditions (e.g. a predefined time window) are met at the next start of the masterlist.
+ If a pre- or postcondition of an item is not met this item will processed at the next start of the masterlist until the required condition ist met and the next item can be 
+ processed.
+
+ The masterlists are defined in the masterlist directory.
+
+ Form more details see \ref sec_masterlistsAdvancedCIC.
+ 
+ \subsection sec_filterIniCICL filter.ini:
+ The file filter.ini is used to define which modules, submodules, settings  and setlists are displayed in the CICoachLab main window (\ref sec_mainWindowCIC) and in the settings dialog (\ref sec_settingsDialogCIC).
+ Filter.ini can provide additional, detailed information on the element which  is displayed if the mouse hovers over the exercise or setting list items displayed in the main 
+ window. These information dialogs are called tooltips.
+ In filter.ini the level of the hearing status can be defined for each modules, submodules, settings  and setlists which is required to be able to see and access the respective 
+ element in the framework gui.
+ Filter.ini can be used to provide translations for the technical exercise names.
+
+ For the translation of dialog and other gui labels and text see section \ref sec_translationsCIC.
+  
+ If you don't want to provide filter.ini or all settings within filter.ini should be ignored you can achieve this by setting <VAR>ignoreFilterFile</VAR> in CICoachLab.ini to <VAR>True</VAR>.
+ 
+ \subsection sec_ciTrainerSetupCICL Setup of CICoachLab
+ The setup of CICoachLab is handled by CICoachLab.ini. It provides basic framework settings and the status of the CICoachLab framework at
+ the last closing of CICoachLab. A valid CICoachLab.ini is required for the launch of CICoachLab.
+ The file is read at the startup of CICoachLab and some fields will be updated during the application of CICoachLab (e.g. lastSavingName, accumulatedRunTime, ...).
+ Changes in CICoachLab.ini which are added, when CICoachLab is oppened might be dicarded.
+ 
+ For the documentation of the field entries and a template of an CICoachLab.ini see CICoachLab.in.
+ 
+ For the handling of exercise specific settings see \ref sec_settingsCIC.
+ 
+ \section sec_guiCICL Graphical user interface
+ \subsection sec_mainWindowCICL Main window
+ In the  main window of CICoachLab the user can select the available exersices and  settings. The button which initializes or starts the exercise is found here. In this window the 
+ exercise gui will be
+ generated.
+
+ In the menu bar of the CICoachLab Framework the entries "File", "Exercise", "Generator", "Preprocessor", "Player", "Setlist", "Help" and, depending on the settings in CICoachLab.ini, "Expert Tools" may be found.
+ In the entry "File" the user data can be entered vie the "User data" entry. Data of results can be loaded or saved. The saving and loading entry may be disabled according to CICoachLab.ini.
+
+ The  menu entries of "Exercise", "Generator", "Preprocessor", "Player" and "Setlist" are generated dynamically according to the selected modules. Here, the first entries represent the available settings. The subsequent entries 
+ represent provided scripts for the analysis of data, or other scripts which might be helpfull for the respective module. The presets of scripts can be selected/run from within this menu bar entry.
+
+ A list of loaded or carried out runs is provided and the results may be displayed if the exercise provides a display function.
+
+ The status bar may provid information about the status of the exercise (e.g.progress of loading data, progress of exercise) status of playback, or errors while loading data.
+ 
+ \image html CICoachLab.png "The Main window of CICoachLab" width=600
+ 
+ As seen in the figure above tooltips may provide additional information in the tooltips. These were defined in the CICoachLab framework or have been defined in filter.ini for exercises, settings or submodules.
+ If a graphical object can be activated with shortcuts these shortcuts are displayed in the tooltips as well. Available shortcuts are provided in the section \ref sec_shortcutsCIC
+ 
+ 
+ \subsection sec_settingsDialogCICL Settings dialog
+ In the settings dialog the user can define or change the settings of the exercises, the generator, preprocessor, player if the Expert Mode is made available in CICoachLab.ini.
+ Not all settings parameters might be available. Which parameters can be changed by a user graphically is defined by the author of the exercise or module.
+ 
+ \image html SettingsDialog.png "Settings dialog" width=400
+ 
+ \subsection sec_userDialogCICL User dialog
+ The user dialog is accessed via the file-menu.
+ In the User dialog the personal data of the user can be provided (e.g.: surname, forname, birthdate, status of hearing... ). Furthermore the user can provide a general consent that the anonymized results can be used in 
+ studies.
+ 
+ The level of hearing abilities of the subject can be entered here, which defines which exercises and settings can be accessed by the user. If the difficulty level is set to 5 every exercise and setting should be accessible by 
+ the user. With lower levels only exercises with the respevtively defined difficulty can be accessed.
+ The levels of dificulties of the exercises and their settings have to be defined in filter.ini
+ 
+ \image html UserdataDialog.png "The users data dialog." width=400
+ 
+ \subsection sec_expertMenuCICL Expert menu
+ In this menu entries are defined which are required by programmers and administrators of CICoachLab. More information is yet to come.
+ 
+ \page page2 Detailed information for programmers and administrators
+ \tableofcontents
+ 
+ \section sec_installattionCICL Installation
+ For the installation and basic setup of CICoachLab check the  <a href=../README.md>README.md</a>.
+ 
+ \section sec_requirementsCICL Requirements
+ 
+ \subsection sec_implementation Implementation of CICoachLab
+ The functions of CICoachLab are implemented as python code because it allows the most flexible adaptation and extention of the code bases according to the individual needs.
+ Single python files of the code can be provided by the administrator to the user as needed, though. E.g. to hide critical code parts from the user.
+
+ A compiled version of CICoachLab has nott been tested so far.
+ 
+ \subsection sec_requiredDirectoriesCICL Required directories
+ 
+ CICoachLab provides and requires the following directories.
+ - html:\n
+   The directory provides the source code documentation which may be helpfull to get an overview of the CICoachLab
+   Framework.
+ - exercises:\n
+ - generators:\n
+ - lib:\n
+ - licenses:\n
+   The license text for the CICoachLab framework is provided  in <a href=../licenses/GPLv3_license.txt>GPLv3_license.txt</a> . Additionatlly the license information of the most commonly imported modules and other dependencies are given in 
+   the  file <a href=../licenses/license_info.txt>license_info.txt</a>
+ - locales:\n
+   The default language in CICoachLab gui elements is englisch. In most exercises generators, preprocessors, player A german translation file is provided with en_de.qm in the directory locales, if gui elements are implemented in the modules or submodules.
+ - masterlists\n
+ - player\n
+ - preprocessors\n
+ - recources:\n
+ - setlists\n
+  
+ 
+  \subsection sec_systemRequirementsCICL System requirements
+ \subsubsection sec_hardwareRequirementsCICL Hardware requirements
+ \verbatim
+ Monitor Resolution:  recommended are 1920*1080, untested so far
+ CPU: untested so far
+ \endverbatim
+ \subsubsection sec_softwareRequirementsWindowsCICL Windows  Software requirements and recomendations
+ \verbatim
+ - winpython (this should contain the most common python standard packages, other python setups are valid as well)
+ - numpy (recomended)
+ - pandas (recomended)
+ - audio2numpy (pip install audio2numpy, external dependencies for mp3 handling: ffmpeg)
+ - configObj (pip install conofigObj)
+ - sounddevice (pip install sounddevice)
+ - soundfile (pip install soundfile)
+ - psutil
+ - pycaw
+ \endverbatim
+ \subsubsection sec_softwareRequirementsLinuxCICL Linux   Software requirements and recomendations
+ \verbatim
+ - audio2numpy (pip install audio2numpy, external dependencies for mp3 handling: ffmpeg)
+ - sounddevice (pip install sounddevice)
+ - soundfile (pip install soundfile)
+ - additional ubuntu packages used : \n
+   sudo apt install python3-numpy python3-matplotlib python3-pandas python3-pip python3-configobj 
+   (ubuntu is one of the great number of linux distributions and should not be considered as recomendation but as my favorit, in other distribution search for the corresponding
+   package names)
+ - additional ubuntu packages used for development of CICoachLab:
+   sudo apt install pyqt5-dev-tools doxygen graphviz
+   sudo apt install qt5-default libpcap-dev libncurses5-dev libprocps-dev libxtst-dev
+   sudo apt install libxcb-util0-dev qttools5-dev-tools libdtkwidget-dev libdtkwm-dev pkg-config
+ \endverbatim .
+ \section sec_moreAboutCICL More about the code
+ \subsection sec_exercisesAdvancedCICL Exercises advanced
+ Exercises are organized as classes which contains the algorithms/code for running the exercise.
+ 
+ The exercise main/python file defines the name of the exercise and points to the exercise directory with the same name as the python
+ file without the .py extension. In the exercise directory the following obligatory subdirectories have to be provided:
+ presets, locales, results.
+ Other subdirectories may be e.g.  analysis, data, signalFiles or any other subdirectories.
+ 
+ presets:\n
+ Apart from the 'default' settings the directory contains the saved settings of the function.
+ locales:\n
+ translations of user dialog messages will be saved here.
+ results:\n
+ backup results will be saved in the results directory.
+ 
+ The main exercise file may be supported by other source code files which have to be provided in the exercise folder or have to be handled by the exercise main
+ file otherwise.
+
+ Common functions are defined in exerciseBase.py and the obligatory directory/dubdirectory structure of an exercise is defined in the directory <VAR>lib</VAR>.
+ In the provided sample exercises these 'exerciseBase' functions  are inherited in 'scaling' and 'quiz'.
+ Since the code is shorter the inheritance of 'exerciseBase' is encouraged for coding new exercises.
+ See \ref sec_execerciseBase for further information.
+
+ \subsubsection sec_exerciseFunctionsCICL Exercise functions
+ 
+ The function of CICoachLab and exercises interact.
+ 
+ The obligatory functions have have to be linked to CICoachLab via the definition in
+ - self.parHandle.curExercise['functions']['settingsLoading']
+ - self.parHandle.curExercise['functions']['settingsDefault']
+ - self.parHandle.curExercise['functions']['destructor'] 
+ - self.parHandle.curExercise['functions']['eraseExerciseGui']
+ 
+ Other possible functions may be:
+ - self.parHandle.curExercise['functions']['displayResults']
+ - self.parHandle.curExercise['functions']['settingsGui']
+ - self.parHandle.curExercise['functions']['checkConditions']
+ - self.parHandle.curExercise['functions']['calibration']
+ - self.parHandle.curExercise['functions']['xlsxExport']
+ 
+ CICoachLab functions usually called by the exercises:
+ - self.loadSettings()
+ - self.closeDownRun()
+ - self.addingPath()
+ - self.closePath()
+ - self.dPrint()
+ 
+ Further use cases might require the calling of:
+ - self.measureReactionTime()
+ - self.checkParameters()
+ 
+ \subsubsection sec_calibrationCICL Calibration
+ The time delay between signal presentation and the user input can be calibrated to measure reaction times.
+ For this case a calibration function has to be provided with self.parHandle.curExercise['functions']['calibration']
+ which is used to start a simulated run
+ 
+ Further information on the calibration:
+ To be done
+ 
+ \subsubsection sec_exerciseRequirementsCICL Exercise requirements
+ A main exercise files is required which handles the path to the main exercise directory and its subdirectories. The main exercise directory should have
+ the same name as the main exercise python file, disregarding the file extension.
+
+ Obligatory subdirectories are the following:
+ - locales 
+ - presets
+ - results
+
+
+ See also the obligatory functions described in section \ref sec_exerciseFunctionsCIC
+
+ \subsection sec_shortcutsCICL Shortcuts
+ 
+ Some shortcuts enable the usage of the keyboard to navigate through the main window of CICoachLab.
+ The usage of shortcuts can be enabled in filter.ini. If the shortcuts are used the shortcuts to access gui items are displayed in the tooltips if the mouse hovers over the respective gui item. 
+
+ Some available shortcuts:
+ - Strg + S: Save CICoachLab data
+ - Strg + O: Open CICoachLab data
+ - Strg + X: Export run data to xlsx file
+ - Strg + H: Open help/Documentation
+ - Strg + N: Start new run of the activated exercise
+ - Strg + U: Open dialog to enter user data. 
+ - Strg + D: Display selected run data 
+ - Strg + 1: Set focus to run mode selection tab
+ - Strg + 2: Set focus to exercise selection list
+ - Strg + 3: Set focus to exercise settings selection list
+ - Strg + 4: Set focus to run data selection list
+ - Strg + 5: Set focus to setlist selection list
+ 
+ The setting of the focus to the respective gui item is possible only if the graphical item is visible.
+ 
+ \subsection sec_settingsAdvancedCICL Settings 
+ The settings can be saved as py-files which are a mighty approach of saving the settings because the py files have
+ access to the inner parts of the CICoachLab variables by the.
+ The settings in the set-files can be managed with the Settings dialog.
+ In special cases of settings, the exercise might have to provide an additional gui-Dialog to handle the
+ the exerise settings.
+ 
+ The default settings are provdided by the obligatory exercise function setDefaultSettings.
+ The Default settings are set at startup of the exercise, if no other specific settings are provided at the
+ intialization of the exercise class. The Settings can be provided as the filename of the .set- or .py file or
+ by passing a dictionary wich contains the setting fields as keys with their accroding values.
+ If not all setting fields are provided the remaining fields are set to the default values.
 
 
 
+ \subsection sec_submodulesAdvancedCICL Player, preprocessors and generators
 
+ Exercises are called modules and submodules in CICoachLab.
+ Since the generators, preprocessors and players are handled and called by the exercise they are called submodules as well.
+ 
+ The used generators, preprocessors and players in an exercise have to rely on the same signal structure of the provided data.
+ CICoachLab is able to handle/provide all types of signals an does not care about the signal structure.
+ So far CICoachLab has been tested only with generators, preprocessors, and player handling audio signals only
+ but other types of data should be handled as well.
+ 
+ The preprocessors are applied while running the player.
+ 
+ Audio signals require the following signal structure:
+ - signal['audio']
+ - signal['fs']
+ 
+ Obligatory subdirectories are the follwing:
+ - locales
+ - presets
 
+ \image html SettingsDialogPlayer.png "The dynamically generated tab of the players settings dialog." width=400
 
+ \subsection sec_setlistsAdvancedCICL Setlists 
+ The field entries of the setlist file are:
+ 
+ - [exercises]
+   - names = exercise1, exercise2, exercise3
+   - settings = exercise1Setting, exercise2Setting, exercise3Setting
+   .
+ - [generators]
+   - names = None, generator, generator
+   - settings = None, generatorSetting1, generatorSetting2
+   .
+ - [preprocessors]
+   - names = None, None, preprocessor
+   - settings = None, None, None, default
+   .
+ - [player]
+   - names = None, player, player
+   - settings = None, default, playerSetting
+   .
+ - ['description']
+   - short = First item, another item, last item
+   .
+ .
+ To be selectable by the user the available setlists have to be defined in filter.ini
+ With the setlists exampleList1.lst and exampleList2.lst the entries within filter.in can be:
+ ...
+ - [setlists]
+  - [[main]]
+      - names = exampleList1, exampleList1
+      - labels = A setlist title, Another setlist title
+      - difficulties = 3, 1,
+         use "info1","info2" to enclose infos,
+         other wise '''info 1''','''info2''' can be used. this is more tricky and not recomended.
+      - infos = "Dieses Beispiel präsentiert eine Übungsabfolge mit CI Simulation der Audio-Darbietung.",""Dieses Beispiel präsentiert eine Übungsabfolge."
+      - visibles = True, True
+      .
+ ...
+ 
+ - names: defines the name(s) (without the extension ".lst") of the displayed setlist
+ - labels: the labels define the setlist entries in the gui list, which are presented to the user for the selection of the setlist.
+ - difficulties: the difficulties define which minimum level of difficulty the user has to reach to be able to see
+                  and select the setlist. The difficulty of the user can be checked and defined in the user menu.
+ - infos: a longer information text can be provided, which is displayed if the user hovers the mouse pointer above
+         the entry in the setlist selection list box.
+ - visibles: define if the entry should be be visible for the user.
+ \verbatim
+ An example can be found in demo.ls.
+ Rename the file extension and adjust the entries accordingly.
+ 
+ exampleList1.lst might be defined as follows:
+ 
+ setname: exampleList1
+ information = Some general information
+ 
+ \endverbatim
+ 
+ For all fields valid entries have to be provided.
+ If a submodule does not have to be defined, None should be provided as entry.
+ as settings the name of a valid settings preset should be provided.
+ Each setlist exercise must have a short description.
+ The short description is taken for the labeling of the entries in the setlist progress box. In the
+ setlist progress box the progress within the setlist is indicated by highlighting the current exercise.
+ 
+ setname and information won't be used within the gui and may be considerer as a description  for developers
+ only. The information which is displayd in the gui is defined in filter.ini.
+
+ If CICoachLab finds an exercise which is not defined in filter.ini CICoachLab won't start.
+ If an availabelbe exercises code is found but not entry in filter.ini is found the exercise won't be displayed.
+
+ \subsection sec_masterlistsAdvancedCICL Masterlists
+
+ If the masterlist mode is set with the 'masterlistStart' field in the '[system]' section of CICoachLab.ini the
+ respective item is run according to masterlist field 'lastItemIDX'.
+ 
+ In the masterlist the fields 'name' and 'information' provide some general information as string about the masterlist.
+ The field 'lastItemIDX' saves the index of provides the index of the last run masterlist item. This field is updated
+ during the run of the masterlist.
+ 
+ The field entries are:
+ - items = setlist1, singleRun1, setlist2
+ - settings = None, singleRunSetting1, None
+ - runmode = setlist, singleRun, setlist
+ - preconditions = None, None, None
+ - preconditionMessages = '''''','''''',''''''
+ - postconditions = None, None, None
+ - postconditionMessages = '''''','''''',''''''
+ - description = '''One, two and three as a short description.''','''Second description''','''Third description'''
+ 
+ An example masterlist can be found in /masterlists with the file masterlist.ls
+
+ \subsection sec_translationsCICL Translations
+ All dialog messages which are presented to the user are provided in english as default.
+ Other translations may be provided as well if it is supported by the implemented modules. 
+ The used localization is defined in CICoachLab.ini with the variable <VAR>localization.</VAR>
+ A german translation is provided which is activated with <VAR>localization = en_de.</VAR>
+ 
+ If <VAR>localization</VAR> is set to an unknown localization the default language will be used and new translation files will be generated if <VAR>Translate CICoachLab</VAR> in the expert menu (\ref sec_expertMenuCIC) is called.
+ <VAR>Translate CICoachLab</VAR> will guide the programmer through the translation process.
+ This translation function assumes that CICoachLab, each exercise, generator, preprocessor, player provides a 'locales' directory for the the saving and application of the 
+ translations. If no locales directory is defined the translation process of this item will be canceled.
+ 
+ 
+ These are the steps used for the translations in CICoachLab:
+ -# The code is parsed for the translation entries (_translate() ) with pylupdate5
+ -# linguist is opened with the generated file for a gui guided translation
+ -# The translation file is generated with lrelease and put into the locales directory of CITrainier or the
+ respective modules or submodules.
+ 
+
+ \subsection sec_guiCICGenerationCICL Gui generation
+ The frameworkgui CICoachLabMainWindowGui.ui can be changed with qtdesigner. The ui file can be converted into pycode by":
+ \code{.em}
+ pyuic5 CICoachLabMainWindowGui.ui -o CICoachLabMainWindowGui.py
+ \endcode
+ The exercise guis can be integrated in the same way as the CICoachLabMainWindowGui.ui/CICoachLabMainWindowGui.py gui.
+ Most often it is easier and more flexible to generate the gui with source code according to the settings.
+ 
+ 
+ 
+ 
+ \defgroup grp_exercises Exercises 
+ The exercises are the applications which will be run by the user.
+ 
+ 
+ The exercises can be selected and started by the user as single run exercises. 
+ 
+ Exercises can be bundled in one or more setlist, which the user can select and started by the user. For more information on setlists see \ref sec_setlistsCIC.
+ 
+ Exercises can be bundled in the masterlist of CICoachLab. The mastelist cannot be selected and started by the user but is selected and started automatically at the start of
+ CICoachLab. If the start conditions are not met the current masterlist exercise will not start and CICoachLab may automatically close down with a informational message. 
+ For more information on masterlist see \ref sec_masterlistsCIC.
+ 
+ The exercises can call differen submodules. For more information see \ref sec_submodulesCICL or \ref grp_generator, \ref grp_preprocessor \ref grp_player.
+ 
+ 
+ \defgroup grp_generators Generators 
+ A Generators is used by the exercises to provide a signal. The signals may be of the type audio, video, tactile or whatever you can programm or imagine.
+
+ \defgroup grp_preprocessors Preprocessors
+ The preprocessors can used within an exercises to alter a signal.
+ 
+ \defgroup grp_player Player
+ A player is used by an exercises to present the signal to the user.
+ 
 */
 
 /* 
- *
- * \section TestingDoxyFormation Testing some formation options
- * \subsection step3 Step 3: Go to Step 1
- * Sometime you have to go backward with references like \ref step1
- * \subsection step4 Step 4: Keep references in mind
- * An example reference \cite MustermannDoe1980
- * \subsection step5 Step 4: Grouping
- * \\defgroup <name> (group title), \\addtogroup, \\addtogroup <name> [(title)] can be used several times, might help to bundle the help of exercises, player, ...
- * \subsection bugs Bugs
- * \attention Don't produce bugs
- *
- *
+
+ \section TestingDoxyFormation Testing some formation options
+ \subsection step3 Step 3: Go to Step 1
+ Sometime you have to go backward with references like \ref step1
+ \subsection step4 Step 4: Keep references in mind
+ An example reference \cite MustermannDoe1980
+ \subsection step5 Step 4: Grouping
+ \\defgroup <name> (group title), \\addtogroup, \\addtogroup <name> [(title)] can be used several times, might help to bundle the help of exercises, player, ...
+ \subsection bugs Bugs
+ \attention Don't produce bugs
+
+
  
  
 
- *
- * \subsection function An example of a function 
- * \\brief
- * \\param, 
- * \\return, 
- * \\copyright \\date, 
- * 
- * \subsection commands Other Imortant commands
- * \\internal documentation for internal use only
- * \\var documentation of variable
- * \@param[out]
- * \\since version available
- * \\todo
- *
- * Typing \\b \b bold words or <b>multiple words</b> is easily done as  \\a \a italic or in another \\e \e italic or \\c \c typewriting  form,.
- * \\a, \\e  and 
- *   \code{.em}
- *   <em>multiple words</em> 
- *   \endcode
- * \<em\> do  <em>really do</em> the same.
- *
- * \\n\\n adds \n\n two new lines
- * \code{.py}
- *  \\code{.py}
- * class Python:
- *    pass
- * \\endcode
- * \endcode
- * \\dotfile 
- * \\diafile
- * \\tableofcontents['{'[option[:level]][,option[:level]]*'}']
- * \\f$ or \\f[ and \\f] can add formula
- * \verbatim
- * Everything is plotted even if it is commented #out
- * This does not matter '''at all'''
- * \endverbatim
- * \defgroup exercise Exercises
- * \defgroup generators Gernerator
- * \defgroup preprocessors Preprocessors
- * \defgroup player Player
- */
+
+ \subsection function An example of a function 
+ \\brief
+ \\param, 
+ \\return, 
+ \\copyright \\date, 
+ 
+ \subsection commands Other Imortant commands
+ \\internal documentation for internal use only
+ \\var documentation of variable
+ \@param[out]
+ \\since version available
+ \\todo
+
+ Typing \\b \b bold words or <b>multiple words</b> is easily done as  \\a \a italic or in another \\e \e italic or \\c \c typewriting  form,.
+ \\a, \\e  and 
+   \code{.em}
+   <em>multiple words</em> 
+   \endcode
+ \<em\> do  <em>really do</em> the same.
+
+ \\n\\n adds \n\n two new lines
+ \code{.py}
+  \\code{.py}
+ class Python:
+    pass
+ \\endcode
+ \endcode
+ \\dotfile 
+ \\diafile
+ \\tableofcontents['{'[option[:level]][,option[:level]]*'}']
+ \\f$ or \\f[ and \\f] can add formula
+ \verbatim
+ Everything is plotted even if it is commented #out
+ This does not matter '''at all'''
+ \endverbatim
+ \defgroup exercise Exercises
+ \defgroup generators Gernerator
+ \defgroup preprocessors Preprocessors
+ \defgroup player Player
+/
 
  
  

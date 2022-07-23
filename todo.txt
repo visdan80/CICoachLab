@@ -1,3 +1,7 @@
+setlist demo> iniPath in exerciseBase should delete old path to erase condition and analysis aftter slider item
+
+
+
 Introduction of pipenv for handling of dependencies? 
 
 Introduce example scripts/settings for conditions

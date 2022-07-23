@@ -1,6 +1,6 @@
 def defineSettings(parHandle):
     """
-    The setting sets the sampling rate down from 44100 to 22050 Hz
+    The setting sets decreases the level by 10db in relation to the default settings of 65dB
     """
 
     parHandle.curPlayer['settings']['level'] = 55

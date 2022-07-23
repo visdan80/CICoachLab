@@ -1,0 +1,9 @@
+/**  \addtogroup grp_player Player
+
+\section sec_introductionPlayAudio playAudio
+This simple audio player uses a basic python package to play back the audio signal.
+The control of the audio signal is restricted to the starting, pausing and stopping of the audio signal.
+
+The progress in the software flow defaults to waiting until the audio signal is played back but can be set otherwise.
+
+ */ 

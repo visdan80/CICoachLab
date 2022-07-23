@@ -6,6 +6,7 @@ usage by patients.
 The exercises can make use of generators, preprocessors and player which can be used by different exercises.
 The used generators, preprocessors and players have to rely on the same signal structure of the provided data.
 CICoachLab is able to handle/provide all types of signals an does not care about the signal structure.
+CICoachLab is able to handle/provide all types of signals an does not care about the signal structure.
 So far CICoachLab has been tested only with generators, preprocessors, and player handling audio signals only
 but other types of data should be handled as well.
 Audio signals require the following signal structure:
@@ -341,6 +342,8 @@ import sys
 import os
 import importlib.util # for directory specific import of py-files
 import importlib.metadata
+
+import pandas as pd
 import pkg_resources
 import numpy as np
 
@@ -348,7 +351,9 @@ import numpy as np
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import pyqtSlot
 
+
 import bitlocker
+#import fhe
 from CICoachLabMainWindowGui2 import Ui_MainWindow
 from UserDataDialogCall import UserDataDialogCall
 from CalibrationCall import CalibrationCall
@@ -503,6 +508,52 @@ class InformationDialog(QtWidgets.QDialog):
         self.acceptBtn = QtWidgets.QPushButton('Ok', clicked=self.accept)
         self.layout().addRow(self.acceptBtn)
 
+
+class SelectionDialog(QtWidgets.QDialog):
+    """!
+    Displaying messages in a non modal dialog.
+    """
+
+    def __init__(self, parent=None, msg='', listItems = []):
+        super().__init__(parent, modal=True)
+        self.parHandle = parent
+        self.returnValue = ''
+
+        self.setLayout(QtWidgets.QFormLayout())
+        self.textLabel = QtWidgets.QLabel(msg)
+        self.layout().addRow(self.textLabel)
+        self.acceptBtn = QtWidgets.QPushButton(_translate("MainWindow", 'Ok', None), clicked=self.accept)
+        self.acceptBtn = QtWidgets.QPushButton(_translate("MainWindow", 'Cancel', None), clicked=self.reject)
+        self.cBox = QtWidgets.QComboBox()
+        if len(listItems) > 0:
+            self.returnValue = listItems[0]
+        self.cBox.addItems(listItems)
+        self.cBox.currentTextChanged.connect(self.setValue)
+
+        self.layout().addRow(self.cBox)
+
+        self.buttonBox = QtWidgets.QDialogButtonBox()
+        #self.buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.layout().addWidget(self.buttonBox)
+
+
+    def setValue(self):
+        self.returnValue = self.cBox.currentText()
+
+    #def accept(self):
+    #    return self.returnValue
+
+    #def reject(self):
+    #    return ''
+
+    def returnResult(self):
+        return self.returnValue
 
 class WorkerSignals(QtCore.QObject):
     """
@@ -666,7 +717,6 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.deleteLater()
             return
 
-
         if self.frameWork['settings']['expertMode']:
 
             self.ui.menuExpertTools = QtWidgets.QMenu(self.ui.menubar)
@@ -705,6 +755,10 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.ui.menuDocumentImportedPackages.setObjectName("menuDocumentImportedPackages")
             self.ui.menuDocumentImportedPackages.triggered.connect(self.documentPackageVersions)
 
+            self.ui.clearPatientData = QtWidgets.QAction(self)
+            self.ui.clearPatientData.setObjectName("clearPatientData")
+            self.ui.clearPatientData.triggered.connect(self.clearPatientData)
+
             self.ui.menuExpertTools.addAction(self.ui.calibrateSystemExercise)
             self.ui.menuExpertTools.addAction(self.ui.menuCalibrateSystem)
 
@@ -714,6 +768,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.ui.menuExpertTools.addAction(self.ui.menuDownloadDependencies)
             self.ui.menuExpertTools.addAction(self.ui.menuInstallMissingPackages)
             self.ui.menuExpertTools.addAction(self.ui.menuDocumentImportedPackages)
+            self.ui.menuExpertTools.addAction(self.ui.clearPatientData)
 
             self.ui.menuExpertTools.setEnabled(True)
 
@@ -748,10 +803,12 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.ui.menuInstallMissingPackages.setText(_translate("MainWindow", "Install missing dependencies", None))
             self.ui.menuDocumentImportedPackages.setText(_translate("MainWindow", "Document dependencies", None))
             self.ui.menuTranslateExercise.setText(_translate("MainWindow", "Translate CICoachLab", None))
+            self.ui.clearPatientData.setText(_translate("MainWindow", "Clean up patient data", None))
 
             self.ui.menubar.addAction(self.ui.menuExpertTools.menuAction())
             self.ui.menubar.show()
 
+        self.ui.menuXlsxExport.triggered.connect(self.xlsxExport)
         self.ui.menuHelpAbout.triggered.connect(self.showAboutDialog)
 
         self.ui.menuSourceCodeDocu = QtWidgets.QAction(self)
@@ -787,6 +844,7 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         # contains all gui widgets which can be disabled
         self.ui.tabTrainerMode.tabBarClicked.connect(self.selectSetlistMode)
+        self.ui.tabTrainerMode.currentChanged.connect(self.selectSetlistModeChanged)
         self.ui.pbStoppSetlist.clicked.connect(self.stoppSetlist)
 
         self.frameWork['gui']['lists'].append(self.ui.lwExerNameVal)
@@ -805,6 +863,10 @@ class CICoachLab(QtWidgets.QMainWindow):
             except:
                 self.dPrint('Exception: Could not disable exercise gui elements', 1)
 
+        self.setTooltips()
+        # generation of shortcut for shortcuts defined in self.shortcuts and connect to the proper functions
+        if self.frameWork['settings']['enableShortCuts']:
+            self.setShortcuts()
 
         if self.frameWork['settings']['fixMasterVolume']:
 
@@ -883,24 +945,38 @@ class CICoachLab(QtWidgets.QMainWindow):
             if self.frameWork['settings']['patientMode']:
                 self.ui.menuFile.removeAction(self.ui.menuFileSave)
                 self.ui.menuFile.removeAction(self.ui.menuFileLoad)
+                self.ui.menuFile.removeAction(self.ui.menuFileAppend)
         else:
+            self.ui.menuFile.removeAction(self.ui.menuFileAppend)
             self.updateFilter(self.user['difficulty'])
             self.updateExerciseListBox()
             self.updateExerciseSettingsListBox()
 
+
         if self.frameWork['settings']['studyMode']:
-            if not(self.user['lastname']) or not(self.user['forname']) or not(self.user['birthday'])\
-                    or self.user['birthday'] == '01.01.1900':
+            if (not (self.user['lastname']) or not (self.user['forname']) or not (self.user['birthday']) \
+                or self.user['birthday'] == '01.01.1900') and not (self.user['subjectID']):
                 msg = _translate("MainWindow", 'The personal data were not provided so far. Please provide your personal'
                       ' (name, forname and birthday) and '
-                      'and confirm the input the button "Saving" .', None)
+                      'and confirm the input the button "Saving". Alternatively provide a "Subject ID".', None)
                 self.dPrint(msg, verbosity=0, guiMode=True)
                 self.callUserDataGui()
+                # still no user data? than closing down CICoachLab.
+                if (not(self.user['lastname']) or not(self.user['forname']) or not(self.user['birthday'])\
+                        or self.user['birthday'] == '01.01.1900') and not( self.user['subjectID']):
+                    msg = _translate(
+                        "MainWindow",
+                        'Still no valid patient data was provided as required. CICoachLab will be closed down.',
+                        None)
+                    self.dPrint(msg, 0, guiMode=True)
+                    self.__exit__(None, None, None)
+                    self.deleteLater()
+                    return
 
         # the settings will be filled by self.updateExerciseSettingsListBox() if an exercise is selected
         self.exerciseSettings = []
 
-        for exercise in self.frameWork['settings']['access']['exercises']['main']['displayed']['names']:
+        for exercise in self.frameWork['settings']['access']['exercises']['main']['available']['names']:
             if not(exercise in self.runData.keys()):
                 self.runData[exercise] = dict()
 
@@ -936,6 +1012,8 @@ class CICoachLab(QtWidgets.QMainWindow):
         if not(self.frameWork['settings']['patientMode']):
             self.ui.menuFileSave.triggered.connect(self.saveRunData)
             self.ui.menuFileLoad.triggered.connect(self.loadRunData)
+            if self.frameWork['settings']['coachMode']:
+                self.ui.menuFileAppend.triggered.connect(self.appendRunData)
         self.ui.menuFileUserData.triggered.connect(self.callUserDataGui)
 
         self.writeIniFile()
@@ -978,18 +1056,138 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.temp = dict()
 
 
+    def setShortcuts(self):
+        """!
+        This function generates the shortcut instances and connects the proper funtions
+        """
+
+        self.dPrint('setShortcuts()', 2)
+
+        for shortcut in list(self.shortcuts):
+            if not(hasattr(self, shortcut + 'Sc')):
+                setattr(self, shortcut + 'Sc', QtWidgets.QShortcut(QtGui.QKeySequence(self.shortcuts[shortcut]),
+                                                               self))
+
+        self.userDialogSc.activated.connect(self.callUserDataGui)
+        self.openHelpSc.activated.connect(self.openSourceCodeDocu)
+        self.startNewRunSc.activated.connect(self.iniRun)
+        self.xlsxExportSc.activated.connect(self.xlsxExport)
+        self.showRundataSc.activated.connect(self.showRundata)
+        self.setFocusTabSc.activated.connect(self.setFocusTab)
+        self.setFocusExerciseSc.activated.connect(self.setFocusExercise)
+        self.setFocusSettingsSc.activated.connect(self.setFocusSettings)
+        self.setFocusRunDataSc.activated.connect(self.setFocusRunData)
+        self.setFocusSetlistSc.activated.connect(self.setFocusSetlist)
+
+        if not(self.frameWork['settings']['patientMode']):
+            self.safeFileSc.activated.connect(self.saveRunData)
+            self.openFileSc.activated.connect(self.loadRunData)
+
+        if self.frameWork['settings']['coachMode']:
+            self.appendFileSc.activated.connect(self.appendRunData)
+
+        # adding shortcuts to tooltips
+        self.ui.menuFileSave.setToolTip(self.ui.menuFileSave.toolTip() +
+                                        ' (' + self.shortcuts['safeFile'] + ')')
+        self.ui.menuFileLoad.setToolTip(self.ui.menuFileLoad.toolTip() +
+                                        ' (' + self.shortcuts['openFile'] + ')')
+        self.ui.menuFileAppend.setToolTip(self.ui.menuFileLoad.toolTip() +
+                                        ' (' + self.shortcuts['appendFile'] + ')')
+        #self.ui.tabTrainerMode.setToolTip(self.ui.tabTrainerMode.toolTip() +
+        #                                  ' (' + self.shortcuts['setFocusTab'] + ')')
+        self.ui.lwExerSetVal.setToolTip(self.ui.lwExerSetVal.toolTip() +
+                                        ' (' + self.shortcuts['setFocusSettings'] + ')')
+        self.ui.lwExerNameVal.setToolTip(self.ui.lwExerNameVal.toolTip() +
+                                         ' (' + self.shortcuts['setFocusExercise'] + ')')
+        self.ui.pbNewRun.setToolTip(self.ui.pbNewRun.toolTip() +
+                                    ' (' + self.shortcuts['startNewRun'] + ')')
+        self.ui.lwRuns.setToolTip(self.ui.lwRuns.toolTip() +
+                                  ' (' + self.shortcuts['setFocusRunData'] + ')')
+        self.ui.menuFile.setToolTipsVisible(True)
+        self.ui.menuXlsxExport.setToolTip(self.ui.menuXlsxExport.toolTip() +
+                                          ' (' + self.shortcuts['xlsxExport'] + ')')
+        self.ui.menuFileUserData.setToolTip(self.ui.menuFileUserData.toolTip() +
+                                            ' (' + self.shortcuts['userDialog'] + ')')
+        self.ui.menuSourceCodeDocu.setToolTip(self.ui.menuSourceCodeDocu.toolTip() +
+                                              ' (' + self.shortcuts['openHelp'] + ')')
+        self.ui.pbShowResults.setToolTip(self.ui.pbShowResults.toolTip() +
+                                         ' (' + self.shortcuts['showRundata'] + ')')
+
+        self.ui.lwSetlistNameVal.setToolTip(self.ui.lwSetlistNameVal.toolTip() +
+                                         ' (' + self.shortcuts['setFocusSetlist'] + ')')
+
+        self.dPrint('Leaving setShortcuts()', 2)
+
+
+    def setTooltips(self):
+        """!
+        This function sets some tooltips. It is called before the definition of shortcuts.
+        """
+
+        self.dPrint('setTooltips()', 2)
+
+        self.ui.gbSubModules.setToolTip(self.ui.gbSubModules.toolTip() +
+                                        _translate("MainWindow", ' (Information on used submodules)', None))
+        self.ui.pbRunSetlist.setToolTip(self.ui.pbRunSetlist.toolTip() +
+                                         _translate("MainWindow", ' (Starts selected setlist)', None))
+        self.ui.pbStoppSetlist.setToolTip(self.ui.pbStoppSetlist.toolTip() +
+                                         _translate("MainWindow", ' (Stops selected setlist)', None))
+        self.ui.lwSetlistContentVal.setToolTip(self.ui.lwSetlistContentVal.toolTip() +
+                                         _translate("MainWindow", ' (Items of setlist)', None))
+
+        self.dPrint('Leaving setTooltips()', 2)
+
+
+    def setFocusSetlist(self):
+        """!
+        Setting the focus to the setlist selection widget if the setlist tab is selected.
+        """
+        if self.curSetlist['active']:
+            self.ui.lwSetlistNameVal.setFocus()
+
+
+    def setFocusTab(self):
+        """!
+        Setting the focus to the single run/setlist tab.
+        """
+        self.ui.tabTrainerMode.setFocus()
+
+
+    def setFocusExercise(self):
+        """!
+        Setting the focus to the exercise selection widget if the single run tab is selected.
+        """
+        if not(self.curSetlist['active']):
+            self.ui.lwExerNameVal.setFocus()
+
+
+    def setFocusSettings(self):
+        """!
+        Setting the focus to the exercise settings selection widget if the single run tab is selected.
+        """
+        if not(self.curSetlist['active']):
+            self.ui.lwExerSetVal.setFocus()
+
+
+    def setFocusRunData(self):
+        """!
+        Setting the focus to the run data selection widget if the single run tab is selected.
+        """
+        if not(self.curSetlist['active']):
+            self.ui.lwRuns.setFocus()
+
+
     def showAboutDialog(self):
         """!
         Showing about dialog!
         """
 
-        # TODO: update link to reprository
         QtWidgets.QMessageBox.about(self,
                                     _translate("MainWindow", "About CICoachLab", None),
                                     _translate("MainWindow",
                                                "This is CICoachLab version. 0.8<br><br>" +
                                                "It is published under the  GPL license version 3 at " +
-                                               "<a href='https://github.com/'> github </a>.<br><br>" +
+                                               "<a href='https://github.com/visdan80/CICoachLab'> https://github.com/visdan80/CICoachLab </a>.<br><br>" +
                                                "Loaded packages or other dependencies may be licensed differently." +
                                                "<br><br><br>" +
                                                "Author:<br>" +
@@ -998,7 +1196,7 @@ class CICoachLab(QtWidgets.QMainWindow):
 
     def getMasterVolume(self):
         """!
-        This function returns the current master volue as integer in percent
+        This function returns the current master volume as integer in percent
         """
 
         if self.frameWork['settings']['system']['sysname'] == 'Windows':
@@ -1253,6 +1451,8 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.frameWork['settings']['fixMasterVolume'] = False
             self.frameWork['settings']['masterVolumeValue'] = None
             self.frameWork['settings']['ignoreFilterFile'] = False
+            self.frameWork['settings']['enableShortCuts'] = False
+            self.frameWork['settings']['xlxsExportSLSetlistMode'] = False
 
             self.frameWork['settings']['usePrevStates'] = False
 
@@ -1275,6 +1475,23 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.frameWork['gui']['menus'] = list()
             self.frameWork['gui']['buttons'] = list()
             self.frameWork['gui']['lists'] = list()
+
+        if mode == 'shortcuts' or mode == 'all':
+            self.shortcuts = dict()
+            self.shortcuts['xlsxExport'] = _translate("MainWindow", 'Ctrl+X', None)
+            self.shortcuts['userDialog'] = _translate("MainWindow", 'Ctrl+U', None)
+            self.shortcuts['openHelp']   = _translate("MainWindow", 'Ctrl+H', None)
+            self.shortcuts['startNewRun'] = _translate("MainWindow", 'Ctrl+N', None)
+            self.shortcuts['safeFile'] = _translate("MainWindow", 'Ctrl+S', None)
+            self.shortcuts['openFile'] = _translate("MainWindow", 'Ctrl+O', None)
+            self.shortcuts['appendFile'] = _translate("MainWindow", 'Ctrl+Shift+O', None)
+            self.shortcuts['showRundata'] = _translate("MainWindow", 'Ctrl+D', None)
+            self.shortcuts['setFocusTab'] = _translate("MainWindow", 'Ctrl+1', None)
+            self.shortcuts['setFocusExercise'] = _translate("MainWindow", 'Ctrl+2', None)
+            self.shortcuts['setFocusSettings'] = _translate("MainWindow", 'Ctrl+3', None)
+            self.shortcuts['setFocusRunData'] = _translate("MainWindow", 'Ctrl+4', None)
+            self.shortcuts['setFocusSetlist'] = _translate("MainWindow", 'Ctrl+5', None)
+
 
         if mode == 'calibration' or mode == 'all':
             self.setDefaultCalibration('frameWork', 'level')
@@ -1351,6 +1568,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.curExercise['functions']['settingsGui']        = None
             self.curExercise['functions']['eraseExerciseGui']   = None
             self.curExercise['functions']['getPlayerStatus']    = None
+            self.curExercise['functions']['xlsxExport']         = None
 
             self.curExercise['path'] = dict()
             self.curExercise['path']['base'] = ''
@@ -1748,6 +1966,11 @@ class CICoachLab(QtWidgets.QMainWindow):
             # at the end of each run of the exercise the data will be added to runData. For each exercise a dictionary
             # will be added4
             self.runData = dict()
+
+            for exercise in self.frameWork['settings']['access']['exercises']['main']['available']['names']:
+                if not (exercise in self.runData.keys()):
+                    self.runData[exercise] = dict()
+
             # a global runDataCounter is used for all exercises
             self.runDataCounter = 0
 
@@ -1755,6 +1978,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             # place to set and find user data
 
             self.user = dict()
+            # obligatory personal data in study mode
             self.user['forname'] = ''
             self.user['lastname'] = ''
             self.user['birthday'] = '01.01.1900'
@@ -1765,7 +1989,8 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.user['comment'] = ''
             # difficulty from 5 (very easy) to 1 (very difficult), -42 shows every possible module
             self.user['difficulty'] = '3'
-            # optional id, when a subject takes part in a study
+            # optional id, when a subject takes part in a study, if no personal data is provided, at least a
+            # subjectID has to be provided. Other wise CICL won't start.
             self.user['subjectID'] = ''
             self.user['studyCheck'] = ''
             self.user['vertigo'] = ''
@@ -2398,6 +2623,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.curRunData['calibration']['preprocessor'] = deepcopy(self.frameWork['calibration'])
         self.curRunData['calibration']['player'] = deepcopy(self.frameWork['calibration'])
         self.curRunData['runCompleted'] = True
+        self.curRunData['user'] = self.user
 
         # if runData was collected wth a set list the setlist name will be saved, otherwise an empty string
         if self.curSetlist['active']:
@@ -2765,7 +2991,6 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.dPrint('selectExer()', 2)
 
-        #exerName = self.exercises[self.ui.lwExerNameVal.currentRow()]
         exerName = self.frameWork['settings']['access']['exercises']['main']['displayed']['names'][self.ui.lwExerNameVal.currentRow()]
         try:
 
@@ -3042,10 +3267,6 @@ class CICoachLab(QtWidgets.QMainWindow):
                   ' setlists available to the user.'
             self.dPrint(msg, 0)
             return True
-
-
-
-
 
         if not(os.path.isfile(self.frameWork['settings']['filterFile'])):
             msg = _translate("MainWindow", "filter.ini could not be be found. You may have to copy and edit "
@@ -3378,6 +3599,8 @@ class CICoachLab(QtWidgets.QMainWindow):
         """
 
         self.dPrint('selectExerSettingFromListBox()', 2)
+
+        self.ui.lwExerSetVal.blockSignals(True)
         idx = self.ui.lwExerSetVal.currentRow()
         exerciseName = self.curExercise['settings']['exerciseName']
         if idx < len(self.frameWork['settings']['access']['exercises']['settings'][exerciseName]['displayed']['names']):
@@ -3408,6 +3631,8 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.updateInfoFields()
         self.writeIniFile()
+
+        self.ui.lwExerSetVal.blockSignals(False)
 
         self.dPrint('Leaving selectExerSettingFromListBox()', 2)
 
@@ -3567,6 +3792,19 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.dPrint('Leaving selectSetlistMode()', 2)
 
 
+    def selectSetlistModeChanged(self,event='',temp=''):
+        """!
+        This function is called when the TrainerMode tab changed. The function self.selectSetlistMode may
+        have been run before, if the tab changed due to a mouse click.
+        """
+
+        self.dPrint('selectSetlistModeChanged()', 2)
+
+        self.setSetlistActivation()
+
+        self.dPrint('Leaving selectSetlistModeChanged()', 2)
+
+
     def setSetlistActivation(self, tabIndex=-1):
         """!
         Toggle the activation of the setlist. If a setlist is selected it can be activated/deactivatet.
@@ -3574,7 +3812,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         Be aware: Debugging of this function might not return correct tab index. Whyever!
         """
 
-        self.dPrint('selectSetlistMode()', 2)
+        self.dPrint('setSetlistActivation()', 2)
 
         # setChecked
         if tabIndex < 0:
@@ -3587,7 +3825,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         else:
             msg = _translate("MainWindow", 'Trainer Selection Mode: No Hit?!?', None)
             self.dPrint(msg, 1, guiMode=True)
-        self.dPrint(' Quit selectSetlistMode()', 2)
+        self.dPrint('Leaving setSetlistActivation()', 2)
 
 
     def selectSettingsFromMenu(self, mode='curPlayer'):
@@ -3595,6 +3833,8 @@ class CICoachLab(QtWidgets.QMainWindow):
          This function is called if a setting is selected in the menue of the
         exercise, generator, preprocess, player.
         """
+
+        self.ui.lwExerSetVal.blockSignals(True)
 
         self.dPrint('selectSettingsFromMenu()', 2)
         try:
@@ -3622,6 +3862,8 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.dPrint('Exception: Could not load setting for ' + mode, 1)
 
         self.updateInfoFields()
+
+        self.ui.lwExerSetVal.blockSignals(False)
         self.dPrint('Leaving selectSettingsFromMenu()', 2)
 
 
@@ -3779,6 +4021,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.frameWork['settings']['fixMasterVolume'] = iniFileConfig['system'].as_bool('fixMasterVolume')
                 self.frameWork['settings']['masterVolumeValue'] = iniFileConfig['system']['masterVolumeValue']
                 self.frameWork['settings']['ignoreFilterFile'] = iniFileConfig['system'].as_bool('ignoreFilterFile')
+                self.frameWork['settings']['enableShortCuts'] = iniFileConfig['system'].as_bool('enableShortCuts')
+                self.frameWork['settings']['xlxsExportSLSetlistMode'] = iniFileConfig['system'].as_bool('enableShortCuts')
 
                 self.frameWork['settings']['debug']['mode'] = iniFileConfig['debug'].as_bool('mode')
                 self.frameWork['settings']['debug']['verbosityThreshold'] = iniFileConfig['debug'].as_int('verbosityThreshold')
@@ -3875,6 +4119,9 @@ class CICoachLab(QtWidgets.QMainWindow):
         """
 
         self.dPrint('iniExercise()', 2)
+        # ignore user input
+        if not(sip.isdeleted(self.ui.lwExerNameVal)):
+            self.ui.lwExerNameVal.blockSignals(True)
 
         if self.curSetlist['active']:
             runMode = 'setlists'
@@ -3889,13 +4136,15 @@ class CICoachLab(QtWidgets.QMainWindow):
             # save previous exercise if an old exercise exists and no setlist is active
             oldExerName = self.curExercise['settings']['exerciseName']
             if (oldExerName != '' and \
-                    oldExerName != exerName) or enforceInit:    # and not(self.curSetlist['active']):
+                oldExerName != exerName) or enforceInit:    # and not(self.curSetlist['active']):
                 try:
                     self.clearSettingsInMenu(mode='curExercise')
                     if self.curExercise['functions']['eraseExerciseGui'] != None:
                         self.curExercise['functions']['eraseExerciseGui']()
                     else:
                         self.dPrint('eraseExerciseGui is undefined: This may be the case if data and  settings are set from saved data', 2)
+                    if self.curExercise['functions']['destructor']:
+                        self.curExercise['functions']['destructor']()
                 except:
                     self.dPrint('Exception: Could not eraseGui for  ' + self.curExercise['settings']['exerciseName'], 1)
 
@@ -3907,11 +4156,11 @@ class CICoachLab(QtWidgets.QMainWindow):
                             self.savePrevState(setOrExerMode=runMode, setOrExername=oldExerName)
                     except:
                         self.dPrint('Exception: Could not save previous '+ runMode +' states for ' +
-                            self.curExercise['settings']['exerciseName'], 1)
+                                    self.curExercise['settings']['exerciseName'], 1)
 
             if not(exerName == '' or exerName == 'None'):
-                if self.frameWork['settings']['usePrevStates'] and\
-                    not(exerName == '') and not(self.prevStates[runMode][statesName]['prevExercise'] == dict())\
+                if self.frameWork['settings']['usePrevStates'] and \
+                        not(exerName == '') and not(self.prevStates[runMode][statesName]['prevExercise'] == dict()) \
                         and self.prevStates[runMode][statesName]['prevExercise']['settings']['exerciseName'] == exerName:
                     # exerName is found in the prevStates it has been initialized before and should be callable from
                     # prevStates
@@ -3930,11 +4179,11 @@ class CICoachLab(QtWidgets.QMainWindow):
                                 msg = "iniExercise(): no previous settings found"
                         else:
                             if self.frameWork['settings']['lastExerciseSettings'] and \
-                                    self.frameWork['settings']['lastExercise'] == exerName and\
+                                    self.frameWork['settings']['lastExercise'] == exerName and \
                                     self.frameWork['settings']['lastExerciseSettings'] != 'settings (dict)':
                                 settings = self.frameWork['settings']['lastExerciseSettings']
                                 msg = "iniExercise(): using settings defined in " + \
-                                    "self.frameWork['settings']['lastExerciseSettings']:" + settings
+                                      "self.frameWork['settings']['lastExerciseSettings']:" + settings
                             else:
                                 settings = 'default'
                                 msg = "iniExercise(): no previous settings found"
@@ -3958,13 +4207,13 @@ class CICoachLab(QtWidgets.QMainWindow):
                             iniSuccess = True
                         except:
                             msg = _translate("MainWindow", 'Exception: Could not initialize exercise settings %(a)s from module '
-                                             '%(b)s! ', None) %{'a': exerName, 'b': module}
+                                                           '%(b)s! ', None) %{'a': exerName, 'b': module}
                             self.dPrint(msg, 1, guiMode=True)
                         self.updateRunlist()
                     except:
                         msg = _translate("MainWindow", 'Exception: Could not import exercise %(a)s'
-                                                      ' from module %(b)s!', None) %\
-                                    {'a':exerName, 'b': module}
+                                                       ' from module %(b)s!', None) % \
+                              {'a':exerName, 'b': module}
                         self.dPrint(msg, 1, guiMode=True)
 
                 self.prevStates[runMode]['lastSingleRunExercise'] = exerName
@@ -3982,11 +4231,11 @@ class CICoachLab(QtWidgets.QMainWindow):
         else:
             if settings and self.curExercise['functions']['settingsLoading']:
                 self.curExercise['functions']['settingsLoading'](settings)
-            elif not(self.curExercise['functions']['settingsLoading']):
+            elif settings and not(self.curExercise['functions']['settingsLoading']):
                 msg = _translate("MainWindow",
-                    'A loading function for the settings should to be defined which calls the loading of CICochLab ' +\
-                    'to handle the loading of settings of the submodules. Alternatively the loading of the submodules ' +\
-                    'has to be handled by exercise. Which is not recommended.  Please contact your admin.'
+                                 'A loading function for the settings should to be defined which calls the loading of CICochLab ' + \
+                                 'to handle the loading of settings of the submodules. Alternatively the loading of the submodules ' + \
+                                 'has to be handled by exercise. Which is not recommended.  Please contact your admin.'
                                  , None)
                 self.dPrint(msg, 0, guiMode=True)
                 """
@@ -4029,6 +4278,9 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.updateExerciseListBox()
                 self.updateExerciseSettingsListBox()
                 self.updateInfoFields()
+
+        if not (sip.isdeleted(self.ui.lwExerNameVal)):
+            self.ui.lwExerNameVal.blockSignals(False)
 
         self.dPrint('Leaving iniExercise()', 2)
 
@@ -4089,7 +4341,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                     iniFileConfig['system']['fixMasterVolume'] = self.frameWork['settings']['fixMasterVolume']
                     iniFileConfig['system']['masterVolumeValue'] = self.frameWork['settings']['masterVolumeValue']
                     iniFileConfig['system']['ignoreFilterFile'] = self.frameWork['settings']['ignoreFilterFile']
-
+                    iniFileConfig['system']['enableShortCuts'] = self.frameWork['settings']['enableShortCuts']
+                    iniFileConfig['system']['xlxsExportSLSetlistMode'] = self.frameWork['settings']['xlxsExportSLSetlistMode']
                     iniFileConfig['debug']['mode'] = self.frameWork['settings']['debug']['mode']
                     iniFileConfig['debug']['verbosityThreshold'] = self.frameWork['settings']['debug']['verbosityThreshold']
                     iniFileConfig['debug']['debuggingFile'] = self.frameWork['settings']['debug']['debuggingFile']
@@ -4249,14 +4502,80 @@ class CICoachLab(QtWidgets.QMainWindow):
             return
         try:
             items = list(self.runData[exerciseName])
-
-            for row in self.curExercise['selectedRunData']:
-                self.curExercise['functions']['displayResults'](
-                    self.runData[self.curExercise['settings']['exerciseName']][items[row]])
-
+            if self.curExercise['selectedRunData']:
+                for row in self.curExercise['selectedRunData']:
+                    self.curExercise['functions']['displayResults'](
+                        self.runData[self.curExercise['settings']['exerciseName']][items[row]])
+            else:
+                msg = _translate("MainWindow",'Could not display results. You did not select any run(s).', None)
+                title = _translate("MainWindow",'Display of results failed.', None)
+                CICoachDialog(self, title, msg, 'information')
+                self.dPrint(msg, 2)
         except:
             self.dPrint(_translate("MainWindow",'Exception: Could not show results', None), 1, guiMode=True)
         self.dPrint('Leaving showRundata()', 2)
+
+
+    def appendRunData(self, event='', filename=''):
+        """!
+        Loading CICoachLab Data and appending it to the currently stored runData.
+        """
+
+        self.dPrint('appendRunData()', 2)
+
+        if filename == '':
+            filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self,
+                _translate("MainWindow", 'Appending of CICoachLab results...', None),
+                self.frameWork['settings']['lastSavingPath'],
+                _translate("MainWindow", 'Result-files', None) + ' (*.cid);;' + \
+                _translate("MainWindow", 'All files', None) + ' (*)',
+                _translate("MainWindow", 'Result-files', None) + ' (*.cid)',
+                QtWidgets.QFileDialog.DontUseNativeDialog
+            )
+
+        if filename != '':
+
+            try:
+                usingBitlocker = self.requiresBitlocker(filename)
+                if usingBitlocker:
+                    self.unlockBitlocker()
+                with bz2.open(filename, 'rb') as f:
+                    loadStruct = pickle.load(f)
+                if usingBitlocker:
+                    self.lockBitlocker()
+
+                loadedRunData = loadStruct['runData']
+                for exercise in list(loadedRunData):
+                    #appending the new data and with a new index by adding the
+                    for ii in list(loadedRunData[exercise]):
+                        self.runData[exercise][self.runDataCounter + ii] = loadedRunData[exercise][ii]
+
+                maxRunDataCounter = -1
+                for item in list(self.runData):
+                    # if entries are found get the highest counter number, which may be 0 in case of one item
+                    if len(self.runData[item]):
+                        maxRunDataCounter = max(maxRunDataCounter, max(self.runData[item]))
+
+                self.runDataCounter = maxRunDataCounter + 1
+                # check if system settings have been the same and
+
+                # TODO: adding check for different users.
+                #loadedRunData['scaling'][130]['user'] == self.user
+
+                self.updateRunlist()
+                self.updateInfoFields()
+                self.frameWork['settings']['saving']['filename'] = filename
+                self.frameWork['settings']['lastSavingPath'] = os.path.dirname(filename)
+
+                # uodate last saving path
+                self.writeIniFile()
+            except:
+                self.dPrint('Exception: Appending of data was not succesfull.', 1)
+        else:
+            self.dPrint('Appending of data was canceled by the user', 1)
+
+        self.dPrint('Leaving appendRunData()', 2)
 
 
     def loadRunData(self, event='', filename=''):
@@ -4290,7 +4609,6 @@ class CICoachLab(QtWidgets.QMainWindow):
                     loadStruct = pickle.load(f)
                 if usingBitlocker:
                     self.lockBitlocker()
-
 
                 if not(loadStruct['frameWork'] == self.frameWork['settings']):
                     self.dPrint(
@@ -4840,6 +5158,15 @@ class CICoachLab(QtWidgets.QMainWindow):
                         settingSections = ['exercises', 'generators', 'preprocessors', 'player']
                         section = ''
                         for section in self.curSetlist['settings']['list'].keys():
+                            if not(section in setlistConfig):
+                                msg = _translate(
+                                    "MainWindow",
+                                    f"Could not find demanded section {section:s} in setlist sections: {str(list(setlistConfig)):s}",
+                                    None)
+                                validsetlistConfig = False
+                                self.dPrint(msg, 0,
+                                            guiMode=True)
+                                break
                             if section in settingSections:
                                 # check entries for consistency within sections
                                 # type(setlistConfig['exercises']['names']) != 1: not valid since a single string entry is imported as string
@@ -5064,8 +5391,51 @@ class CICoachLab(QtWidgets.QMainWindow):
         filename = os.path.join(self.frameWork['path']['pwd'],
                                 'html', 'index.html')
         if not(os.path.isfile(filename)):
-            msgDoxyStart = _translate("MainWindow", 'Please wait the source code documentation will be generated.', None)
+            msgDoxyStart = _translate(
+                "MainWindow",
+                'Please wait! The source code documentation will be generated.\n\nPress the "enter"-key to continue.'
+                , None)
             windowHandle = self.showInformationDialog(msgDoxyStart)
+
+            # for the dynamical loading of all dox files which are found in the subfolders of CICoachLab the Doxyfile has to be updated at
+            # the first Startup of the help generation.
+            doxyfile = os.path.join(self.frameWork['path']['pwd'], 'Doxyfile')
+            resetAndUpdate = True
+            if os.path.isfile(doxyfile):
+                # this can happen if the html folder was deleted for the regeneration of the documentation without deleting
+                # Doxyfile
+                question = _translate("MainWindow",'The file Doxyfile does already exist. Do you want to reset it to the'
+                                              ' template files and update dynamically added dox files?\n\n'
+                                              'If you dissent the availble Doxyfile will be used. ', None)
+                title = _translate("MainWindow", 'Resetting and updating Doxyfile?', None)
+                quest = CICoachDialog(self, title, question, mode='confirmation')
+                answer = quest.returnButton()
+
+                if answer == QtWidgets.QMessageBox.Ok:
+                    resetAndUpdate = True
+                    answerStr = _translate("MainWindow", 'Yes', None)
+                else:
+                    resetAndUpdate = False
+                    answerStr = _translate("MainWindow", 'Cancel', None)
+
+                self.dPrint(question + ': ' + str(answerStr), 0)
+
+            if resetAndUpdate:
+                # why can I not apply the mode 'r+'? workaround : read Doxyfiletemplate and write to Doxyfile
+                with open(doxyfile+'_template', 'r') as f:
+                    doxyContent = f.read()
+                    doxFiles = self.getListOfFiles(self.frameWork['path']['pwd'], depthOfDir=6, namePart='.dox',
+                                        nameIgnore=['mainpage.dox'], fullPath=True)
+                    #reducing full path to relative path for Doxyfile inclusion
+                    for ii in range(len(doxFiles)):
+                        doxFiles[ii] = re.sub(self.frameWork['path']['pwd']+os.path.sep, '', doxFiles[ii])
+                    doxFilesStr = " ".join(doxFiles)
+
+                    doxyContentChanged = re.sub('. mainpage.dox', '. mainpage.dox ' + doxFilesStr, doxyContent)
+                with open(doxyfile, 'w') as f:
+                    f.write(doxyContentChanged)
+
+            # generation of doxygen help according to Doxyfile content
             subprocess.call('doxygen')
             try:
                 windowHandle.close()
@@ -5613,6 +5983,8 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         if usingBitlocker:
             status = self.unlockBitlocker()
+        else:
+            status = True
         if not(status):
             msg = _translate("MainWindow", 'Could not ' + mode + ' ' + source + ' to ' + destination, None)
             if logMode:
@@ -5941,9 +6313,12 @@ class CICoachLab(QtWidgets.QMainWindow):
         print(externalImportsText)
 
         try:
-            textNumOfLine = _translate("MainWindow", f"Python and Pip-install-Imports and dependencies were found in {noLines:d} lines: ", None)
+            textNumOfLine = _translate("MainWindow",
+                               f"Python and Pip-install-Imports and dependencies were found in {noLines:d} lines: ",
+                               None)
             text = _translate("MainWindow",
-                                       f"Dependencies have been found.\n Details are provided in 'Show Details' and dependencies.txt", None)
+                      f"Dependencies have been found.\n Details are provided in 'Show Details' and dependencies.txt",
+                      None)
             title = _translate("MainWindow", "Python and Pip-install-Imports and dependencies", None)
             detailedText=textNumOfLine + '\n' + extractImportText + pipImportText + externalImportsText
             CICoachDialog(self, title, text, 'information', detailedText=detailedText)
@@ -6380,6 +6755,288 @@ class CICoachLab(QtWidgets.QMainWindow):
         filter = Filter(widget)
         widget.installEventFilter(filter)
         return filter.clicked
+
+
+    def xlsxExport(self, mode = '', filename = ''):
+        """!
+        This function exports the exercise data into an xlsx-file. A preparing function has to be provided by the
+        exercise in self.curExercise['functions']['xlsxExport'].
+
+        """
+
+        self.dPrint('xlsxExport()', 2)
+
+        self.xlsxExportFilename = filename # TODO
+        self.xlsxExportFilename = '/home/daniel/Dokumente/programme/pythonSkripte/projekte/ciTrainer/testing/test.xlsx'
+        if not(self.xlsxExportFilename):
+            self.xlsxExportFilename, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self,
+                _translate("MainWindow", "Export to xlsx file ... ", None),
+                self.xlsxExportFilename,
+                _translate("MainWindow", 'Xlsx-file', None) + ' (.xlsx) ;;' + \
+                _translate("MainWindow", 'All files', None) + ' (*)',
+                _translate("MainWindow", 'Xlsx-file', None) + ' (*.xlsx)',
+                QtWidgets.QFileDialog.DontUseNativeDialog
+            )
+            if not (self.xlsxExportFilename):
+                msg = 'Aborting xslx-export because no filename is provide'
+                return
+
+        if not ('.xlsx' in self.xlsxExportFilename):
+            self.xlsxExportFilename = self.xlsxExportFilename + '.xlsx'
+
+        # obligatory entries which are saved in the results file by CICLab
+        prologtitles = ['subject']
+        epilogtitles = ['exercise', 'startASCII',
+                        'settingName', 'endASCII', 'duration', 'reactionTime', 'setlist', 'setlistIndex', 'masterlist',
+                        'masterlistIndex', 'runIDX', 'itemIdx', 'runCompleted', 'statusMessage', 'runAccomplished']
+
+        if not(mode):
+            msg = _translate("MainWindow", 'Please select the mode you want to export the data.', None)
+            options = {'allglobal': _translate("MainWindow",'all global runs', None),
+                       'allExercise': _translate("MainWindow",'all exercise runs', None),
+                       'selectedExercise': _translate("MainWindow",'selected runs', None),
+                       'selectedSetlist': _translate("MainWindow",'selected setlist', None),
+                       'masterlist': _translate("MainWindow",'masterlist', None)}
+            dlg = SelectionDialog(self, msg=msg, listItems=list(options.values()))
+            dlg.exec_()
+            mode = dlg.returnResult()
+        #mode = 'singleExercise' # 'singleExercise', 'all', 'setlist'
+        if not(dlg.result()):
+            msg = 'Aborting xslx-export because no mode was selected.'
+            self.dPrint(msg, 0)
+            return
+        #settingNames = []
+        exerciseNames = []
+        if mode == options['allglobal']:
+            exerciseNames = self.frameWork['settings']['access']['exercises']['main']['displayed']['names']
+        elif mode == options['allExercise'] or mode == options['selectedExercise']:
+            exerciseNames = [self.curExercise['settings']['exerciseName']]
+            if mode == options['selectedExercise']:
+                if not (self.curExercise['selectedRunData']):
+                    msg = _translate("MainWindow", "No data has been selected.\n\n"
+                                                   "Choose another option or select the ", None)
+                    self.dPrint(msg, 0, guiMode=True)
+                    return
+        elif mode == options['selectedSetlist']:
+            if self.curSetlist['settings']['setlistName']:
+                exerciseNames = list(set(self.curSetlist['settings']['list']['exercises']['names']))
+                #settingNames = self.curSetlist['settings']['list']['exercises']['settings']
+        elif mode == options['selectedMasterlist']:
+            if self.curMasterlist['settings']['items']:
+                exerciseNames = self.curMasterlist['settings']['items']
+        oldExercise = self.curExercise['settings']['exerciseName']
+        oldSettings = self.curExercise['settings']
+
+        if mode == options['selectedSetlist']:
+            setListName = self.curSetlist['settings']['setlistName']
+            if not(setListName):
+                msg = _translate("MainWindow", 'No setlist was selected for xlsx-export:', None)
+                self.dPrint(msg, 0, guiMode=True)
+                return
+
+        statusAll = []
+        exportDataFrame = pd.DataFrame()
+        exportSeries = pd.Series()
+        xlxsExportSLSetlistMode = self.frameWork['settings']['xlxsExportSLSetlistMode']
+        allUsers = []
+        allSetListIdx = []
+        for exerciseName in exerciseNames:
+            try:
+                self.iniExercise(exerciseName)
+            except:
+                msg = _translate("MainWindow",
+                                 'Exercise could not be initialized for xlsx-export:', None) + exerciseName
+                self.dPrint(msg, 0, guiMode=True)
+                return
+
+            if self.curExercise['functions']['xlsxExport'] == None:
+                msg = _translate("MainWindow", 'No export function is defined for ', None) + exerciseName
+                self.dPrint(msg, 0, guiMode=False)
+            else:
+                items = list(self.runData[exerciseName])
+
+                if mode == options['selectedExercise']:
+                    rows = self.curExercise['selectedRunData']
+                elif mode == options['allglobal'] or mode == options['allExercise']:
+                    #rows = list(items)
+                    rows = range(len(items))
+                elif mode == options['selectedSetlist']:
+                    rows = []
+                    for row in range(len(items)):
+                        if self.runData[exerciseName][items[row]]['setListName'] == setListName:
+                            rows.append(row)
+                elif mode == options['masterlist']:
+                    rows = []
+                    for row in range(len(items)):
+                        if self.runData[exerciseName][items[row]]['masterlistName'] == \
+                                self.curMasterlist['settings']['masterlistFile']:
+                            rows.append(row)
+                exportDataFrameList = []
+                for row in rows:
+                    if not(xlxsExportSLSetlistMode):
+                        exportSeries = pd.Series()
+                    data = self.runData[exerciseName][items[row]]
+                    user = data['user']
+                    if user:
+                        if self.user['subjectID']:
+                            subj = self.user['subjectID']
+                        else:
+                            if len(self.user['forname']) > 0 and len(self.user['lastname']) > 0:
+                                subj = self.user['forname'][0] + self.user['lastname'][0] + \
+                                       self.user['birthday'].replace('.', '')[0:4]
+                            else:
+                                subj = self.user['birthday'].replace('.', '')[0:4]
+                    else:
+                        subj = 'Anonym'
+
+                    if data['settings']['masterlist']['masterlistStart']:
+                        masterlistFile = data['settings']['masterlist']['masterlistFile']
+                    else:
+                        masterlistFile = ''
+                    allUsers.append(subj)
+                    allSetListIdx.append(data['setListIdx'])
+                    prolog = [subj]
+                    epilog = [exerciseName,
+                              data['time']['startASCII'],
+                              data['settings']['exercise']['settingsName'],
+                              data['time']['endASCII'],
+                              data['time']['duration'],
+                              data['time']['reactionTime'],
+                              data['settings']['setlist']['setlistName'],
+                              data['setListIdx'],
+                              masterlistFile,
+                              data['settings']['masterlist']['lastItemIDX'],
+                              data['runIDX'], #data['itemIdx']
+                              data['itemIdx'],
+                              data['runCompleted'],
+                              data['statusMessage'],
+                              data['runAccomplished']
+                              ]
+
+                    prologSeries = pd.Series(prolog, index=prologtitles, name='prolog')
+                    epilogSeries = pd.Series(epilog, index=epilogtitles, name='epilog')
+                    # The returned status can be 'Valid', 'NoAnswer', 'None', 'Failed', 'Warning'
+                    dataSeries, status = self.curExercise['functions']['xlsxExport'](data)
+                    dataSeries.rename('results')
+                    statusAll.append(status)
+                    
+                    exportSeries = exportSeries.append(prologSeries)
+                    exportSeries = exportSeries.append(epilogSeries)
+
+                    exportSeries = exportSeries.append(dataSeries)
+
+                    # if index is not unique (because the same question has been asked twice in an questionaire)
+                    # the index will unificated/be made unique
+                    exportSeries.index = \
+                        exportSeries.index + exportSeries.groupby(level=0).cumcount().astype(
+                            str).replace('0', '')
+
+                    # choosing format of exported setlist-data, export all found data into
+                    # a single line which contains all data of the setlist or
+                    # a matrix where a line contains the data of each run with its specific exercise and setting
+                    if xlxsExportSLSetlistMode:
+                        exportSeries.append(exportSeries)
+                    else:
+                        exportDataFrameList.append(exportSeries)
+                
+                if xlxsExportSLSetlistMode:
+                    exportSeries.append(exportSeries)
+                if exportDataFrameList and not(xlxsExportSLSetlistMode):
+                    exportDataFrame = exportDataFrame.append(pd.DataFrame(exportDataFrameList))
+
+        if xlxsExportSLSetlistMode:
+            exportSeries.index = \
+                exportSeries.index + exportSeries.groupby(level=0).cumcount().astype(
+                    str).replace('0', '')
+            exportSeries = exportSeries._set_name('Setlist Export')
+            exportDataFrame = exportDataFrame.append(exportSeries)
+        if len(set(allUsers)) > 1 and xlxsExportSLSetlistMode and mode == options['selectedSetlist']:
+            question = _translate("MainWindow",
+                                  'Multiple users were found. Do you want to export the data nevertheless?', None)
+            title = _translate("MainWindow", 'Multiple users found', None)
+            quest = CICoachDialog(self, title, question, 'confirmation')
+            answer = quest.returnButton()
+            if answer == QtWidgets.QMessageBox.Cancel:
+                self.dPrint(question + ': Cancel', 0)
+                return
+            self.dPrint(question + ': OK', 0)
+        if mode == options['selectedSetlist'] and len(allSetListIdx) != len(set(allSetListIdx)):
+            question = _translate("MainWindow",
+                                  'Multiple partial repetitions of the selected setlist was found. '
+                                  'Do you want to export the data nevertheless?', None)
+            title = _translate("MainWindow", 'Multiple setlist repetitions found.', None)
+            quest = CICoachDialog(self, title, question, 'confirmation')
+            answer = quest.returnButton()
+            if answer == QtWidgets.QMessageBox.Cancel:
+                self.dPrint(question + ': Cancel', 0)
+                return
+            self.dPrint(question + ': OK', 0)
+
+        # sorting all runs according to time
+        if not(xlxsExportSLSetlistMode and mode == options['selectedSetlist']):
+            exportDataFrame = exportDataFrame.sort_values(by='startASCII')
+
+        with pd.ExcelWriter(self.xlsxExportFilename) as writer:
+            exportDataFrame.to_excel(writer, sheet_name='CICoachLabExport')
+
+        self.iniExercise(oldExercise, oldSettings)
+
+        self.dPrint('Leaving xlsxExport()', 2)
+
+
+    def clearPatientData(self):
+        """!
+        This function will clear the old patient data by deleting backup data/*.cid file and the debugFiles defined in
+        filter.ini.
+        The currently selected file as defined in "patientSavingFile" will not be deleted.
+        """
+
+        listOfPatientDataFiles = self.getListOfFiles(self.frameWork['path']['pwd'], depthOfDir=6, namePart='.cid',
+                                      nameIgnore=[self.frameWork['settings']['patientSavingFile']], fullPath=True)
+        debugFile = self.frameWork['settings']['debug']['debuggingTempFile']
+
+        if listOfPatientDataFiles or os.path.isfile(debugFile):
+            listOfPatientDataFilesShort = listOfPatientDataFiles.copy()
+            for ii in range(len(listOfPatientDataFilesShort)):
+                listOfPatientDataFilesShort[ii] = re.sub(self.frameWork['path']['pwd'] + os.path.sep, '',
+                                                         listOfPatientDataFilesShort[ii])
+            msg = _translate("MainWindow",
+                             'Would you like to remove the following files?: \n\n'
+                             + "\n".join(listOfPatientDataFilesShort) +
+                             '\n\n' +
+                             debugFile, None)
+            title = _translate("MainWindow", 'Confirm file deletion', None)
+            quest = CICoachDialog(self, title, msg, 'confirmation')
+            answer = quest.returnButton()
+            if answer == QtWidgets.QMessageBox.Ok:
+                for file in listOfPatientDataFiles:
+                    os.remove(file)
+                if self.frameWork['settings']['debug']['debuggingFileHandle']:
+                    self.frameWork['settings']['debug']['debuggingFileHandle'].close()
+                    self.frameWork['settings']['debug']['debuggingFileHandle'] = None
+                try:
+                    os.remove(self.frameWork['settings']['debug']['debuggingTempFile'])
+                except:
+                    self.dPrint('Could not remove "debuggingTempFile"', 0)
+
+        msg = _translate("MainWindow",
+                         'Would you like to remove the current and old run data from CICoachLab?', None)
+        title = _translate("MainWindow", 'Confirm deletion of current and old run data', None)
+        quest = CICoachDialog(self, title, msg, 'confirmation')
+        answer = quest.returnButton()
+        if answer == QtWidgets.QMessageBox.Ok:
+            self.initializeToDefaults(mode='runData')
+            self.updateRunlist()
+
+        msg = _translate("MainWindow",
+                         'Would you like to remove the current user data from CICoachLab?', None)
+        title = _translate("MainWindow", 'Confirm deletion of current user data', None)
+        quest = CICoachDialog(self, title, msg, 'confirmation')
+        answer = quest.returnButton()
+        if answer == QtWidgets.QMessageBox.Ok:
+            self.initializeToDefaults(mode='user')
+        self.iniExercise(self.curExercise['settings']['exerciseName'],self.curExercise['settings'], enforceInit=True)
 
     def setRetainSizeWhenHidden(self, widgetObj):
         """!

@@ -65,6 +65,10 @@ fixMasterVolume = False
 masterVolumeValue = 100
 # ignoring filter.ini, no filter.ini file is required)
 ignoreFilterFile = False
+# enables shortcuts of the CICoachLab frameWork
+enableShortCuts = True
+# export a setlist into a single line instead of multiple lines
+xlxsExportSLSetlistMode = True
 
 #############################################################################
 [debug]

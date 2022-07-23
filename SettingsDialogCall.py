@@ -465,35 +465,43 @@ class SettingsDialogCall(QtWidgets.QDialog):
                                             convertFunc = int
 
                                         if settingLimits[dynItem]['listStyle']:
-                                            validator = Validators.NumberListValidator(inputRange=settingLimits[dynItem]['range'],
-                                                                        convertFunc=convertFunc, comboStyle=False)
+                                            validator = Validators.NumberListValidator(
+                                                inputRange=settingLimits[dynItem]['range'],
+                                                convertFunc=convertFunc, comboStyle=False,
+                                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                                         else:
                                             #
-                                            validator = Validators.NumberValidator(inputRange=settingLimits[dynItem]['range'],
-                                                                        convertFunc=convertFunc, comboStyle=False)
-
-                                            # validator.setRange(range)
-                                            #self.lineEdit1.setValidator(validator)
-                                            #validator.setRange(settingLimits[dynItem]['range'])
+                                            validator = Validators.NumberValidator(
+                                                inputRange=settingLimits[dynItem]['range'],
+                                                convertFunc=convertFunc, comboStyle=False,
+                                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                                     elif settingLimits[dynItem]['type'] == 'bool':
                                         if settingLimits[dynItem]['listStyle']:
-                                            validator = Validators.BoolListValidator()
+                                            validator = Validators.BoolListValidator(
+                                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                                         else:
-                                            validator = Validators.BoolValidator()
+                                            validator = Validators.BoolValidator(
+                                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                                     elif settingLimits[dynItem]['type'] == 'string':
                                         if settingLimits[dynItem]['listStyle']:
-                                            validator = Validators.StringListValidator(inputRange=settingLimits[dynItem]['range'])
+                                            validator = Validators.StringListValidator(
+                                                inputRange=settingLimits[dynItem]['range'],
+                                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                                         else:
-                                            validator = Validators.StringValidator(inputRange=settingLimits[dynItem]['range'])
+                                            validator = Validators.StringValidator(
+                                                inputRange=settingLimits[dynItem]['range'],
+                                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
 
                                     elif isinstance(settingLimits[dynItem]['type'], list):
 
                                         #(type, listStyle = None, inputRange=None, convertFunc=None, comboStyle=None)
-                                        validator = Validators.AnyValidator(type=settingLimits[dynItem]['type'],
-                                                                listStyle=settingLimits[dynItem]['listStyle'],
-                                                                inputRange=settingLimits[dynItem]['range'],
-                                                                convertFunc=None,
-                                                                comboStyle=settingLimits[dynItem]['comboBoxStyle'])
+                                        validator = Validators.AnyValidator(
+                                            type=settingLimits[dynItem]['type'],
+                                            listStyle=settingLimits[dynItem]['listStyle'],
+                                            inputRange=settingLimits[dynItem]['range'],
+                                            convertFunc=None,
+                                            comboStyle=settingLimits[dynItem]['comboBoxStyle'],
+                                            sysname=self.parHandle.frameWork['settings']['system']['sysname'])
 
                                     validator.validationChanged.connect(self.markGuiFieldState)
                                     self.uiSettingsDyn[mode][dynItem + 'Entry'].setValidator(validator)

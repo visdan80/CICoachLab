@@ -1,6 +1,3 @@
-# separate the entries by colons
-# default settings can be defined by by an empty value or 'default'
-#
 # If the same exercise, generator, preProc, or player are used for different 
 # settings respectively it is sufficient to  define a single name. Otherwise  
 # ensure that the number of items in name and settings are the same within the
@@ -13,23 +10,28 @@
 # If a preProcessor is defined in the exercise setting the exercise setttings
 # overrule the definitions in the set list.
 # The same applies for the  generator and player settings.
+# In this case you should define those submodules as 'None'.
+# For the usage of the default settings define the settings as 'default'
+#
+# If an exercise item does not end with an accomplished run the setlist will
+# stopp after the run and the setlist has to be restarted.
 ##############################################################################
 
 [exercises]
-names = presenter, questionaire, confusionMatrix, questionaire, presenter
-settings = cleanQtMedia, aSetting, ShortCM, FASorig, vocoder
+names = questionaire, quiz, questionaire, scaling
+settings = studyInstruction, default, slider, fatigue.py
 
 [generators]
-names = genQtAudio, None, genWavreader, None, genWavreader
-settings = default, None, default, None, default 
+names = None, None, None, None
+settings = default, default, default, default
 
-[preProcs]
-names = None, None, None, None, preVocoder
-settings = None, default, None, None, default
+[preprocessors]
+names = None, None, None, None
+settings = default, default, default, default
 
 [player]
-names = playQtAudio, None, playAudio, None, playAudio
-settings = default, default, playAudio1.py, default, default 
+names = None, playQtAudio, None, None
+settings = default, higLevel, default, default
 
 ['description']
-short = Trainingsphase,  Fragebogen, Verwechslungen, Fragebogen Ende, Abschlussphase
+short = Introduction,  Some exercise, Questionare, Scaling

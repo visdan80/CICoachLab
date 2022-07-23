@@ -16,7 +16,8 @@ class exerciseBase():
     - prepareRun
     - startRun
     - runButton
-    - quitRun
+    - quitRun (cancel run without marked accomplishment, if a run is accomplished a set/ or masterlist will continue)
+    - finishRun (cancel run with marked accomplishment, if a run is accomplished a set/ or masterlist will continue)
     - eraseExerciseGui
     - iniPath
     - closePath
@@ -100,6 +101,21 @@ class exerciseBase():
             self.setDefaultSettings()
             self.iniPath()
 
+            # making the exercise function available for the frameWork.
+            self.parHandle.curExercise['functions']['prepareRun'] = self.prepareRun
+
+            self.parHandle.curExercise['functions']['settingsLoading'] = self.loadSettings
+            self.parHandle.curExercise['functions']['settingsDefault'] = self.setDefaultSettings
+            self.parHandle.curExercise['functions']['eraseExerciseGui']  = self.eraseExerciseGui
+            self.parHandle.curExercise['functions']['destructor'] = self.__exit__
+
+            self.parHandle.curExercise['functions']['displayResults'] = None
+            self.parHandle.curExercise['functions']['settingsGui'] = None
+            self.parHandle.curExercise['functions']['checkConditions'] = None
+            self.parHandle.curExercise['functions']['calibration'] = None
+
+            self.parHandle.curExercise['settings']['exerciseName'] = exerciseName
+
             # loading settings or getting default settings
             if settings != 'default' and settings != '':
                 # the loaded settings just may overwrite parts of the defaultSettings....
@@ -116,22 +132,6 @@ class exerciseBase():
                 self.parHandle.iniSubmodule('preprocessor',
                                         self.parHandle.curPreprocessor['settings']['preprocessorName'],
                                         self.parHandle.curPreprocessor['settings']['settingsName'])
-
-            # making the exercise function available for the frameWork.
-            self.parHandle.curExercise['functions']['prepareRun'] = self.prepareRun
-
-            self.parHandle.curExercise['functions']['settingsLoading'] = self.loadSettings
-            self.parHandle.curExercise['functions']['settingsDefault'] = self.setDefaultSettings
-            self.parHandle.curExercise['functions']['eraseExerciseGui']  = self.eraseExerciseGui
-            self.parHandle.curExercise['functions']['destructor'] = self.__exit__
-
-            self.parHandle.curExercise['functions']['displayResults'] = None
-            self.parHandle.curExercise['functions']['settingsGui'] = None
-            self.parHandle.curExercise['functions']['checkConditions'] = None
-            self.parHandle.curExercise['functions']['calibration'] = None
-
-            self.parHandle.curExercise['settings']['exerciseName'] = exerciseName
-
 
             # this function sets the default calibration values for the exercise.
             self.parHandle.setDefaultCalibration('curExercise', 'time')
@@ -160,6 +160,9 @@ class exerciseBase():
         self.eraseExerciseGui()
 
         self.parHandle.curExercise['settings']['exerciseName']              = ''
+        # resetting all function handles by constructing new which deletes all functions independent from the number of
+        # linked functions by the derived functions.
+        self.parHandle.curExercise['functions'] = dict()
         self.parHandle.curExercise['functions']['settingsLoading']  = None
         self.parHandle.curExercise['functions']['settingsDefault']  = None
         self.parHandle.curExercise['functions']['eraseExerciseGui'] = None
@@ -222,11 +225,25 @@ class exerciseBase():
         """!
         This functions finalizes the run of the exercise.
         The data will be saved by calling the framework function self.closeDownRun().
+        If this function is called the run will be marked as not accomplished.
         """
 
-        self.parHandle.dPrint('exerciseBase: exerciseBase()', 2)
+        self.parHandle.dPrint('exerciseBase: quitRun()', 2)
         self.parHandle.frameWork['functions']['closeDownRun']()
-        self.parHandle.dPrint('exerciseBase: Leaving exerciseBase()', 2)
+        self.parHandle.dPrint('exerciseBase: Leaving quitRun()', 2)
+
+
+    def finishRun(self):
+        """!
+        This functions finalizes the run of the exercise.
+        The data will be saved by calling the framework function self.closeDownRun().
+        If this function is called the run will be marked as accomplished.
+        """
+
+        self.parHandle.dPrint('exerciseBase: finishRun()', 2)
+        self.parHandle.frameWork['functions']['closeDownRun']()
+        self.parHandle.dPrint('exerciseBase: Leaving finishRun()', 2)
+
 
     def eraseExerciseGui(self):
         '''!
@@ -324,7 +341,7 @@ class exerciseBase():
             self.setDefaultSettings()
         try:
             if settings == 'default':
-                if selfcurExercise['functions']['eraseExerciseGui']:
+                if self.parHandle.curExercise['functions']['eraseExerciseGui']:
                     self.parHandle.curExercise['functions']['eraseExerciseGui']()
                 self.parHandle.curExercise['functions']['settingsDefault']()
             else:

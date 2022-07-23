@@ -23,6 +23,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.Qt import QBrush, QPalette
 import re
 import numpy as np
+import pandas as pd
 from exerciseBase import exerciseBase
 import multiprocessing as mp
 from CICoachLab import Worker
@@ -55,7 +56,7 @@ class quiz(exerciseBase):
             self.exerciseName = self.parHandle.curExercise['settings']['exerciseName']
             
 
-            #self.parHandle.curExercise['functions']['displayResults'] = self.displayResults
+            self.parHandle.curExercise['functions']['xlsxExport'] = self.xlsxExportPreparation
 
             self.vBLayout   = None
 
@@ -63,11 +64,13 @@ class quiz(exerciseBase):
             #self.vHLayout   = None
             self.ui         = dict()
             # number of item within randomized items
-            self.sequenceNo = -1
+            self.presentationNo = -1
             # number of previously selected item within randomized items
-            self.sequenceNoPrevious = -1
+            self.presentationNoPrevious = -1
             # number of question of item
-            self.questNumber = -1
+            self.itemQuestNumber = -1
+            # number of question across items
+            self.globalQuestNumber = -1
             self.audioSolutionFlag = False
             self.solutionTextCounter = -1
             self.itemOptions = []
@@ -256,7 +259,7 @@ class quiz(exerciseBase):
 
         objectName = 'pbFinish'
         pbFinish = QtWidgets.QPushButton(exerciseWidget, text=_translate("quiz", 'Quit run', None), objectName=objectName)
-        pbFinish.clicked.connect(self.quitRun)
+        pbFinish.clicked.connect(self.finishRun)
         pbFinish.setMaximumSize(100, 50)
         pbFinish.setMinimumSize(100, 50)
         self.vBLayout.addWidget(pbFinish, alignment=QtCore.Qt.AlignRight)
@@ -351,8 +354,8 @@ class quiz(exerciseBase):
 
         self.parHandle.dPrint(self.exerciseName + ': presentSignal()', 2)
         # documentation of partial or total playbacks
-        self.parHandle.curRunData['results']['audioPresentationCounter'] = \
-            self.parHandle.curRunData['results']['audioPresentationCounter'] + 1
+        self.parHandle.curRunData['results']['audioPresentationCounter'][self.globalQuestNumber] = \
+            self.parHandle.curRunData['results']['audioPresentationCounter'][self.globalQuestNumber] + 1
 
         # check if paused state is found or if the slider position has been changed by the user to middle of the signal
         sliderMax = self.controlbarRefs['loControlbar']['seekSlider'].maximum()
@@ -361,13 +364,13 @@ class quiz(exerciseBase):
         if self.enforceReplay or ( self.parHandle.curPlayer['handle'].userAction != 2
                 and (sliderPosition == sliderMax or sliderPosition == sliderMin)):
             # if the audio player is not paused the required signal will be loaded
-            signalfileName = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['soundfile']
+            signalfileName = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['soundfile']
             if self.audioSolutionFlag:
-                if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['audio']['signalfile']:
-                    signal = self.signalContainer['assistance'][self.itemOrder[self.sequenceNo]]
+                if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['signalfile']:
+                    signal = self.signalContainer['assistance'][self.itemOrder[self.presentationNo]]
                 else:
                     signal = self.signalContainer['test'][signalfileName]
-                if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['audio']['preprocessing']:
+                if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['preprocessing']:
                     self.parHandle.curPreprocessor['settings']['deactivate'] = False
                 else:
                     self.parHandle.curPreprocessor['settings']['deactivate'] = True
@@ -444,21 +447,21 @@ class quiz(exerciseBase):
 
         self.solutionTextCounter = -1
         self.parHandle.dPrint(self.exerciseName + ': iniItem()', 2)
-        # check if there is only one hint common to all questions of this item with self.sequenceNo or if the
-        curItem = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]
-        if self.sequenceNoPrevious != self.sequenceNo or \
+        # check if there is only one hint common to all questions of this item with self.presentationNo or if the
+        curItem = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]
+        if self.presentationNoPrevious != self.presentationNo or \
                 not(isinstance(curItem['assistance']['text']['text'], str)) or \
-                not(isinstance(curItem['assistance']['text']['text'][self.questNumber], str)):
+                not(isinstance(curItem['assistance']['text']['text'][self.itemQuestNumber], str)):
             self.ui['teSolutionText'].setText('')
 
-        ah = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['audio']['enable']
-        th = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['text']['enable']
+        ah = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['enable']
+        th = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['text']['enable']
         if ah or th:
             self.ui['lbSolutionText'].show()
         else:
             self.ui['lbSolutionText'].hide()
 
-        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['audio']['enable']:
+        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['enable']:
             #self.ui['pbSolutionAudio'].clicked.connect(self.toggleAudioSolution)
             self.parHandle.reconnect(self.ui['pbSolutionAudio'].clicked, self.toggleAudioSolution)
             self.ui['pbSolutionAudio'].setDisabled(False)
@@ -475,7 +478,7 @@ class quiz(exerciseBase):
             #self.ui['pbSolutionAudio'].setPalette(QPalette(tb, tb, tb, tb, tb, tb, tb, tb, tb))
 
 
-        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['text']['enable']:
+        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['text']['enable']:
             #self.ui['pbSolutionText'].clicked.connect(self.showTextSolution)
             self.parHandle.reconnect(self.ui['pbSolutionText'].clicked, self.showTextSolution)
             self.ui['pbSolutionText'].setDisabled(False)
@@ -493,12 +496,12 @@ class quiz(exerciseBase):
 
         self.ui['pbSolutionAudio'].setChecked(False)
 
-        quest = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['quests'][self.questNumber]
+        quest = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['quests'][self.itemQuestNumber]
         self.ui['lbQuest'].setText(quest)
 
         # deleting old option, because the number of options has changed
         if not(len(self.itemOptions) ==
-               len(self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['options'][self.questNumber])):
+               len(self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['options'][self.itemQuestNumber])):
             for ii in reversed(range(self.hOptionLayout.count())):
                 widgetToRemove = self.hOptionLayout.itemAt(ii).widget()
                 # remove it from the layout list
@@ -506,7 +509,7 @@ class quiz(exerciseBase):
                 # remove it from the gui
                 widgetToRemove.setParent(None)
             self.itemOptions = []
-            options = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['options'][self.questNumber]
+            options = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['options'][self.itemQuestNumber]
             # randomizing order of presentated options if required
             if self.parHandle.curExercise['settings']['randomizedOptions']:
                 np.random.shuffle(options)
@@ -520,58 +523,30 @@ class quiz(exerciseBase):
 
         # setting options
         for ii in range(len(self.itemOptions)):
-            optionText = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['options'][self.questNumber][ii]
+            optionText = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['options'][self.itemQuestNumber][ii]
             self.itemOptions[ii].setText(optionText)
 
-        '''
-        pbSolutionAudio
-        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['audio']['enable']:
-            pbSolutionAudio.setDisabled(False)
-            pbSolutionAudio.setCheckable(True)
-            #pbSolutionAudio.setPalette(QPalette())
-            pbSolutionAudio.show()
-            pbSolutionAudio.clicked.connect(self.toggleAudioSolution)
-        else:
-            pbSolutionAudio.setDisabled(True)
-            pbSolutionAudio.setCheckable(False)
-            pbSolutionAudio.hide()
-            #tb = QBrush(QtCore.Qt.transparent)
-            #pbSolutionAudio.setPalette(QPalette(tb, tb, tb, tb, tb, tb, tb, tb, tb))
-        
-        pbSolutionText
-        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['assistance']['text']['enable']:
-            #pbSolutionText.setPalette(QPalette())
-            pbSolutionText.clicked.connect(self.showTextSolution)
-            pbSolutionText.setDisabled(False)
-            pbSolutionText.setCheckable(True)
-            pbSolutionText.show()
-        else:
-            #tb = QBrush(QtCore.Qt.transparent)
-            #pbSolutionText.setPalette(QPalette(tb, tb, tb, tb, tb, tb, tb, tb, tb))
-            pbSolutionText.setDisabled(True)
-            pbSolutionText.setCheckable(False)
-            pbSolutionText.hide()
-        '''
         self.parHandle.dPrint(self.exerciseName + ': Leaving iniItem()', 2)
 
 
     def nextItem(self):
         """!
-        Go to next item in self.parHandle.curExercise['settings']['list'] by counting up self.sequenceNo or
-        self.questNumber and calling self.iniItem()
+        Go to next item in self.parHandle.curExercise['settings']['list'] by counting up self.presentationNo or
+        self.itemQuestNumber and calling self.iniItem()
         """
 
         self.audioSolutionFlag = False
 
         self.parHandle.dPrint(self.exerciseName + ': nextItem()', 2)
         # documenting prious sequenceNo for resetting of text hint
-        self.sequenceNoPrevious = self.sequenceNo
+        self.presentationNoPrevious = self.presentationNo
         # asking next question of item or continue to next item
-        if self.questNumber == len(self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['quests']) - 1:
+        if self.itemQuestNumber == len(self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['quests']) - 1:
             # last question of item reached: check for more items and proceed in case of more items
-            if self.sequenceNo < len(self.parHandle.curExercise['settings']['list']) - 1:
-                self.sequenceNo = self.sequenceNo + 1
-                self.questNumber = 0
+            if self.presentationNo < len(self.parHandle.curExercise['settings']['list']) - 1:
+                self.presentationNo = self.presentationNo + 1
+                self.itemQuestNumber = 0
+                self.globalQuestNumber = self.globalQuestNumber + 1
                 presentSignalFlag = True
                 # if the audio was paused the old item audio was played, until the audio playback was stopped.
                 # stopping play back to be sure that the correct audio is played back
@@ -583,7 +558,8 @@ class quiz(exerciseBase):
                 presentSignalFlag = False
         else:
             presentSignalFlag = False
-            self.questNumber = self.questNumber + 1
+            self.itemQuestNumber = self.itemQuestNumber + 1
+            self.globalQuestNumber = self.globalQuestNumber + 1
         self.iniItem()
         if presentSignalFlag:
             self.presentSignal()
@@ -593,18 +569,18 @@ class quiz(exerciseBase):
 
     def previousItem(self):
         """!
-        Go to previous item in self.parHandle.curExercise['settings']['list'] by counting up self.sequenceNo or
-        self.questNumber and calling self.iniItem()
+        Go to previous item in self.parHandle.curExercise['settings']['list'] by counting up self.presentationNo or
+        self.itemQuestNumber and calling self.iniItem()
         """
 
         self.parHandle.dPrint(self.exerciseName + ': previousItem()', 2)
         self.audioSolutionFlag = False
 
-        self.sequenceNoPrevious = self.sequenceNo
-        if self.questNumber == 0:
-            if self.sequenceNo > 0:
+        self.presentationNoPrevious = self.presentationNo
+        if self.itemQuestNumber == 0:
+            if self.presentationNo > 0:
                 presentSignalFlag = True
-                self.sequenceNo = self.sequenceNo - 1
+                self.presentationNo = self.presentationNo - 1
                 # if the audio was paused the old item audio was played, until the audio playback was stopped.
                 # stopping play back to be sure that the correct audio is played back
                 if 'functions' in self.parHandle.curPlayer and \
@@ -614,7 +590,8 @@ class quiz(exerciseBase):
                 presentSignalFlag = False
         else:
             presentSignalFlag = False
-            self.questNumber = self.questNumber - 1
+            self.globalQuestNumber = self.globalQuestNumber - 1
+            self.itemQuestNumber = self.itemQuestNumber - 1
 
         self.iniItem()
         # play signal if
@@ -636,13 +613,22 @@ class quiz(exerciseBase):
         inputAnswer = self.parHandle.sender().text()
         objectAnswer = self.parHandle.sender().objectName()
 
-        solution = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]['solutions'][self.questNumber]
+        solution = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['solutions'][self.itemQuestNumber]
 
-        self.parHandle.curRunData['results']['label'] = inputAnswer
-        self.parHandle.curRunData['results']['sequenceNo'] = self.sequenceNo
-        self.parHandle.curRunData['results']['itemNo'] = int(self.itemOrder[self.sequenceNo])
+        self.parHandle.curRunData['results']['label'].append(inputAnswer)
+        self.parHandle.curRunData['results']['presentationNo'].append(self.presentationNo)
+        self.parHandle.curRunData['results']['questNo'].append(self.itemQuestNumber)
+        self.parHandle.curRunData['results']['itemNo'].append(int(self.itemOrder[self.presentationNo]))
+
+        reactTime = self.parHandle.frameWork['temp']['reactionTimeAfterPresentation']
+        self.parHandle.curRunData['results']['audioPresentationCounter'][self.globalQuestNumber] = \
+            self.parHandle.curRunData['results']['audioPresentationCounter'][self.globalQuestNumber]
+        if reactTime:
+            self.parHandle.curRunData['results']['reactionTimeMax'][[self.globalQuestNumber]] = \
+                np.max([self.parHandle.curRunData['results']['reactionTimeMax'][[self.globalQuestNumber]], reactTime])
+
         if inputAnswer == solution:
-            self.parHandle.curRunData['results']['correct'] = True
+            self.parHandle.curRunData['results']['correct'].append(True)
 
             self.ui[objectAnswer].setStyleSheet("background-color : green")
             """
@@ -652,7 +638,7 @@ class quiz(exerciseBase):
             self.parHandle.changePalette(self.ui[objectAnswer], pal)
             """
         else:
-            self.parHandle.curRunData['results']['correct'] = False
+            self.parHandle.curRunData['results']['correct'].append(False)
             self.ui[objectAnswer].setStyleSheet("background-color : red")
             """
             pal = QtGui.QPalette(self.ui[objectAnswer].palette())
@@ -687,7 +673,7 @@ class quiz(exerciseBase):
         self.parHandle.dPrint(self.exerciseName + ': showTextSolution()', 2)
 
 
-        curItem = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.sequenceNo]]
+        curItem = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]
         solution = ''
         if isinstance(curItem['assistance']['text']['text'], str):
             if self.solutionTextCounter < 0:
@@ -699,11 +685,11 @@ class quiz(exerciseBase):
             if isinstance(curItem['assistance']['text']['text'][0],str):
                 if self.solutionTextCounter >= 0 and self.solutionTextCounter < len(curItem['assistance']['text']['text']):
                     solution = curItem['assistance']['text']['text'][self.solutionTextCounter]
-            elif isinstance(curItem['assistance']['text']['text'][self.sequenceNo], list):
-                if self.sequenceNo >= 0 and self.sequenceNo < len(curItem['assistance']['text']['text'][self.sequenceNo])\
+            elif isinstance(curItem['assistance']['text']['text'][self.presentationNo], list):
+                if self.presentationNo >= 0 and self.presentationNo < len(curItem['assistance']['text']['text'][self.presentationNo])\
                         and self.solutionTextCounter >= 0 and \
-                        self.solutionTextCounter < len(curItem['assistance']['text']['text'][self.questNumber]):
-                    solution = curItem['assistance']['text']['text'][self.questNumber][self.solutionTextCounter]
+                        self.solutionTextCounter < len(curItem['assistance']['text']['text'][self.itemQuestNumber]):
+                    solution = curItem['assistance']['text']['text'][self.itemQuestNumber][self.solutionTextCounter]
         if solution:
             if self.solutionTextCounter == 0:
                 self.ui['teSolutionText'].setText('')
@@ -726,21 +712,32 @@ class quiz(exerciseBase):
         The result variables are initialized.
         """
 
+        noItems = 0
+        for item in self.parHandle.curExercise['settings']['list']:
+            noItems = noItems+len(item['quests'])
+
         # exercise specific result format:
         self.parHandle.curRunData['results'] = dict()
-        self.parHandle.curRunData['results']['label'] = 'noAnswer'
-        self.parHandle.curRunData['results']['sequenceNo'] = -1
-        self.parHandle.curRunData['results']['itemNo'] = -1
+        self.parHandle.curRunData['results']['label'] = []
+        # documentation of the number of presentation of the item
+        self.parHandle.curRunData['results']['presentationNo'] = []
+        # documentation of the item number in the settings list
+        self.parHandle.curRunData['results']['itemNo'] = []
+        # documentation of the question number in the settings list
+        self.parHandle.curRunData['results']['questNo'] = []
         self.parHandle.curRunData['results']['assistance'] = dict()
         # will be set to True if solution text is displayed
-        self.parHandle.curRunData['results']['assistance']['text'] = False
+        self.parHandle.curRunData['results']['assistance']['text'] = [False] * noItems
         # will be set to True if solution audio is played back
-        self.parHandle.curRunData['results']['assistance']['audio'] = False
-        self.parHandle.curRunData['results']['correct'] = ''
-        self.parHandle.curRunData['results']['audioPresentationCounter'] = 0
+        self.parHandle.curRunData['results']['assistance']['audio'] = [False] * noItems
+        self.parHandle.curRunData['results']['correct'] = []
+        self.parHandle.curRunData['results']['audioPresentationCounter'] = np.zeros(noItems)
+        self.parHandle.curRunData['results']['reactionTimeMax'] = np.ones(noItems)*-1
+        self.parHandle.curRunData['results']['question'] = [False] * noItems # TODO
 
-        self.sequenceNo = 0
-        self.questNumber = 0
+        self.presentationNo = 0
+        self.itemQuestNumber = 0
+        self.globalQuestNumber = 0
 
         self.itemOrder = np.arange(len(self.parHandle.curExercise['settings']['list']))
         
@@ -797,6 +794,29 @@ class quiz(exerciseBase):
             self.parHandle.curExercise['path']['data'], 'solution')
 
         self.parHandle.dPrint(self.exerciseName + ': iniPath()', 2)
+
+    def xlsxExportPreparation(self, data):
+        """!
+        This function prepares the result for the export to xlsx files.
+        """
+
+        '''
+        self.parHandle.curRunData['results']['label']
+        self.parHandle.curRunData['results']['presentationNo']
+        self.parHandle.curRunData['results']['questNo']
+        self.parHandle.curRunData['results']['question']
+        self.parHandle.curRunData['results']['itemNo']
+
+
+        self.parHandle.curRunData['results']['audioPresentationCounter']
+        self.parHandle.curRunData['results']['reactionTimeMax']
+        self.parHandle.curRunData['results']['correct']
+        '''
+
+        dataSeries = pd.Series()
+        status = True
+        return dataSeries, status
+
 
 
     def setDefaultSettings(self):

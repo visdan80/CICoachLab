@@ -61,6 +61,7 @@ def exporteMastrlistResults(parHandle):
     for item in parHandle.curExercise['selectedRunData']:
         resultFile = os.path.join(resultsPath, baseName + f"{ic:02d}" + '.xlsx')
         # ensuring that no existing data will be overwritten by CICoachLab.
+
         if os.path.isfile(resultFile):
             renameFlag = False
             newBaseName = baseName
@@ -79,6 +80,43 @@ def exporteMastrlistResults(parHandle):
                       _translate("MainWindow", ' renamed to ', None) + newResultFile
                 parHandle.dPrint(msg, 0, guiMode=True)
             resultFile = newResultFile
+
+
+        # TODO:
+        # move function to CICoachLab.py
+        # before selection of file name ask if the selected data should be exported
+        #   one or more runs can be selected for the export
+        # if no run is selected as if the masterlsit or setlist data should be exported.
+        #   provide selection of date of masterlist/setlist
+        # or export all available data?
+        #
+        # for the excel export each exercise has to provide an excel export function
+        #   introduce in confusionMatrix, questionaire, scaling, quiz
+        #   the function should return a list of single line dictionary, and
+        #       should the occasion arise a none empty dictionary of pandas dataframees
+        #       is returned.
+        #       The first arguement
+        #       should be of the format:
+        #       dict or dataseries?
+        #       dict('subject': string [study Label of subjcect]
+        #           'exercise': string
+        #           'date': string
+        #           'setting': string
+        #           'setlist': string
+        #           'masterlist': string
+        #           'dataTitle1': string or number representing a data point
+        #           'dataTitle2': string or number representing a data point
+        #           ...
+        #       The second argument should be of the format:
+        #       dict('exercise:' list[Dataframe1, Dataframe2....]
+        #       list
+        #       is returned  as extra data sheet/table.
+        # introduce in self.initializeToDefaults()
+        #   self.curExercise['functions']['exportResultsToExcel']    = None
+        #   introduce menu>File>Export results which points to this function.
+
+
+
 
         with pd.ExcelWriter(resultFile) as writer:
             parHandle.runData[exerciseName][items[item]]['results']['confMat'][0].to_excel(

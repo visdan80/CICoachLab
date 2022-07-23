@@ -128,6 +128,7 @@ class questionaire():
         self.parHandle.curExercise['functions']['settingsLoading']   = None
         self.parHandle.curExercise['functions']['settingsDefault']   = None
         self.parHandle.curExercise['functions']['destructor']        = None
+        self.parHandle.curExercise['functions']['xlsxExport']        = None
 
         self.parHandle.initializeToDefaults(mode='curExerciseSettings')
 
@@ -457,8 +458,10 @@ class questionaire():
 
                             ti = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
                             convertFunc = int
-                            validator = Validators.NumberValidator(inputRange=item['range'],
-                                                                   convertFunc=convertFunc, comboStyle=False)
+                            validator = Validators.NumberValidator(
+                                inputRange=item['range'],
+                                convertFunc=convertFunc, comboStyle=False,
+                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                             ti.setValidator(validator)
 
                             ti.editingFinished.connect(self.runButton)
@@ -475,8 +478,10 @@ class questionaire():
 
                             tf = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
                             convertFunc = float
-                            validator = Validators.NumberValidator(inputRange=item['range'],
-                                                                   convertFunc=convertFunc, comboStyle=False)
+                            validator = Validators.NumberValidator(
+                                inputRange=item['range'],
+                                convertFunc=convertFunc, comboStyle=False,
+                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
                             tf.setValidator(validator)
 
                             tf.editingFinished.connect(self.runButton)
@@ -595,6 +600,7 @@ class questionaire():
         The gui is initialized by enabling the questionaire elements and by calling iniGui().
         """
 
+        # this index might allow subpages of an questionaire in later versions
         self.runIdx = 0
         self.parHandle.dPrint('questionaire: startRun()', 2)
         
@@ -609,7 +615,6 @@ class questionaire():
         self.presentationCounter = 0
         self.previousQuestionaireGroup = 0
         self.questionNo = 0
-        self.runIdx = 0
         self.finishRunCheck = False
         self.parHandle.curRunData['results'] = []
 
@@ -618,6 +623,7 @@ class questionaire():
         labels = ['Question', 'Group', 'InputType', 'Value', 'Other', 'NoAnswer', 'Comment']
 
         self.determineNumberOfQuestions()
+
 
         valType = zeros(self.numberOfQuestions)
         entries = { "Questions": [""] * self.numberOfQuestions,
@@ -631,6 +637,13 @@ class questionaire():
         questMat = pd.DataFrame(entries, columns = labels)
 
         self.parHandle.curRunData['results'].append(questMat)
+        # at least set the questions for the addressing of the items
+        items = self.parHandle.curExercise['settings']['items']
+        for item in items:
+            # not all questionare items have question and just might provide information
+            if item['question']:
+                self.parHandle.curRunData['results'][self.runIdx].loc[self.questionNo, 'Question'] = item['question']
+
         self.parHandle.curRunData['runAccomplished'] = False
 
 
@@ -688,6 +701,7 @@ class questionaire():
         ic = 0
         for item in objectNames:
             token = item.split('_')[0]
+            self.ui[item].blockSignals(True)
             if token == 'sc':
                 # single choise
                 self.ui[item].setChecked(True)
@@ -716,7 +730,8 @@ class questionaire():
                 #multiple choice
                 print('TODO')
             ic = ic + 1
-        pass
+            self.ui[item].blockSignals(False)
+
         self.parHandle.dPrint('questionaire: Leaving displaySingleResults()', 2)
 
 
@@ -981,6 +996,43 @@ class questionaire():
         self.parHandle.dPrint('questionaire: Leaving loadSettings()', 2)
 
 
+    def xlsxExportPreparation(self, data):
+        """!
+        This function prepares the result for the export to xlsx files.
+        """
+
+        self.parHandle.dPrint(
+            self.parHandle.curExercise['settings']['exerciseName'] + ': xlsxExportPreparation()', 2)
+
+        if not(hasattr(data['results'][0], 'ObjectName')):
+            msg = _translate("questionaire", 'No valid data could be found. This run has been canceled, probably.', None)
+            self.parHandle.dPrint(msg, 1, guiMode=False)
+            status = 'None'
+            questions = []
+            for item in data['settings']['exercise']['items']:
+                if len(item['question']) > 0:
+                    questions.append(item['question'])
+            answers = ["NoAnswer"] * len(questions)
+        else:
+
+            values = data['results'][0]['Value']
+            ic = 0
+            questions = []
+            answers = []
+            for item in data['results'][0]['Question']:
+                questions.append(item)
+                answers.append(values[ic])
+                ic = ic + 1
+
+        dataSeries = pd.Series(answers, index=questions)
+
+        status = True
+
+
+        self.parHandle.dPrint(self.parHandle.curExercise['settings']['exerciseName'] + ': Leaving xlsxExportPreparation()', 2)
+        return dataSeries, status
+
+
     def setDefaultSettings(self):
         """!
         The default parameters of the tests will be set.
@@ -1208,6 +1260,7 @@ class questionaire():
         self.parHandle.curExercise['functions']['checkConditions'] = None
         self.parHandle.curExercise['functions']['destructor'] = self.__exit__
         self.parHandle.curExercise['functions']['eraseExerciseGui'] = self.eraseExerciseGui
+        self.parHandle.curExercise['functions']['xlsxExport'] = self.xlsxExportPreparation
         self.parHandle.curExercise['settings']['exerciseName'] = 'questionaire'
 
         # setting paths to exercise subfolder like "analysis"  "presets"  "results" (and other folders if the

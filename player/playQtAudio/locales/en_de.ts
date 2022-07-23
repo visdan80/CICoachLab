@@ -41,42 +41,42 @@ Bitte ändern Sie nicht die Lautstärkeeinstellung während der Nutzung von CICo
         <translation>Ende von Audiosignal.</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="711"/>
+        <location filename="../../playQtAudio.py" line="709"/>
         <source>Play</source>
         <translation>Abspielen</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="712"/>
+        <location filename="../../playQtAudio.py" line="710"/>
         <source>Pause</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="713"/>
+        <location filename="../../playQtAudio.py" line="711"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="914"/>
+        <location filename="../../playQtAudio.py" line="912"/>
         <source>sampling rate</source>
         <translation>Abtastrate</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="923"/>
+        <location filename="../../playQtAudio.py" line="921"/>
         <source>level</source>
         <translation>Pegel</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="933"/>
+        <location filename="../../playQtAudio.py" line="931"/>
         <source>Visual preparation</source>
         <translation>Visuelle Vorbereitung</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="942"/>
+        <location filename="../../playQtAudio.py" line="940"/>
         <source>Preparation time</source>
         <translation>Vorbereitungszeit</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="951"/>
+        <location filename="../../playQtAudio.py" line="949"/>
         <source>Wait for audio end</source>
         <translation>Warten auf Signalende</translation>
     </message>

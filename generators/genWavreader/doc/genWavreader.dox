@@ -1,0 +1,7 @@
+/**  \addtogroup grp_generators Generator 
+
+\section sec_introductionGenWavReader genWavreader
+This simple generator reads out the audio signal from the files wich are defined by the transmitted file name. 
+The supported file format is *.wav and *.mp3.
+
+ */ 

@@ -614,8 +614,9 @@ set-list</string>
     </property>
     <addaction name="menuFileSave"/>
     <addaction name="menuFileLoad"/>
+    <addaction name="menuFileAppend"/>
     <addaction name="separator"/>
-    <addaction name="menuFileExtractSelection"/>
+    <addaction name="menuXlsxExport"/>
     <addaction name="menuFileUserData"/>
     <addaction name="separator"/>
    </widget>
@@ -720,7 +721,7 @@ set-list</string>
     <string>Loading results</string>
    </property>
   </action>
-  <action name="menuFileExtractSelection">
+  <action name="menuXlsxExport">
    <property name="text">
     <string>&amp;Export selected run</string>
    </property>
@@ -728,6 +729,11 @@ set-list</string>
   <action name="menuFileUserData">
    <property name="text">
     <string>User data</string>
+   </property>
+  </action>
+  <action name="menuFileAppend">
+   <property name="text">
+    <string>Appending results</string>
    </property>
   </action>
  </widget>

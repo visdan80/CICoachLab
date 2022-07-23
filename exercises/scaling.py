@@ -19,6 +19,8 @@ GPL-3.0-or-later
 
 
 import os
+
+import pandas as pd
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore, QtGui
 import re
@@ -43,6 +45,7 @@ class scaling(exerciseBase):
             super().__init__(parHandle, settings=settings, exerciseName='scaling')
 
             self.parHandle.curExercise['functions']['displayResults'] = self.displayResults
+            self.parHandle.curExercise['functions']['xlsxExport'] = self.xlsxExportPreparation
 
             self.vBLayout   = None
 
@@ -207,7 +210,7 @@ class scaling(exerciseBase):
 
         objectName = 'pbFinish'
         pButton = QtWidgets.QPushButton(subWidget, text=_translate("scaling", 'End', None), objectName=objectName)
-        pButton.clicked.connect(self.quitRun)
+        pButton.clicked.connect(self.finishRun)
         pButton.setMaximumSize(100, 50)
         pButton.setMinimumSize(100, 50)
         self.vBLayout.addWidget(pButton)
@@ -304,6 +307,42 @@ class scaling(exerciseBase):
         # self.parHandle.curExercise['path']['scripts']  = os.path.join(pwd, 'scripts')
 
         self.parHandle.dPrint(self.parHandle.curExercise['settings']['exerciseName'] + ': iniPath()', 2)
+
+    def xlsxExportPreparation(self, data):
+        """!
+        This function prepares the result for the export to xlsx files and provides a datasSeries .
+        The returned status can be 'Valid', 'NoAnswer', 'None', 'Failed', 'Warning'
+        """
+
+        self.parHandle.dPrint(self.parHandle.curExercise['settings']['exerciseName'] + ': xlsxExportPreparation()', 2)
+
+        status = 'Valid'# 'Valid', 'NoAnswer', 'None', 'Failed', 'Warning'
+
+        if data['results'] == None or np.isnan(data['results']['index']):
+            msg = _translate("scaling", 'The user did not provide any input.', None)
+            self.parHandle.showInformation(msg)
+            self.parHandle.dPrint(msg, 1, guiMode=False)
+            print(msg)
+            item = 'None'
+            status = 'None'
+            itemList = ['None','None', item]
+            question = 'No question'
+        else:
+            if data['results']['index'] >= 0:
+                item = data['results']['label']
+                status = 'Valid'
+            else:
+                item = "No Answer"
+                status = 'NoAnswer'
+            itemList = ['0 to ' + str(len(data['settings']['exercise']['items']['values'])-1), item,
+                        data['results']['index']]
+            question = data['settings']['exercise']['Question']
+        itemTitle = ['range', question, 'index']
+        dataSeries = pd.Series(itemList, index=itemTitle)
+
+        self.parHandle.dPrint(self.parHandle.curExercise['settings']['exerciseName'] + ': Leaving xlsxExportPreparation()', 2)
+        return dataSeries, status
+
 
     def setDefaultSettings(self):
         """!

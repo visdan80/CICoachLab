@@ -674,8 +674,6 @@ class playQtAudio():
         self.playBtn = controlbar.children()[1].itemAt(0).widget()
         self.pauseBtn = controlbar.children()[1].itemAt(1).widget()
         self.stopBtn = controlbar.children()[1].itemAt(2).widget()
-        #self.volumeDescBtn
-        #self.volumeIncBtn
         self.seekSlider = controlbar.children()[0].itemAt(1).widget().objectName()
         self.seekSliderLabelStart = controlbar.children()[0].itemAt(0).widget().objectName()
         self.seekSliderLabelEnd = controlbar.children()[0].itemAt(2).widget().objectName()
