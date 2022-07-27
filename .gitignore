@@ -132,3 +132,5 @@ dmypy.json
 /debugfile.txt
 /filter.ini
 /.idea/
+/html/
+/CICoachLab.ini
