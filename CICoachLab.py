@@ -268,7 +268,7 @@ CPU: untested so far
 ## Software
 Linux/Windows
 
-Python 3.8 or higher
+Python 3.8.3 or higher but not higher than 3.8.XX
 PyQt5
 Windows 7
 Windows 10 if the options "fixMasterVolume" and "bitlockerMode" are set to True in CICoachLab.ini.
@@ -392,7 +392,7 @@ except ImportError:
     import sip
 
 matplotlib.rcParams['text.usetex']
-matplotlib.rcParams['text.latex.preamble'] = [r'\usepackag{amsmath}]']
+matplotlib.rcParams['text.latex.preamble'] = r'\usepackag{amsmath}]'
 
 global globalTemp
 globalTemp = dict()
@@ -666,8 +666,19 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+
         # initializing frameWork
         self.initializeToDefaults(mode='all')
+
+        # self.initialized allows that the initialization of submodules can be handled by self.iniExercise() while
+        # loading settings or individually if a setlists defines individual submodule-settings. The settings defined
+        # in the setlist overrules the submodule-settings of an exercise. This should allow an easier handling of minor
+        # changes in the settings, e.g.: usage of different preprocessors
+        self.initialized = dict()
+        self.initialized['generator'] = False
+        self.initialized['preprocessor'] = False
+        self.initialized['player'] = False
+        self.initialized['exercise'] = False
 
         self.setWindowIcon(QtGui.QIcon(os.path.join(self.frameWork['path']['pwd'], 'recources', 'logo.svg')))
         screen = self.app.primaryScreen()
@@ -688,6 +699,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             QtCore.Qt.WindowMinimizeButtonHint|
             QtCore.Qt.WindowMaximizeButtonHint
             )
+        self.showMaximized()
         # Python packages which are commonly used by CICoachLab or its modules are defined.
         # In the expert mode menu the currently used packages  can be downloaded via pip as backup,
         # and installed  via pip to resolve missing dependencies.
@@ -706,16 +718,21 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.__exit__(None, None, None)
             self.deleteLater()
             return
-
-        if self.frameWork['settings']['localization']:
-            self.setLocalization(self.frameWork['settings']['localization'])
-            self.ui.retranslateUi(self)
+        if self.frameWork['settings']['fontSize']:
+            self.setFontSize(self.frameWork['settings']['fontSize'])
+        # the exercise widget title will cleared at first start of a run and relabeled to initial label  at start
+        # of new exercise
+        self.oldExerciseWidgetTitle = self.ui.exerWidget.title()
 
         success = self.readFilter()
         if not(success):
             self.__exit__(None, None, None)
             self.deleteLater()
             return
+
+        if self.frameWork['settings']['localization']:
+            self.setLocalization(self.frameWork['settings']['localization'])
+            self.ui.retranslateUi(self)
 
         if self.frameWork['settings']['expertMode']:
 
@@ -759,6 +776,14 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.ui.clearPatientData.setObjectName("clearPatientData")
             self.ui.clearPatientData.triggered.connect(self.clearPatientData)
 
+            self.ui.increaseFontSize = QtWidgets.QAction(self)
+            self.ui.increaseFontSize.setObjectName("increaseFontSize")
+            self.ui.increaseFontSize.triggered.connect(self.increaseFontSize)
+
+            self.ui.decreaseFontSize = QtWidgets.QAction(self)
+            self.ui.decreaseFontSize.setObjectName("increaseFontSize")
+            self.ui.decreaseFontSize.triggered.connect(self.decreaseFontSize)
+
             self.ui.menuExpertTools.addAction(self.ui.calibrateSystemExercise)
             self.ui.menuExpertTools.addAction(self.ui.menuCalibrateSystem)
 
@@ -769,6 +794,9 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.ui.menuExpertTools.addAction(self.ui.menuInstallMissingPackages)
             self.ui.menuExpertTools.addAction(self.ui.menuDocumentImportedPackages)
             self.ui.menuExpertTools.addAction(self.ui.clearPatientData)
+            self.ui.menuExpertTools.addAction(self.ui.increaseFontSize)
+            self.ui.menuExpertTools.addAction(self.ui.decreaseFontSize)
+
 
             self.ui.menuExpertTools.setEnabled(True)
 
@@ -804,6 +832,8 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.ui.menuDocumentImportedPackages.setText(_translate("MainWindow", "Document dependencies", None))
             self.ui.menuTranslateExercise.setText(_translate("MainWindow", "Translate CICoachLab", None))
             self.ui.clearPatientData.setText(_translate("MainWindow", "Clean up patient data", None))
+            self.ui.increaseFontSize.setText(_translate("MainWindow", "Increase Font size", None))
+            self.ui.decreaseFontSize.setText(_translate("MainWindow", "Decrease Font size", None))
 
             self.ui.menubar.addAction(self.ui.menuExpertTools.menuAction())
             self.ui.menubar.show()
@@ -817,7 +847,10 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.ui.menuSourceCodeDocu.setText(_translate("MainWindow", "Documentation", None))
         self.ui.menuHelp.addAction(self.ui.menuSourceCodeDocu)
 
-        if len(self.frameWork['settings']['debug']['debuggingTempFile']) > 0 and self.frameWork['settings']['debug']['mode'] == True:
+        if len(self.frameWork['settings']['debug']['debuggingTempFile']) > 0 \
+                and self.frameWork['settings']['debug']['mode'] == True \
+                and self.frameWork['settings']['debug']['debuggingFile'] != \
+                self.frameWork['settings']['debug']['debuggingTempFile']:
             self.dPrint(
                 'A debug file ' + self.frameWork['settings']['debug']['debuggingTempFile'] + 'will be written.' +
                 ' At the end it will be moved to: ' + self.frameWork['settings']['debug']['debuggingFile']
@@ -913,7 +946,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                     self.deleteLater()
                     return
                 else:
-                    msg = _translate("MainWindow", 'Your data will be saved under the new file: ',
+                    msg = _translate("MainWindow", 'The result file does not exist. '
+                                                   'Your data will be saved under the (new) file: ',
                         None) + self.frameWork['settings']['patientSavingFile'] + '(.cid)'
                     self.dPrint(msg, 1, guiMode=True)
             else:
@@ -1018,6 +1052,17 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.writeIniFile()
 
+        if self.curMasterlist['settings']['masterlistStart']:
+            self.ui.menubar.hide()
+            # if tab hidden, the empty space will be set smaller
+            tabWidth = self.ui.tabTrainerMode.width()
+            self.ui.tabTrainerMode.setMaximumWidth(int(tabWidth/4))
+            # leaving (above defined) empty space of hidden widget
+            sp = self.ui.tabTrainerMode.sizePolicy()
+            sp.setRetainSizeWhenHidden(True)
+            self.ui.tabTrainerMode.setSizePolicy(sp)
+            self.ui.tabTrainerMode.hide() #actual hiding tab bidget
+
         self.readMasterlist()
         if self.curMasterlist['settings']['masterlistStart']:
             title = _translate("MainWindow",
@@ -1054,6 +1099,72 @@ class CICoachLab(QtWidgets.QMainWindow):
         # temporary storing  place to store temporary variable
         # but first of all handles to handles of widgets of matplotlib
         self.temp = dict()
+
+
+
+    def __enter__(self):
+        """!
+        This function is doing nothing but to return self. It allows the initialzation of the class with "with"
+        """
+        return self
+
+
+    def __exit__(self, exc_type, exc_value, tb):
+        """!
+        The destructor of the CICoachLab closes the debug file.
+
+        The destructor __del__ is avoided, since it is called at undefined times/before or after the destruction of
+        other classes. E.g. ConfigObj could not be used to handle the shutdown in the __del__ destructor.
+        """
+
+        self.dPrint('__exit__()', 2)
+
+        if self.frameWork['settings']['patientMode']:
+            self.saveRunData(filename=self.frameWork['settings']['patientSavingFile'])
+        if exc_type is not None:
+            traceback.print_exception(exc_type, exc_value, tb)
+            # return False # uncomment to pass exception through
+
+        # cleanup of exercise, generator, preprocessor, player and setlist
+        self.iniExercise(exerName='')
+        '''
+        self.iniSubmodule('generator', submoduleName='')
+        self.iniSubmodule('preprocessor',  submoduleName='')
+        self.iniSubmodule('player',  submoduleName='')
+        '''
+
+        self.frameWork['settings']['dailyCumulatedRunTime'] = \
+            self.frameWork['settings']['sessionCumulatedRunTime'] + self.frameWork['settings']['dailyCumulatedRunTime']
+
+        self.writeIniFile()
+        if not(self.frameWork['settings']['debug']['debuggingFileHandle'] == None):
+            self.frameWork['settings']['debug']['debuggingFileHandle'].close()
+            # reset closed handle to zero for correct handling in self.dPrint()
+            self.frameWork['settings']['debug']['debuggingFileHandle'] = None
+            # return False # uncomment to pass exception through
+
+        source = self.frameWork['settings']['debug']['debuggingTempFile']
+        destination = self.frameWork['settings']['debug']['debuggingFile']
+        if destination and (destination != source) and os.path.isfile(source):
+            try:
+                status, temp = self.moveLogFile(source, destination)
+                if status == 0:
+                    debuggingTempFileBackup = self.frameWork['settings']['debug']['debuggingTempFileBackup']
+                    if debuggingTempFileBackup:
+                        os.remove(debuggingTempFileBackup)
+                        self.frameWork['settings']['debug']['debuggingTempFileBackup'] = ''
+            except:
+                msg = _translate("MainWindow",
+                                 'Could not move the log file from {:s} to {:s}. Please contact your admininstrator.'.format(
+                                     source, destination), None)
+                self.dPrint(msg, 0, guiMode=True)
+                return False
+
+        if self.frameWork['settings']['fixMasterVolume']:
+            self.setMasterVolume(self.oldMasterVol)
+
+        self.dPrint('Leaving __exit__()', 2)
+        return True
 
 
     def setShortcuts(self):
@@ -1241,69 +1352,6 @@ class CICoachLab(QtWidgets.QMainWindow):
         elif self.frameWork['settings']['system']['sysname'] == 'Linux':
             subprocess.call("amixer sset 'Master' " + str(vol) + "%", shell=True)
 
-
-    def __enter__(self):
-        """!
-        This function is doing nothing but to return self. It allows the initialzation of the class with "with"
-        """
-        return self
-
-
-    def __exit__(self, exc_type, exc_value, tb):
-        """!
-        The destructor of the CICoachLab closes the debug file.
-
-        The destructor __del__ is avoided, since it is called at undefined times/before or after the destruction of
-        other classes. E.g. ConfigObj could not be used to handle the shutdown in the __del__ destructor.
-        """
-
-        self.dPrint('__exit__()', 2)
-
-        if self.frameWork['settings']['patientMode']:
-            self.saveRunData(filename=self.frameWork['settings']['patientSavingFile'])
-        if exc_type is not None:
-            traceback.print_exception(exc_type, exc_value, tb)
-            # return False # uncomment to pass exception through
-
-        # cleanup of exercise, generator, preprocessor, player and setlist
-        self.iniExercise(exerName='')
-        self.iniSubmodule('generator', submoduleName='')
-        self.iniSubmodule('preprocessor',  submoduleName='')
-        self.iniSubmodule('player',  submoduleName='')
-
-
-        self.frameWork['settings']['dailyCumulatedRunTime'] = \
-            self.frameWork['settings']['sessionCumulatedRunTime'] + self.frameWork['settings']['dailyCumulatedRunTime']
-
-        self.writeIniFile()
-        if not(self.frameWork['settings']['debug']['debuggingFileHandle'] == None):
-            self.frameWork['settings']['debug']['debuggingFileHandle'].close()
-            # reset closed handle to zero for correct handling in self.dPrint()
-            self.frameWork['settings']['debug']['debuggingFileHandle'] = None
-            # return False # uncomment to pass exception through
-
-        source = self.frameWork['settings']['debug']['debuggingTempFile']
-        destination = self.frameWork['settings']['debug']['debuggingFile']
-        if destination and (destination != source) and os.path.isfile(source):
-            try:
-                status, temp = self.moveLogFile(source, destination)
-                if status == 0:
-                    debuggingTempFileBackup = self.frameWork['settings']['debug']['debuggingTempFileBackup']
-                    if debuggingTempFileBackup:
-                        os.remove(debuggingTempFileBackup)
-                        self.frameWork['settings']['debug']['debuggingTempFileBackup'] = ''
-            except:
-                msg = _translate("MainWindow",
-                                 'Could not move the log file from {:s} to {:s}. Please contact your admininstrator.'.format(
-                                     source, destination), None)
-                self.dPrint(msg, 0, guiMode=True)
-                return False
-
-        if self.frameWork['settings']['fixMasterVolume']:
-            self.setMasterVolume(self.oldMasterVol)
-
-        self.dPrint('Leaving __exit__()', 2)
-        return True
 
 
     def showInformationDialog(self, msg, modal=False):
@@ -2379,6 +2427,9 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.initializeToDefaults(mode='curRunData')
 
+        # removing title of exercise widget for clearer gui and more space
+        self.ui.exerWidget.setTitle('')
+
         self.frameWork['temp']['activeRun'] = True
 
         self.curRunData['itemIdx'] = 0
@@ -2509,8 +2560,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                     settings = self.curSetlist['settings']['list']['preprocessors']['settings'][instanceCounter]
                 else:
                     settings = ''
-                # if no preprocessor is defined the previous preprocessor will be unloaded.
-                self.iniSubmodule('preprocessor',  preName, settings)
+                    # if no preprocessor is defined the previous preprocessor will be unloaded.
+                self.iniSubmodule('preprocessor', preName, settings)
             except:
                 msg = _translate("MainWindow", 'Exception: Loading of preprocessor  failed: ', None)\
                       + preName + ': ' + settings
@@ -2523,7 +2574,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                 else:
                     settings = ''
                 # if no player is defined the previous player will be unloaded.
-                self.iniSubmodule('player',  playName, settings)
+                self.iniSubmodule('player', playName, settings)
             except:
                 msg = _translate("MainWindow", 'Exception: Loading of player  failed: ', None)\
                       + playName + ': ' + settings
@@ -2575,10 +2626,16 @@ class CICoachLab(QtWidgets.QMainWindow):
 
     def closeDownRun(self):
         """!
+        This function handles the things to be done at the end of the run and it might invoke the next run and even
+        exercise if the run is part of a setlist or masterlist.
+
         After the run the frameWork disables the exercise gui and re-enables the frameWork gui elements.
         The end time will be recorded the used settings of the generator, preprocessor generator and exercise will be saved
         The results will be added to the run list.
         The data will be automatically saved if defined by self.frameWork['settings']['autoBackupResults']
+
+        Because the exercise class might be closed in this function self.closeDownRun() should be called
+        a the end of a class member to avoid access to non existing class members or variables.
         """
 
         self.dPrint('closeDownRun()', 2)
@@ -2870,6 +2927,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             try:
                 if self.checkForInputWidgets(item):
                     item.blockSignals(True)
+                    item.setEnabled(False)
                     msg = 'Blocking signals ' + str(item)
                     self.dPrint(msg, 4)
             except:
@@ -2893,6 +2951,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             try:
                 if self.checkForInputWidgets(item):
                     item.blockSignals(False)
+                    item.setEnabled(True) # enabling/disabling the butttons
                     msg = 'Unlocking signals ' + str(item)
                     self.dPrint(msg, 4)
             except:
@@ -3930,6 +3989,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             getattr(specModule, submoduleName)(self, settings)
             self.iniSettingsInMenu(module)
 
+
             if isinstance(settings, str):
                 settingsName = settings
             else:
@@ -3949,6 +4009,8 @@ class CICoachLab(QtWidgets.QMainWindow):
 
             self.settings[mode]['last' + Mode + 'Name'] = submoduleName
             self.settings[mode][submoduleName]['lastSettingsName'] = settingsName
+
+        self.initialized[mode] = True
 
         self.dPrint('Leaving iniSubmodule()', 2)
 
@@ -4017,6 +4079,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.curMasterlist['settings']['masterlistStart'] = iniFileConfig['system'].as_bool('masterlistStart')
                 self.frameWork['settings']['exerciseFrameGeometry'] = iniFileConfig['system']['exerciseFrameGeometry']
                 self.frameWork['settings']['mainFramegeometry'] = iniFileConfig['system']['mainFramegeometry']
+                self.frameWork['settings']['fontSize'] = iniFileConfig['system']['fontSize']
                 self.frameWork['settings']['localization'] = iniFileConfig['system']['localization']
                 self.frameWork['settings']['fixMasterVolume'] = iniFileConfig['system'].as_bool('fixMasterVolume')
                 self.frameWork['settings']['masterVolumeValue'] = iniFileConfig['system']['masterVolumeValue']
@@ -4123,6 +4186,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         if not(sip.isdeleted(self.ui.lwExerNameVal)):
             self.ui.lwExerNameVal.blockSignals(True)
 
+        self.initialized['exercise'] = False
         if self.curSetlist['active']:
             runMode = 'setlists'
             statesName = self.curSetlist['settings']['setlistName']
@@ -4133,6 +4197,8 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         # just initialize exercise if it was not selected before
         if exerName != self.curExercise['settings']['exerciseName'] or enforceInit:
+            # resetting exercise widget title, it will cleared at first start of a run
+            self.ui.exerWidget.setTitle(self.oldExerciseWidgetTitle)
             # save previous exercise if an old exercise exists and no setlist is active
             oldExerName = self.curExercise['settings']['exerciseName']
             if (oldExerName != '' and \
@@ -4238,21 +4304,41 @@ class CICoachLab(QtWidgets.QMainWindow):
                                  'has to be handled by exercise. Which is not recommended.  Please contact your admin.'
                                  , None)
                 self.dPrint(msg, 0, guiMode=True)
-                """
-                # after the exercise settings have been updated the defined generator, preprocessor and player are loaded
-                playerSettings = self.curPlayer['settings']
-                generatorSettings = self.curGenerator['settings']
-                preprocessorSettings = self.curPreprocessor['settings']
-                self.iniSubmodule('player', playerSettings['playerName'],
+
+            '''
+            # after the exercise settings have been updated the defined generator, preprocessor and player are loaded
+            playerSettings = self.curPlayer['settings']
+            generatorSettings = self.curGenerator['settings']
+            preprocessorSettings = self.curPreprocessor['settings']
+            
+            self.iniSubmodule('player', playerSettings['playerName'],
+                              playerSettings, enforceInit=True)
+            self.iniSubmodule('generator', generatorSettings['generatorName'],
+                              generatorSettings, enforceInit=True)
+            self.iniSubmodule('preprocessor', preprocessorSettings['preprocessorName'],
+                              preprocessorSettings, enforceInit=True)
+            '''
+
+            if not(self.initialized['player']):
+                playerName = self.curExercise['settings']['player']
+                playerSettings = self.curExercise['settings']['playerSettings']
+                self.iniSubmodule('player', playerName,
                                   playerSettings, enforceInit=True)
-                self.iniSubmodule('generator', generatorSettings['generatorName'],
+            if not(self.initialized['generator']):
+                generatorName = self.curExercise['settings']['generator']
+                generatorSettings = self.curExercise['settings']['generatorSettings']
+                self.iniSubmodule('generator', generatorName,
                                   generatorSettings, enforceInit=True)
-                self.iniSubmodule('preprocessor', preprocessorSettings['preprocessorName'],
-                                  preprocessorSettings, enforceInit=True)
-                """
+            if not (self.initialized['preprocessor']):
+                preprocessorName = self.curExercise['settings']['preprocessor']
+                preprocessorSettings = self.curExercise['settings']['preprocessorSettings']
+                self.iniSubmodule('preprocessor', preprocessorName,
+                              preprocessorSettings, enforceInit=True)
+
             self.dPrint('Exercise is already selected but settings have changed. Just calling loadSetting-function', 3)
             iniSuccess = True
 
+        self.initialized['exercise'] = True
         if iniSuccess:
             if not('exercise' in self.settings):
                 self.settings['exercise'] = dict()
@@ -4337,6 +4423,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                     iniFileConfig['system']['masterlistStart'] = self.curMasterlist['settings']['masterlistStart']
                     iniFileConfig['system']['exerciseFrameGeometry'] = self.frameWork['settings']['exerciseFrameGeometry']
                     iniFileConfig['system']['mainFramegeometry'] = self.frameWork['settings']['mainFramegeometry']
+                    iniFileConfig['system']['fontSize'] = self.frameWork['settings']['fontSize']
                     iniFileConfig['system']['localization'] = self.frameWork['settings']['localization']
                     iniFileConfig['system']['fixMasterVolume'] = self.frameWork['settings']['fixMasterVolume']
                     iniFileConfig['system']['masterVolumeValue'] = self.frameWork['settings']['masterVolumeValue']
@@ -4426,7 +4513,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                         title =  _translate("MainWindow", 'CICoachLab - Information', None)
                         text = msg + f"\n({self.frameWork['temp']['dPrintItemNumber']:03d}) "
                         CICoachDialog(self, title, text, 'information')
-                msg = f"\n{self.frameWork['temp']['dPrintItemNumber']:03d}: "+msg
+                msg = f"{self.frameWork['temp']['dPrintItemNumber']:03d}: "+msg
                 print(msg)
 
                 if self.frameWork['settings']['debug']['verbosityThreshold'] >= verbosity and \
@@ -4633,12 +4720,16 @@ class CICoachLab(QtWidgets.QMainWindow):
 
 
                 self.user = loadStruct['user']
+
+                '''
+                
                 self.iniSubmodule('player',  loadStruct['player']['settings']['playerName'],
                                 playerSettings, enforceInit=True)
                 self.iniSubmodule('generator', loadStruct['generator']['settings']['generatorName'],
                                   generatorSettings, enforceInit=True)
                 self.iniSubmodule('preprocessor',  loadStruct['preprocessor']['settings']['preprocessorName'],
                                      preprocessorSettings, enforceInit=True)
+                '''
                 self.iniExercise(loadStruct['exercise']['settings']['exerciseName'],
                                  exerciseSettings, enforceInit=True)
 
@@ -4663,7 +4754,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.writeIniFile()
 
             except:
-                self.dPrint('Exception: Loading of data was not succesfull.', 1)
+                self.dPrint('Exception: Loading of data was not succesfull. Please contact your Admin.',
+                            1, guiMode=True)
         else:
             self.dPrint('Loading of data was canceled by the user', 1)
         self.dPrint('Leaving loadRunData()', 2)
@@ -5044,10 +5136,13 @@ class CICoachLab(QtWidgets.QMainWindow):
             mode = 'preprocessor'
         elif module == 'curPlayer':
             mode = 'player'
-        if self.curExercise['functions']['eraseExerciseGui']:
-            self.curExercise['functions']['eraseExerciseGui']()
-        if self.curExercise['functions']['settingsDefault']:
-            self.curExercise['functions']['settingsDefault']()
+        self.initialized[mode] = False
+
+        if module == 'curExercise':
+            if self.curExercise['functions']['eraseExerciseGui']:
+                self.curExercise['functions']['eraseExerciseGui']()
+            if self.curExercise['functions']['settingsDefault']:
+                self.curExercise['functions']['settingsDefault']()
 
         if isinstance(settings, str):
             self.dPrint(settings, 4)
@@ -6621,6 +6716,41 @@ class CICoachLab(QtWidgets.QMainWindow):
         return status, msgOut
 
 
+    def setFontSize(self, fontSize):
+        """!
+        This function will increase the font size of all widgets.
+        """
+
+        self.dPrint('setFontSize()', 2)
+
+        oldFont = self.app.font()
+        oldFont.setPointSize(int(fontSize))
+        self.app.setFont(oldFont)
+
+        self.dPrint('Leaving setFontSize()', 2)
+
+
+    def increaseFontSize(self):
+        """!
+        This function will increase the font size of all widgets.
+        """
+        oldFont = self.app.font()
+        pSize = oldFont.pointSize()
+        oldFont.setPointSize(pSize + 1)
+        self.app.setFont(oldFont)
+        self.showInformation(_translate("MainWindow", "Increasing font size to: ", None) + str(pSize + 1))
+
+    def decreaseFontSize(self):
+        """!
+        This function will increase the font size of all widgets.
+        """
+        oldFont = self.app.font()
+        pSize = oldFont.pointSize()
+        oldFont.setPointSize(pSize - 1)
+        self.app.setFont(oldFont)
+        self.showInformation(_translate("MainWindow","Decreasing font size to: ", None) + str(pSize - 1))
+
+
     def mathTexToQPixmap(self, mathTex, fontsize):
         """!
         This function is used to add formated text on buttons.
@@ -7052,7 +7182,6 @@ class CICoachLab(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-
     with CICoachLab(app=app) as ciTraining:
         ciTraining.show()
         # app.exec is sufficient in PyQt5 in PyQt4 sys exit is required.

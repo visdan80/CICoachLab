@@ -394,7 +394,7 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../CICoachLab.py" line="3753"/>
+        <location filename="../CICoachLab.py" line="3806"/>
         <source>Setlist activated</source>
         <translation>Setlist aktiviert</translation>
     </message>
@@ -572,17 +572,17 @@ Set-Liste</translation>
         <translation>Nutzerdaten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="797"/>
+        <location filename="../CICoachLab.py" line="822"/>
         <source>Expert tools</source>
         <translation>Experten Werkezuge</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="798"/>
+        <location filename="../CICoachLab.py" line="823"/>
         <source>Calibrate Exercise</source>
         <translation>Kalibrierung von Übung</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="799"/>
+        <location filename="../CICoachLab.py" line="824"/>
         <source>Calibrate System</source>
         <translation>Kalibrierung von System</translation>
     </message>
@@ -592,7 +592,7 @@ Set-Liste</translation>
         <translation type="obsolete">Öffnen von Quellcode Dokumentation</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="800"/>
+        <location filename="../CICoachLab.py" line="825"/>
         <source>Open settings dialog</source>
         <translation>Öffnen des Einstellungs Dialog</translation>
     </message>
@@ -621,12 +621,12 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
         <translation type="obsolete">Die persönlichen Daten wurden noch nicht eingegeben. Bitte geben Sie die persönlichen Daten (Name, Vorname, Geburtsdatum) ein bestätigen Sie dies mit dem Speichern-Button.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2567"/>
+        <location filename="../CICoachLab.py" line="2612"/>
         <source>Estimated exercise duration: %5.1f min</source>
         <translation>Geschätzte Übungsdauer: %5.1f min</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2679"/>
+        <location filename="../CICoachLab.py" line="2730"/>
         <source>Starting next run of SetList ... </source>
         <translation>Nächster Lauf von Setlist wird gestartet ... </translation>
     </message>
@@ -636,57 +636,57 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
         <translation type="obsolete">Prüfung auf Vollendung ... </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2685"/>
+        <location filename="../CICoachLab.py" line="2736"/>
         <source>The previous run was aborted or finished without success. The setlist has been stopped</source>
         <translation>Der vorhergehende Lauf wurde unterbrochen oder erfolglos abgeschlossen. Die setlist wurde beendet</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2966"/>
+        <location filename="../CICoachLab.py" line="3019"/>
         <source>Could not run check of accomplishment: </source>
         <translation>Prüfung auf Vollendung konnte nicht durchgeführt werden: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2973"/>
+        <location filename="../CICoachLab.py" line="3026"/>
         <source>Could not run check of accomplishment (eval): %s </source>
         <translation>Der Erfolg des Laufs konnte nicht überprüft werden (eval): %s </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2978"/>
+        <location filename="../CICoachLab.py" line="3031"/>
         <source>Could not run check of accomplishment (unsupported type): type %s</source>
         <translation>Der Erfolg des Laufs konnte nicht überprüft werden (nicht unterstützter Typ): %s</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2997"/>
+        <location filename="../CICoachLab.py" line="3050"/>
         <source>Selected exercise: %s</source>
         <translation>Ausgewählte Übung: %s</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3000"/>
+        <location filename="../CICoachLab.py" line="3053"/>
         <source>Exercise - %s</source>
         <translation>Übung - %s</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3126"/>
+        <location filename="../CICoachLab.py" line="3179"/>
         <source>default values</source>
         <translation>Standardwerte</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3391"/>
+        <location filename="../CICoachLab.py" line="3444"/>
         <source>Error filter.ini: %s is shorter than other fields</source>
         <translation>Fehler in filter.ini: %s ist kürzer als andere Felder</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3571"/>
+        <location filename="../CICoachLab.py" line="3624"/>
         <source>all settings</source>
         <translation>alle Einstellungen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3573"/>
+        <location filename="../CICoachLab.py" line="3626"/>
         <source> the settings</source>
         <translation> die Einstellungen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3612"/>
+        <location filename="../CICoachLab.py" line="3665"/>
         <source>Loading settings: %s  ...</source>
         <translation>Laden der Einstellung: %s  ...</translation>
     </message>
@@ -696,17 +696,17 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
         <translation type="obsolete">Das Lader der Standardeinstellungen war erfolgreich: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3620"/>
+        <location filename="../CICoachLab.py" line="3673"/>
         <source>Loading of settings was successful: </source>
         <translation>Das Lader der Einstellungen war erfolgreich: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3626"/>
+        <location filename="../CICoachLab.py" line="3679"/>
         <source>Exception: Loading of settings %(a)s of exercise %(b)s was not successfull</source>
         <translation>Laden der Einstellung %(a)s der Übung %(b)s war nicht erfolgreich</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3826"/>
+        <location filename="../CICoachLab.py" line="3879"/>
         <source>Trainer Selection Mode: No Hit?!?</source>
         <translation>Trainer Auswahl Modus: Kein Treffer?!?</translation>
     </message>
@@ -716,22 +716,22 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
         <translation type="obsolete">IniFile konnte nicht erflogreich gelesen werden. Überprüfen Sie bitte den Inhalt von iniFile und/oder Fragen Sie ihren Administrator</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4209"/>
+        <location filename="../CICoachLab.py" line="4267"/>
         <source>Exception: Could not initialize exercise settings %(a)s from module %(b)s! </source>
         <translation>Exception: Übungseinstellungen %(a)s von modul %(b)s konnten nicht gesetzt werden! </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4214"/>
+        <location filename="../CICoachLab.py" line="4272"/>
         <source>Exception: Could not import exercise %(a)s from module %(b)s!</source>
         <translation>Exception: Die Übung  %(a)s von Modul %(b)s konnte nicht importiert werden!</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4295"/>
+        <location filename="../CICoachLab.py" line="4373"/>
         <source>Writing of ini File failed. Inifile configuration could not bee read before. Check content of iniFile</source>
         <translation>Das Schreiben von iniFile misslang. Die Konfiguration von iniFile konnte zuvor nicht gelesen werden. Prüfen Sie den Inhalt von iniFile</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4388"/>
+        <location filename="../CICoachLab.py" line="4467"/>
         <source>Writing of inifile failed. Check file permissions.</source>
         <translation>Das Schreiben von iniFile misslang. Prüfen Sie die Schreibberechtigungen.</translation>
     </message>
@@ -741,22 +741,22 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
         <translation type="obsolete">Sie müssen erst den aktiven Lauf schließen bevor Sie CITrainer schließen können</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2502"/>
+        <location filename="../CICoachLab.py" line="2547"/>
         <source>Exception: Loading of generator  failed: </source>
         <translation>Exception: Das Laden des Generators schlug fehl: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2515"/>
+        <location filename="../CICoachLab.py" line="2560"/>
         <source>Exception: Loading of preprocessor  failed: </source>
         <translation>Exception: Das Laden des Preprocessors schlug fehl: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2528"/>
+        <location filename="../CICoachLab.py" line="2573"/>
         <source>Exception: Loading of player  failed: </source>
         <translation>Exception: Das Laden des Players schlug fehl: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2538"/>
+        <location filename="../CICoachLab.py" line="2583"/>
         <source>Instance of set list failed. No exercise has been defined!?
 
 </source>
@@ -765,7 +765,7 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
 </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2542"/>
+        <location filename="../CICoachLab.py" line="2587"/>
         <source>Exception: Loading of exercise  failed: </source>
         <translation>Exception: Das Lader der Übung schlug fehl: </translation>
     </message>
@@ -775,154 +775,154 @@ Bitte prüfen Sie, ob sie den vorgesehenen USB-Stick angeschlossen haben und sta
         <translation type="obsolete">Exception: Start von Übung nicht möglich: %s</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4500"/>
+        <location filename="../CICoachLab.py" line="4579"/>
         <source>No display function is defined for </source>
         <translation>Es wurde keine Anzeigefunktion definiert für </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4515"/>
+        <location filename="../CICoachLab.py" line="4594"/>
         <source>Exception: Could not show results</source>
         <translation>Exeption: Die Ergebnisse konnten nicht angezeigt werden</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4897"/>
+        <location filename="../CICoachLab.py" line="4981"/>
         <source>No Calibration function is defined in current exercise.</source>
         <translation>Es wurde keine Kalibrierungsfunktion für die aktuelle Übung definiert.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4972"/>
+        <location filename="../CICoachLab.py" line="5056"/>
         <source>Finished calibration successfully</source>
         <translation>Die Kalibierung wurde erfolgreich beendet</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5176"/>
+        <location filename="../CICoachLab.py" line="5263"/>
         <source>Could not read setlist </source>
         <translation>Auslesen war nicht möglich für Setliste </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5178"/>
+        <location filename="../CICoachLab.py" line="5265"/>
         <source>
 Section </source>
         <translation>
 Sektion </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5179"/>
+        <location filename="../CICoachLab.py" line="5266"/>
         <source>: The number of items in names(</source>
         <translation>: Die Anzahl der Einträge in &quot;name&quot;(</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5181"/>
+        <location filename="../CICoachLab.py" line="5268"/>
         <source>)  and settings (</source>
         <translation>) und &quot;settings&quot; (</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5183"/>
+        <location filename="../CICoachLab.py" line="5270"/>
         <source>) does not match</source>
         <translation>) stimmte nicht überein</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5449"/>
+        <location filename="../CICoachLab.py" line="5536"/>
         <source>Exception: Could not open the source code documentation</source>
         <translation>Exception: Die Dokumentation für den Quellcode konnte nicht geöffnet werden</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5627"/>
+        <location filename="../CICoachLab.py" line="5714"/>
         <source>Could not call the Dynamic Function </source>
         <translation>Die dynamisch Funktion konnte nicht geladen werden </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="832"/>
+        <location filename="../CICoachLab.py" line="862"/>
         <source>The dayly cumulated runtime exceeded the allowed maximum time</source>
         <translation>Die tägliche Test kumulierte Laufzeit überschreitet den maximal erlaubten Höchstwert</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1612"/>
+        <location filename="../CICoachLab.py" line="1657"/>
         <source>Exercise name</source>
         <translation>Name der Übung</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1622"/>
+        <location filename="../CICoachLab.py" line="1667"/>
         <source>Settings name</source>
         <translation>Name der Einstellung</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1632"/>
+        <location filename="../CICoachLab.py" line="1677"/>
         <source>Players name</source>
         <translation>Name des Players</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1642"/>
+        <location filename="../CICoachLab.py" line="1687"/>
         <source>Player settings name</source>
         <translation>Name der Player-Einstellungen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1652"/>
+        <location filename="../CICoachLab.py" line="1697"/>
         <source>Generator name</source>
         <translation>Namer des Generators</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1662"/>
+        <location filename="../CICoachLab.py" line="1707"/>
         <source>Generator settings name</source>
         <translation>Name der Generator-Eisntellungen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1673"/>
+        <location filename="../CICoachLab.py" line="1718"/>
         <source>Display of results</source>
         <translation>Darstellung der Egebnisse</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1695"/>
+        <location filename="../CICoachLab.py" line="1740"/>
         <source>Comments</source>
         <translation>Kommentare</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1705"/>
+        <location filename="../CICoachLab.py" line="1750"/>
         <source>prerunCondition</source>
         <translation>Vorlaufkondition</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1715"/>
+        <location filename="../CICoachLab.py" line="1760"/>
         <source>postrunCondition</source>
         <translation>Nachlaufkondition</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2403"/>
+        <location filename="../CICoachLab.py" line="2448"/>
         <source>Could not run masterlist because of precondition:</source>
         <translation>Die Masterlist konnte wegen der Vorlaufkondition nicht fortgesetzt werden:</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2594"/>
+        <location filename="../CICoachLab.py" line="2645"/>
         <source>The postrun conditions were not met!</source>
         <translation>The Nachlaufkonditions wurden nicht erfüllt!</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2717"/>
+        <location filename="../CICoachLab.py" line="2768"/>
         <source>Could not continue masterlist because of postcondition:</source>
         <translation>Die Masterlist konnte wegen der Nachlaufkondition nicht fortgesetzt werden:</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3003"/>
+        <location filename="../CICoachLab.py" line="3056"/>
         <source>Exception: Start of exercise not possible: %s</source>
         <translation>Exception: Der Start der Übung war nicht möglich: %s</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3577"/>
+        <location filename="../CICoachLab.py" line="3630"/>
         <source>Saving of </source>
         <translation>Speicherung von </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3577"/>
+        <location filename="../CICoachLab.py" line="3630"/>
         <source>settings ...</source>
         <translation>Einstellungen ...</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3577"/>
+        <location filename="../CICoachLab.py" line="3630"/>
         <source>Result file</source>
         <translation>Ergebnisdatei</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6772"/>
+        <location filename="../CICoachLab.py" line="6894"/>
         <source>All files</source>
         <translation>Alle Dateien</translation>
     </message>
@@ -942,17 +942,17 @@ Sektion </translation>
         <translation type="obsolete">Die Masterlist konnte nicht gelesen werden.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1023"/>
+        <location filename="../CICoachLab.py" line="1065"/>
         <source>Starting tasks?</source>
         <translation>Starten der Aufgaben?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1025"/>
+        <location filename="../CICoachLab.py" line="1067"/>
         <source>The next task will be started. Press OK to continue</source>
         <translation>Die nächste Aufgabe wird gestartet. Bitte drücken sie den OK Knopf zum Fortfahren.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1041"/>
+        <location filename="../CICoachLab.py" line="1083"/>
         <source>Could not run masterlist. Check failed.</source>
         <translation>Die masterlist konnte nicht durchgeführt werden. Die Prüfung war nicht erfolgreich</translation>
     </message>
@@ -962,32 +962,32 @@ Sektion </translation>
         <translation type="obsolete">Übersetze alle Übungen und CITrainer</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="802"/>
+        <location filename="../CICoachLab.py" line="827"/>
         <source>Download dependencies</source>
         <translation>Abhängigkeiten herunterladen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="803"/>
+        <location filename="../CICoachLab.py" line="828"/>
         <source>Install missing dependencies</source>
         <translation>Installieren von fehlenden Abhängigkeiten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="804"/>
+        <location filename="../CICoachLab.py" line="829"/>
         <source>Document dependencies</source>
         <translation>Dokumentation von Abhängigkeiten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="805"/>
+        <location filename="../CICoachLab.py" line="830"/>
         <source>Translate CICoachLab</source>
         <translation>Übersetzung von CICoachLab</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="817"/>
+        <location filename="../CICoachLab.py" line="844"/>
         <source>Documentation</source>
         <translation>Dokumentation</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="886"/>
+        <location filename="../CICoachLab.py" line="916"/>
         <source>The bitlocked path could not be unlocked.
 
  Please check if you attached the (correct) memory stick and restart CICoachLab.</source>
@@ -998,10 +998,10 @@ Sektion </translation>
     <message>
         <location filename="../CICoachLab.py" line="916"/>
         <source>Your data will be saved under the new file: </source>
-        <translation>Ihre Daten werden in einer neuen Datei gespeichert: </translation>
+        <translation type="obsolete">Ihre Daten werden in einer neuen Datei gespeichert: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1185"/>
+        <location filename="../CICoachLab.py" line="1293"/>
         <source>About CICoachLab</source>
         <translation>Über CICoachLab</translation>
     </message>
@@ -1011,64 +1011,64 @@ Sektion </translation>
         <translation type="obsolete">Das ist die Version 0.8 von CICoachLab. &lt;br&gt;&lt;br&gt;CICoachLab ist unter der GPL Lizenz Version 3  auf &lt;a href=&apos;https://github.com/&apos;&gt; github &lt;/a&gt; veröffentlicht.&lt;br&gt;&lt;br&gt;Geladene Software Pakete oder andere Abhänigkeiten sind gegebenenfalls unter anderen Lizenzen veröffentlicht.&lt;br&gt;&lt;br&gt;&lt;br&gt;Author:&lt;br&gt;Daniel Leander &lt;visdan at web.de&gt;&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1685"/>
+        <location filename="../CICoachLab.py" line="1730"/>
         <source>External Display</source>
         <translation>Externe Anzeige</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2442"/>
+        <location filename="../CICoachLab.py" line="2487"/>
         <source>CICoachLab will be closed.</source>
         <translation>CICoachLab wird geschlossen.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="2784"/>
+        <location filename="../CICoachLab.py" line="2835"/>
         <source>Run completed successfully.</source>
         <translation>Der Durchlauf wurde erfolgreich abgeschlossen.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3367"/>
+        <location filename="../CICoachLab.py" line="3420"/>
         <source> The number of fields differs in filter.ini</source>
         <translation>Die Anzahl der Eintragsfelder unterscheidet sich in filter.ini</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4102"/>
+        <location filename="../CICoachLab.py" line="4159"/>
         <source>IniFile could not be read successfully. Please check content of iniFile and/or call administrator
 Error: &apos;{e}&apos;</source>
         <translation>IniFile konnte nicht erfolgreich ausgelesen werden. Bitte überprüfen Sie den Inhalt von CICoachLab.ini und/oder kontaktieren sie den Administrator
 Error: &apos;{e}&apos;</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4418"/>
+        <location filename="../CICoachLab.py" line="4497"/>
         <source>CICoachLab - Critical error</source>
         <translation>CICoachLab - Kritischer Fehler</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4422"/>
+        <location filename="../CICoachLab.py" line="4501"/>
         <source>CICoachLab - Warning</source>
         <translation>CICoachLab - Warnung</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4426"/>
+        <location filename="../CICoachLab.py" line="4505"/>
         <source>CICoachLab - Information</source>
         <translation>CICoachLab - Information</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4593"/>
+        <location filename="../CICoachLab.py" line="4672"/>
         <source>Opening of CICoachLab results...</source>
         <translation>Öffnen von CICoachLab Ergebnissen...</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4593"/>
+        <location filename="../CICoachLab.py" line="4672"/>
         <source>Result-files</source>
         <translation>Ergebnis-Dateien</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4693"/>
+        <location filename="../CICoachLab.py" line="4777"/>
         <source>Saving data as &quot;coach&quot;?</source>
         <translation>Möchten sie die Datean als &quot;coach&quot; speichern?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4694"/>
+        <location filename="../CICoachLab.py" line="4778"/>
         <source>You are currently logged in as &quot;coach&quot;. Do you really want to save the data?
 
 Please confirm the filename or even better select a new filename.</source>
@@ -1077,12 +1077,12 @@ Please confirm the filename or even better select a new filename.</source>
 Bitte bestätigen sie den Dateinamen oder wählen sie im besten Fall einen anderen Dateinamem.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4715"/>
+        <location filename="../CICoachLab.py" line="4799"/>
         <source>Saving of CICoachLab results</source>
         <translation>Speicherung von CICoachLab Ergebnissen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4715"/>
+        <location filename="../CICoachLab.py" line="4799"/>
         <source>Result files</source>
         <translation>Ergebnis Dateien</translation>
     </message>
@@ -1092,17 +1092,17 @@ Bitte bestätigen sie den Dateinamen oder wählen sie im besten Fall einen ander
         <translation type="obsolete">Bitte warten Sie! Die Dokumentation wird erstellt.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5464"/>
+        <location filename="../CICoachLab.py" line="5551"/>
         <source>You have to finish, close, or cancel your active run before you can finish CICoachLab</source>
         <translation>Sie müssen den aktiven Durchlauf beenden, schließen oder abbrechen, bevor Sie CICoachLab beenden können</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6124"/>
+        <location filename="../CICoachLab.py" line="6211"/>
         <source>Installing missing dependencies.</source>
         <translation>Installation von fehlenden Abhängigkeiten.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6125"/>
+        <location filename="../CICoachLab.py" line="6212"/>
         <source>Some dependencies are missing. Do you want to install the following packages?: </source>
         <translation>Einige Software-Abhängigkeiten sind nicht erfüllt. Möchten Sie die folgenden Pakete installieren?: </translation>
     </message>
@@ -1112,7 +1112,7 @@ Bitte bestätigen sie den Dateinamen oder wählen sie im besten Fall einen ander
         <translation>CICoach Lab</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="909"/>
+        <location filename="../CICoachLab.py" line="939"/>
         <source>The path for loading and saving user data could not be found.
 
  Please check if you attached the defined memory stick and restart CICoachLab.</source>
@@ -1121,154 +1121,154 @@ Bitte bestätigen sie den Dateinamen oder wählen sie im besten Fall einen ander
  Bitte prüfen Sie, ob sie den (richtigen) USB-Stick angeschlossen haben und starten Sie CICoachLab neu.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="801"/>
+        <location filename="../CICoachLab.py" line="826"/>
         <source>Finding dependencies</source>
         <translation>Ermittlung von Abhängigkeiten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3272"/>
+        <location filename="../CICoachLab.py" line="3325"/>
         <source>filter.ini could not be be found. You may have to copy and edit filter.in or retrieve the deleted file before starting CICOachLab.</source>
         <translation>filter.ini konnte nicht gefunden werden. Kopieren sie ggf. filter.in nach filter.ini und editieren Sie die Datei bevor sie CICoachLab starten.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="3974"/>
+        <location filename="../CICoachLab.py" line="4030"/>
         <source>CICoachLab.ini could not be be found. You may have to copy and edit CICoachLab.in or retrieve the deleted file before starting CICOachLab.</source>
         <translation>CICoachLab.ini konnte nicht gefunden werden. Kopieren sie ggf. CICoachLab.in nach CICoachLab.ini und editieren Sie die Datei bevor sie CICoachLab starten.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4235"/>
+        <location filename="../CICoachLab.py" line="4293"/>
         <source>A loading function for the settings should to be defined which calls the loading of CICochLab to handle the loading of settings of the submodules. Alternatively the loading of the submodules has to be handled by exercise. Which is not recommended.  Please contact your admin.</source>
         <translation>Eine Ladefunktion für die Einstellungen sollten definiert werden, die von CICoachLab aufgerufen wird, um dabei das Laden der Einstellungen der Submodule abzurbeiten. Alternativ muss das Laden der Submodule durch die Übungen gehändelt werden. Dies wird nicht empfohlen. Bitte kontaktieren Sie Ihren Administator.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5090"/>
+        <location filename="../CICoachLab.py" line="5177"/>
         <source>This should not happen: loadSettings failed. A python setting has been found but is disabled according to .&quot;expertSettingsMode&quot; in CICoachLab.ini</source>
         <translation>Das sollte nicht passieren: Das Lader der Einstellungen schlug fehl. Python-Einstellungen wurden gefunden aber wurden mit dem &quot;expertSettingsMode&quot; in CICoachLab.ini deaktiviert.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6316"/>
+        <location filename="../CICoachLab.py" line="6403"/>
         <source>Python and Pip-install-Imports and dependencies were found in {noLines:d} lines: </source>
         <translation>Python und Pip-Installations-Importe und Abhängigkeiten wurden gefunden in {noLines:d} Zeilen: </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6319"/>
+        <location filename="../CICoachLab.py" line="6406"/>
         <source>Dependencies have been found.
  Details are provided in &apos;Show Details&apos; and dependencies.txt</source>
         <translation>Abhängigkeiten wurden gefunden.
  Details werden bereitgestellt in &apos;Details anzeigen&apos; und dependencies.txt</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6322"/>
+        <location filename="../CICoachLab.py" line="6409"/>
         <source>Python and Pip-install-Imports and dependencies</source>
         <translation>Python and Pip-install-Importe und Abhängigkeiten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6528"/>
+        <location filename="../CICoachLab.py" line="6615"/>
         <source>Could not read masterlist: </source>
         <translation>Masterlist konnte nicht gelesen werden.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1129"/>
+        <location filename="../CICoachLab.py" line="1237"/>
         <source> (Information on used submodules)</source>
         <translation> (Information über genutzte Untermodule)</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1131"/>
+        <location filename="../CICoachLab.py" line="1239"/>
         <source> (Starts selected setlist)</source>
         <translation> (Start von ausgewählter setlist)</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1133"/>
+        <location filename="../CICoachLab.py" line="1241"/>
         <source> (Stops selected setlist)</source>
         <translation> (Stoppen von ausgewählter setlist)</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1135"/>
+        <location filename="../CICoachLab.py" line="1243"/>
         <source> (Items of setlist)</source>
         <translation> (Punkte von setlist)</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1185"/>
+        <location filename="../CICoachLab.py" line="1293"/>
         <source>This is CICoachLab version. 0.8&lt;br&gt;&lt;br&gt;It is published under the  GPL license version 3 at &lt;a href=&apos;https://github.com/visdan80/CICoachLab&apos;&gt; https://github.com/visdan80/CICoachLab &lt;/a&gt;.&lt;br&gt;&lt;br&gt;Loaded packages or other dependencies may be licensed differently.&lt;br&gt;&lt;br&gt;&lt;br&gt;Author:&lt;br&gt;Daniel Leander &lt;visdan at web.de&gt;&lt;br&gt;&lt;br&gt;</source>
         <translation>Dies ist CICoachLab version 0.8&lt;br&gt;&lt;br&gt;CICoachLab ist unter der GPL license version 3 auf &lt;a href=&apos;https://github.com/visdan80/CICoachLab&apos;&gt; https://github.com/visdan80/CICoachLab &lt;/a&gt; veröffentlicht.&lt;br&gt;&lt;br&gt;Geladene Software module und Abhängikeiten können anders lizensiert sein.&lt;br&gt;&lt;br&gt;&lt;br&gt;Author:&lt;br&gt;Daniel Leander &lt;visdan at web.de&gt;&lt;br&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1481"/>
+        <location filename="../CICoachLab.py" line="1526"/>
         <source>Ctrl+X</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1482"/>
+        <location filename="../CICoachLab.py" line="1527"/>
         <source>Ctrl+U</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1483"/>
+        <location filename="../CICoachLab.py" line="1528"/>
         <source>Ctrl+H</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1484"/>
+        <location filename="../CICoachLab.py" line="1529"/>
         <source>Ctrl+N</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1485"/>
+        <location filename="../CICoachLab.py" line="1530"/>
         <source>Ctrl+S</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1486"/>
+        <location filename="../CICoachLab.py" line="1531"/>
         <source>Ctrl+O</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1488"/>
+        <location filename="../CICoachLab.py" line="1533"/>
         <source>Ctrl+D</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1489"/>
+        <location filename="../CICoachLab.py" line="1534"/>
         <source>Ctrl+1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1490"/>
+        <location filename="../CICoachLab.py" line="1535"/>
         <source>Ctrl+2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1491"/>
+        <location filename="../CICoachLab.py" line="1536"/>
         <source>Ctrl+3</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1492"/>
+        <location filename="../CICoachLab.py" line="1537"/>
         <source>Ctrl+4</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1493"/>
+        <location filename="../CICoachLab.py" line="1538"/>
         <source>Ctrl+5</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4510"/>
+        <location filename="../CICoachLab.py" line="4589"/>
         <source>Could not display results. You did not select any run(s).</source>
         <translation>Die Ergebnisse konnten nicht angezeigt werden. Sie haben keinen Lauf ausgewählt.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4511"/>
+        <location filename="../CICoachLab.py" line="4590"/>
         <source>Display of results failed.</source>
         <translation>Die Anzeige der Ergebnisse schlug fehl.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5162"/>
+        <location filename="../CICoachLab.py" line="5249"/>
         <source>Could not find demanded section {section:s} in setlist sections: {str(list(setlistConfig)):s}</source>
         <translation>Es konnte nicht der erforderliche Eintrag {section:s} in den setlist Eintägen gefunden werden: {str(list(setlistConfig)):s}</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6817"/>
+        <location filename="../CICoachLab.py" line="6939"/>
         <source>No data has been selected.
 
 Choose another option or select the </source>
@@ -1277,17 +1277,17 @@ Choose another option or select the </source>
 Wählen Sie eine andere Option aus.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6772"/>
+        <location filename="../CICoachLab.py" line="6894"/>
         <source>Export to xlsx file ... </source>
         <translation>Export in xlsx Datei . ... </translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6772"/>
+        <location filename="../CICoachLab.py" line="6894"/>
         <source>Xlsx-file</source>
         <translation>Xlsx-Datei</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6854"/>
+        <location filename="../CICoachLab.py" line="6976"/>
         <source>No export function is defined for </source>
         <translation>Es ist keine Export-Funktion definiert für </translation>
     </message>
@@ -1297,7 +1297,7 @@ Wählen Sie eine andere Option aus.</translation>
         <translation>Ü&amp;bung</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5394"/>
+        <location filename="../CICoachLab.py" line="5481"/>
         <source>Please wait! The source code documentation will be generated.
 
 Press the &quot;enter&quot;-key to continue.</source>
@@ -1311,136 +1311,136 @@ Drücken Sie die &quot;Enter/Return&quot;-Taste zum fortsetzen.</translation>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5419"/>
+        <location filename="../CICoachLab.py" line="5506"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="806"/>
+        <location filename="../CICoachLab.py" line="831"/>
         <source>Clean up patient data</source>
-        <translation>Aufäumen von Patientendaten</translation>
+        <translation>Aufräumen von Patientendaten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="959"/>
+        <location filename="../CICoachLab.py" line="990"/>
         <source>The personal data were not provided so far. Please provide your personal (name, forname and birthday) and and confirm the input the button &quot;Saving&quot;. Alternatively provide a &quot;Subject ID&quot;.</source>
         <translation>Die persönlichen Nutzer Daten wurden bisher nicht eingetragen. Bitte tragen sie ihre persönlichen Daten ein (Name, Vorname und Geburtstag) und bestätigen Sie die Eingabe mit &quot;Speichern&quot;. Alternativ können Sie eine &quot;Probanden ID&quot; eingeben.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="967"/>
+        <location filename="../CICoachLab.py" line="998"/>
         <source>Still no valid patient data was provided as required. CICoachLab will be closed down.</source>
         <translation>Es wurden nicht die notwendigen Nutzerdaten eingetragen. CICoachLabd wird geschlossen.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="1487"/>
+        <location filename="../CICoachLab.py" line="1532"/>
         <source>Ctrl+Shift+O</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="4527"/>
+        <location filename="../CICoachLab.py" line="4606"/>
         <source>Appending of CICoachLab results...</source>
         <translation>Anhängen von CICoachLab Ergebnissen...</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5407"/>
+        <location filename="../CICoachLab.py" line="5494"/>
         <source>The file Doxyfile does already exist. Do you want to reset it to the template files and update dynamically added dox files?
 
 If you dissent the availble Doxyfile will be used. </source>
         <translation>Die Datei Doxyfile existiert bereits. Wollen sie diese auf die Vorlage zurücksetzen und gefundene dox-Dateien dynamisch hinzufügen?
 
-Wenn sie dies ablehnen wird die bestehen Doxyfile für die Generierung der dynaischen Hilfe genutzt.</translation>
+Wenn Sie dies ablehnen wird die bestehen Doxyfile für die Generierung der dynaischen Hilfe genutzt.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5410"/>
+        <location filename="../CICoachLab.py" line="5497"/>
         <source>Resetting and updating Doxyfile?</source>
         <translation>Zurücksetzen und Aktualisieren von Doxyfile?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="5416"/>
+        <location filename="../CICoachLab.py" line="5503"/>
         <source>Yes</source>
         <translation>Ja</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6795"/>
+        <location filename="../CICoachLab.py" line="6917"/>
         <source>Please select the mode you want to export the data.</source>
         <translation>Bitte wählen sie den Export-Modus aus.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6796"/>
+        <location filename="../CICoachLab.py" line="6918"/>
         <source>all global runs</source>
         <translation>alle Durchläufe</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6797"/>
+        <location filename="../CICoachLab.py" line="6919"/>
         <source>all exercise runs</source>
         <translation>alle Übungsdurchläufe</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6798"/>
+        <location filename="../CICoachLab.py" line="6920"/>
         <source>selected runs</source>
         <translation>ausgewählte Durchläufe</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6799"/>
+        <location filename="../CICoachLab.py" line="6921"/>
         <source>selected setlist</source>
         <translation>ausgewhählte Setlist</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6800"/>
+        <location filename="../CICoachLab.py" line="6922"/>
         <source>masterlist</source>
         <translation>masterlist</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6834"/>
+        <location filename="../CICoachLab.py" line="6956"/>
         <source>No setlist was selected for xlsx-export:</source>
         <translation>Es wurde keine Setlist ausgewählt für den xlsx-Export.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6848"/>
+        <location filename="../CICoachLab.py" line="6970"/>
         <source>Exercise could not be initialized for xlsx-export:</source>
         <translation>Die Übung konnte nicht für den xlsx-Export intialisiert werden.</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6955"/>
+        <location filename="../CICoachLab.py" line="7077"/>
         <source>Multiple users were found. Do you want to export the data nevertheless?</source>
         <translation>Es wurden mehrer Nutzer gefunden. Möchten Sie die daten dennoch exportieren?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6957"/>
+        <location filename="../CICoachLab.py" line="7079"/>
         <source>Multiple users found</source>
         <translation>Mehrer Nutzer gefunden</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6965"/>
+        <location filename="../CICoachLab.py" line="7087"/>
         <source>Multiple partial repetitions of the selected setlist was found. Do you want to export the data nevertheless?</source>
         <translation>Mehrere Wiederholungen der Setlist wurden gefunden. Möchten Sie die Daten dennoch exportieren?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="6968"/>
+        <location filename="../CICoachLab.py" line="7090"/>
         <source>Multiple setlist repetitions found.</source>
         <translation>Mehrere Wiederholungen</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="7009"/>
+        <location filename="../CICoachLab.py" line="7131"/>
         <source>Confirm file deletion</source>
         <translation>Bestätigen der Dateilöschung</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="7023"/>
+        <location filename="../CICoachLab.py" line="7145"/>
         <source>Would you like to remove the current and old run data from CICoachLab?</source>
         <translation>Möchten Sie die alten und aktuellen Durchlaufdaten in CICoachLab entfernen?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="7025"/>
+        <location filename="../CICoachLab.py" line="7147"/>
         <source>Confirm deletion of current and old run data</source>
         <translation>Bestätigung von Löschen der aktuellen und alten Durchlaufdaten</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="7032"/>
+        <location filename="../CICoachLab.py" line="7154"/>
         <source>Would you like to remove the current user data from CICoachLab?</source>
         <translation>Möchten Sie die aktuellen Nutzerdaten von CICoachLab löschen?</translation>
     </message>
     <message>
-        <location filename="../CICoachLab.py" line="7034"/>
+        <location filename="../CICoachLab.py" line="7156"/>
         <source>Confirm deletion of current user data</source>
         <translation>Bestätigung von Löschung der Nutzerdaten</translation>
     </message>
@@ -1448,6 +1448,31 @@ Wenn sie dies ablehnen wird die bestehen Doxyfile für die Generierung der dynai
         <location filename="../CICoachLabMainWindowGui2.py" line="453"/>
         <source>Appending results</source>
         <translation>Anhängung von Ergebnissen</translation>
+    </message>
+    <message>
+        <location filename="../CICoachLab.py" line="946"/>
+        <source>The result file does not exist. Your data will be saved under the (new) file: </source>
+        <translation>Dier Ergebnisdatei existiert nicht. Ihre Daten werden in der (neuen) Datei gespeichert: </translation>
+    </message>
+    <message>
+        <location filename="../CICoachLab.py" line="832"/>
+        <source>Increase Font size</source>
+        <translation>Erhöhung der Schriftgröße</translation>
+    </message>
+    <message>
+        <location filename="../CICoachLab.py" line="833"/>
+        <source>Decrease Font size</source>
+        <translation>Verkleinerung der Schriftgröße</translation>
+    </message>
+    <message>
+        <location filename="../CICoachLab.py" line="6733"/>
+        <source>Increasing font size to: </source>
+        <translation>Die Schriftgröße wird erhöht: </translation>
+    </message>
+    <message>
+        <location filename="../CICoachLab.py" line="6743"/>
+        <source>Decreasing font size to: </source>
+        <translation>Verkleinerung der Schrfitgröße: </translation>
     </message>
 </context>
 <context>

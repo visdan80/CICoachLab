@@ -505,7 +505,10 @@ class playQtAudio():
             self.player.stop()
             self.parHandle.showInformation(self.oldInfoMsg)
             if self.controlbarLabel:
-                pos = self.player.position()/self.player.duration()*100
+                if self.player.duration():
+                    pos = self.player.position()/self.player.duration()*100
+                else:
+                    pos = 0
                 self.providePlayerFeedBack(status='stopped', position=pos)
 
         self.parHandle.dPrint('playQtAudio: Leaving stateChanged()', 2)

@@ -122,16 +122,30 @@ class exerciseBase():
                 self.loadSettings(settings)
 
 
-            # setting default generator and player if necessary
-            if self.parHandle.curPlayer['settings']['playerName'] == '' or \
-                    self.parHandle.curPlayer['settings']['playerName'] != 'playQtAudio':
-                self.parHandle.iniSubmodule('player',  'playQtAudio')
+            # setting default generator and player and their settings if necessary, since they are mandatory
+            if self.parHandle.curPlayer['settings']['playerName'] == '':
+                playerName = self.parHandle.curExercise['settings']['player']
+                playerSettings = self.parHandle.curExercise['settings']['playerSettings']
+                if not(playerName):
+                    playerName = 'playQtAudio'
+                    playerSettings = 'default'
+
+            self.parHandle.iniSubmodule('player', playerName, playerSettings)
             if self.parHandle.curGenerator['settings']['generatorName'] == '':
-                self.parHandle.iniSubmodule('generator',  'genWavreader')
-            if self.parHandle.curPreprocessor['settings']['preprocessorName'] == '':
-                self.parHandle.iniSubmodule('preprocessor',
-                                        self.parHandle.curPreprocessor['settings']['preprocessorName'],
-                                        self.parHandle.curPreprocessor['settings']['settingsName'])
+                generatorName = self.parHandle.curExercise['settings']['generator']
+                generatorSettings = self.parHandle.curExercise['settings']['generatorSettings']
+                if not(generatorName):
+                    generatorName = 'genWavreader'
+                    generatorSettings = 'default'
+            self.parHandle.iniSubmodule('generator', generatorName, generatorSettings)
+            # setting preprocessor if defined in the loaded settings.
+            if self.parHandle.curExercise['settings']['preprocessor'] != '':
+                preprocessorName = self.parHandle.curExercise['settings']['preprocessor']
+                preprocessorSettings = self.parHandle.curExercise['settings']['preprocessorSettings']
+                if preprocessorName:
+                    self.parHandle.iniSubmodule('preprocessor',
+                                            preprocessorName,
+                                            preprocessorSettings)
 
             # this function sets the default calibration values for the exercise.
             self.parHandle.setDefaultCalibration('curExercise', 'time')

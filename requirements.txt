@@ -31,3 +31,4 @@ traceback
 webbrowser
 windows_tools.bitlocker
 pkg_resources
+ConfigObj

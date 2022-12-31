@@ -56,6 +56,8 @@ masterlistFile = masterlists/masterlist.lst
 masterlistStart = False
 exerciseFrameGeometry = 
 mainFramegeometry = 
+# font size of app
+fontSize = 10
 # localization file of CICoachLab is defined in the locales directory.
 # locales-folders can be defined in the exercises folders for the exercise modules
 localization = en_de
