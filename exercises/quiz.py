@@ -24,10 +24,14 @@ from PyQt5.Qt import QBrush, QPalette
 import re
 import numpy as np
 import pandas as pd
+from copy import deepcopy
+from time import time
+import datetime
+
 from exerciseBase import exerciseBase
 import multiprocessing as mp
 from CICoachLab import Worker
-from copy import deepcopy
+from CICoachDialog import CICoachDialog
 
 # TODO: check implemenation of multithreading
 
@@ -560,9 +564,19 @@ class quiz(exerciseBase):
                     self.parHandle.curPlayer['functions']['stopHandler']()
             else:
                 # end of items reached
-                presentSignalFlag = False
-                self.parHandle.closeDownRun()
-                self.closingFlag = True
+
+                # checking minimum time limit and informing user
+                status = self.checkMinimumTime()
+
+                # check time  condition
+                if not(status):
+                    presentSignalFlag = False
+                    self.closingFlag = False
+                else:
+                    # time condition met
+                    presentSignalFlag = False
+                    self.parHandle.closeDownRun()
+                    self.closingFlag = True
 
         else:
             presentSignalFlag = False
@@ -610,8 +624,36 @@ class quiz(exerciseBase):
 
         self.parHandle.dPrint(self.exerciseName + ': Leaving previousItem()', 2)
 
+    def checkMinimumTime(self):
+        """!
+        This function checks if the exercise ran the minimum aamount of the required time as defined in
+        self.parHandle.curExercise['settings']['minPresentationTime']
 
-    
+        If this check fails the user is informed that more time within the exercise is required.
+        """
+        self.parHandle.dPrint(self.exerciseName + ': checkMinimumTime()', 2)
+
+        now = time()
+        startDate = self.parHandle.curRunData['time']['startASCII']  # format '06:02:59 - 06.03.23'
+        minTime = self.parHandle.curExercise['settings']['minPresentationTime']
+        timeDiff = now - self.parHandle.curRunData['time']['start']
+        if timeDiff < minTime:
+            status = False
+            minTimeMinutes = minTime / 60
+            timeDiffMinutes = timeDiff / 60
+            msg = _translate(
+                "quiz", f"You you should at least spent {minTimeMinutes:1.1f} minutes in this exercise.\n"
+                        f"Your achieved {timeDiffMinutes:1.1f} minutes up to now.", None)
+            title = _translate("quiz", 'Minimum presentation time not achieved', None)
+            CICoachDialog(self.parHandle, title, msg, mode='information')
+            self.parHandle.dPrint(msg, 0)
+        else:
+            status = True
+
+        self.parHandle.dPrint(self.exerciseName + ': Leaving checkMinimumTime()', 2)
+        return status
+
+
     def run(self):
         """!
         This function handles the user input.
@@ -695,7 +737,8 @@ class quiz(exerciseBase):
             if isinstance(curItem['assistance']['text']['text'][0],str):
                 if self.solutionTextCounter >= 0 and self.solutionTextCounter < len(curItem['assistance']['text']['text']):
                     solution = curItem['assistance']['text']['text'][self.solutionTextCounter]
-            elif isinstance(curItem['assistance']['text']['text'][self.presentationNo], list):
+            #elif isinstance(curItem['assistance']['text']['text'][self.presentationNo], list):
+            elif isinstance(curItem['assistance']['text']['text'][0], list):
                 if self.presentationNo >= 0 and self.presentationNo < len(curItem['assistance']['text']['text'][self.presentationNo])\
                         and self.solutionTextCounter >= 0 and \
                         self.solutionTextCounter < len(curItem['assistance']['text']['text'][self.itemQuestNumber]):
@@ -760,7 +803,19 @@ class quiz(exerciseBase):
         self.iniItem()
         #self.presentSignal()
 
+    def finishRun(self):
+        """!
+        Close the exercise if possible
+        """
 
+        status = self.checkMinimumTime()
+
+        if status:
+            # This function handles the closing with the CICoachlab.py basics.
+            super().finishRun()
+        else:
+            msg = 'The exercise cannot be close, because the minimum Time was not achieved.'
+            self.parHandle.dPrint(msg, 0)
 
 
     def runButton(self, temp, forcedInput=''):
@@ -848,7 +903,7 @@ class quiz(exerciseBase):
         self.parHandle.curExercise['settingLimits']['randomizedItems']['type'] = 'bool'
         self.parHandle.curExercise['settingLimits']['randomizedItems']['mandatory'] = True
         self.parHandle.curExercise['settingLimits']['randomizedItems']['comboBoxStyle'] = True
-        self.parHandle.curExercise['settingLimits']['randomizedItems']['range'] = [True, False] #TODO: fill preselection with availabel players
+        self.parHandle.curExercise['settingLimits']['randomizedItems']['range'] = [True, False]
         self.parHandle.curExercise['settingLimits']['randomizedItems']['editable'] = True
         self.parHandle.curExercise['settingLimits']['randomizedItems']['default'] = True
 
@@ -856,7 +911,7 @@ class quiz(exerciseBase):
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['type'] = 'bool'
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['mandatory'] = True
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['comboBoxStyle'] = True
-        self.parHandle.curExercise['settingLimits']['randomizedOptions']['range'] = [True, False] #TODO: fill preselection with availabel players
+        self.parHandle.curExercise['settingLimits']['randomizedOptions']['range'] = [True, False]
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['editable'] = True
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['default'] = True
 
@@ -864,15 +919,28 @@ class quiz(exerciseBase):
         self.parHandle.curExercise['settingLimits']['list']['type'] = 'list'
         self.parHandle.curExercise['settingLimits']['list']['mandatory'] = True
         self.parHandle.curExercise['settingLimits']['list']['comboBoxStyle'] = False
-        self.parHandle.curExercise['settingLimits']['list']['range'] = [True, False] #TODO: fill preselection with availabel players
+        self.parHandle.curExercise['settingLimits']['list']['range'] = [True, False]
         self.parHandle.curExercise['settingLimits']['list']['editable'] = False
         self.parHandle.curExercise['settingLimits']['list']['label'] = 'List of entries'
         self.parHandle.curExercise['settingLimits']['list']['toolTip'] = 'List of entries'
         self.parHandle.curExercise['settingLimits']['list']['function'] = self.loadList
         self.parHandle.curExercise['settingLimits']['list']['default'] = []
 
+        self.parHandle.curExercise['settingLimits']['minPresentationTime'] = self.parHandle.setSettingLimitsTemplate()
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['type'] = 'float'
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['mandatory'] = True
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['comboBoxStyle'] = False
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['range'] = [0, 999999]
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['editable'] = True
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['label'] = 'Zeitminimum'
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['toolTip'] = \
+            'Zeit die mindestens seit dem Start dieser Übung vergangen sein muss.'
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['default'] = 300 # 5 Minuten
+
+
         self.parHandle.curExercise['settings']['randomizedItems']     = True
         self.parHandle.curExercise['settings']['randomizedOptions']   = True
+        self.parHandle.curExercise['settings']['minPresentationTime'] = 300
 
         self.parHandle.curExercise['settings']['list']              = []
 

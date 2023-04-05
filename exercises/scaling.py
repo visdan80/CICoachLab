@@ -283,10 +283,15 @@ class scaling(exerciseBase):
         elif 'pbAnswer' in inputAnswer:
             # value is extracted from input
             idx = int(re.sub('pbAnswer', '', inputAnswer))
-            self.parHandle.curRunData['results']['label'] = self.parHandle.curExercise['settings']['items']['values'][idx]
+            label = self.parHandle.curExercise['settings']['items']['values'][idx]
+            if label == '...':
+                label = self.parHandle.curExercise['settings']['items']['values'][idx-1] + ' ' + \
+                        self.parHandle.curExercise['settings']['items']['values'][idx] + ' ' +\
+                                self.parHandle.curExercise['settings']['items']['values'][idx+1]
+            self.parHandle.curRunData['results']['label'] = label
             self.parHandle.curRunData['results']['index'] = idx
         else:
-            msg = _translate("scaling", 'This should not happen. Could not store valid anwser.', None)
+            msg = _translate("scaling", 'This should not happen. Could not store valid answer.', None)
             self.parHandle.dPrint(msg, 0, guiMode=True)
             self.parHandle.curRunData['results']['label'] = ''
             self.parHandle.curRunData['results']['index'] = np.NaN

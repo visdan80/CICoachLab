@@ -1,6 +1,9 @@
 import sys
-if True:  # TODO remove needed for import of fhe, or move import after setting apllication of path
-    sys.path.insert(0, '/home/daniel/Dokumente/programme/pythonSkripte/projekte/ciTrainer/preprocessors/preVocoder')
+import os
+
+sep = os.path.sep
+vocoderPath = 'preprocessors' + sep + 'preVocoder'
+sys.path.insert(0, vocoderPath) 
 
 
 import vocoder
@@ -26,18 +29,14 @@ settings['movAvCF']             = 4410
 settings['amplitudeChScaling']    = 'rms'#'rms',max
 # noise, signal, pulsetrain, fineStructure
 settings['stimSignalType']      = 'noise'# fineStructure, sinus, pulstrain,noise
-#settings['stimSignalType']      = 'noise'# fineStructure, sinus, pulstrain,noise
 settings['finestructure']              = dict()
 settings['finestructure']['mode']      = True
 settings['finestructure']['channels']  = [1,1,1,1, 1, 1, 1, 1, 1, 1, 1, 1]
-#settings['finestructure']['channels']  = list(np.int_(np.ones(settings['numberOfChannels'],)))
-#settings['finestructure']['channels']  = [1,1,1,1, 1, 1, 1, 0, 0, 0, 0, 0]
-#settings['finestructure']['channels']  = [1,1,1,1, 0, 0, 0, 0, 0, 0, 0, 0]
-#settings['finestructure']['channels']  = [1,0,1,0, 1, 0, 1, 0, 1, 0, 1, 0]
+
 
 #%% read, generate and here vocoded wav file
 if False:
-    filename = '/home/daniel/Dokumente/programme/pythonSkripte/projekte/ciTrainer/preprocessors/preVocoder/under.wav'
+    filename = vocoderPath + sep + ' Daniel_Leander-Track10.wav'
 
     wavSignal, fs = sf.read( filename )
     signal = dict()
@@ -85,12 +84,7 @@ if False:
     
     plt.plot(wavSignalPart,marker='d',color='blue')
     
-    #plt.plot(wavSignalPart<0)
     plt.plot(zeroX)
-    #plt.title('Butterworth filter frequency response')
-    #plt.xlabel('Frequency [radians / second]')
-    #plt.ylabel('Amplitude [dB]')
-    #plt.axhline(0, color='green') # cutoff frequency
     plt.margins(0, 0.1)
     plt.grid(which='both', axis='both')
     plt.show()    
@@ -125,7 +119,6 @@ if True:
     
     plt.plot(signal,color='black')
     plt.plot(np.abs(hilbert(signal)),color='red')
-    #%%
     
     np.random.seed()
     noise = np.random.rand(sigLen,1)
@@ -135,34 +128,26 @@ if True:
     
     signal = lfilter(b, a, noise)
 
-    # %%
-
-    #signal = np.zeros(sigLen)
-    #signal[int(np.floor(sigLen/2))] = 1
     envHilb = np.abs(hilbert(signal))
 
     movAvSamps = 1000
     bo = np.ones((movAvSamps,))/movAvSamps
     envRMS = lfilter(bo, 1, np.abs(signal))
-    #plt.plot(noise,color='blue')
     plt.plot(signal,color='green')
     plt.plot(envHilb,color='red')
     plt.plot(envRMS, color='black')
     
-    #%%
     signal2 = signal.copy()
     signal2 = signal2/np.max(signal2)
     env = np.abs(hilbert2(signal2))
     plt.plot(signal2,color='black')
     plt.plot(env,color='red')
     
-
     loops = 1
     for loop in range(loops):
         signal2 = signal2/env
         signal2 = lfilter(b,a,signal2)
         env = np.abs(hilbert2(signal2))
-    #plt.plot(signal2, color='red')
     plt.plot(signal2,color='green')
     plt.plot(env,color='blue')
         

@@ -44,9 +44,9 @@ class NumberValidator(QtGui.QValidator):
         The input may be a single number of type float or integer.
 
         The status may be be of type
-            QtGui.QValidator.Intermediate if the input is not finished yet,
-            QtGui.QValidator.Invalid if invalid or unparsable data has been entered or
-            QtGui.QValidator.Acceptable if data is valid.
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
 
             The data is valid only if it is of type int or float, and if it lies within the defined range. The range
             may be a set of possible values (comboStyle == True) or the range of length two within the minimum and maximum
@@ -161,9 +161,9 @@ class NumberListValidator(NumberValidator):
         The input may consist of a single string value or a list of strings devided by ','
 
         It may be of type
-            QtGui.QValidator.Intermediate if the input is not finished yet,
-            QtGui.QValidator.Invalid if invalid or unparsable data has been entered or
-            QtGui.QValidator.Acceptable if data is valid.
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
 
             The data is valid only if it is of type int or float, and if it lies within the defined range. The range
             may be a set of possible values (comboStyle == True) or the range within the minimum and maximum.
@@ -215,9 +215,9 @@ class StringValidator(QtGui.QValidator):
         interpreted as a boolean value. A list of strings is separated by ','.
 
         It may be of type
-            QtGui.QValidator.Intermediate if the input is not finished yet,
-            QtGui.QValidator.Invalid if invalid or unparsable data has been entered or
-            QtGui.QValidator.Acceptable if data is valid.
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
 
             The data is valid if any string is entered. The input can
 
@@ -244,7 +244,7 @@ class StringValidator(QtGui.QValidator):
                             else:
                                 state = QtGui.QValidator.Invalid
                             stateList.append(state)
-                elif isinstance(self.range, string):
+                elif isinstance(self.range, str):
                     # check if string contains allowed words
                     setRange = set(self.range)
                     setString = set(string)
@@ -322,9 +322,9 @@ class StringListValidator(StringValidator):
         interpreted as a boolean value. A list of strings is separated by ','.
 
         It may be of type
-            QtGui.QValidator.Intermediate if the input is not finished yet,
-            QtGui.QValidator.Invalid if invalid or unparsable data has been entered or
-            QtGui.QValidator.Acceptable if data is valid.
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
 
             The data is valid if any string is entered. The input can
 
@@ -382,9 +382,9 @@ class BoolListValidator(StringListValidator):
         interpreted as a boolean value. A list of strings is separated by ','.
 
         It may be of type
-            QtGui.QValidator.Intermediate if the input is not finished yet,
-            QtGui.QValidator.Invalid if invalid or unparsable data has been entered or
-            QtGui.QValidator.Acceptable if data is valid.
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
 
             The data is valid if any string is entered. The input can
 

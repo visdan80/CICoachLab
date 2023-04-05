@@ -13,9 +13,12 @@ lastPreprocessorSettings =
 lastPlayer = 
 lastPlayerSettings = 
 lastSetlist = 
-lastRunEndTime = 1990-01-01
+lastRunEndTime = 
+# entry has to be provided: default 0
 dailyCumulatedRunTime = 0
-maxDailyCumulatedRunTime = 86400
+# entry has to be provided: default 0
+maxDailyCumulatedRunTime = 0
+# entry has to be provided: default 0
 currentSessionStartTime = 0
 #############################################################################
 
@@ -52,8 +55,12 @@ bitlockerPathClear =
 bitlockerPathEncrypt = 
 # In the study mode the subject is asked to enter personal information which allows to recognize the user.
 studyMode = False
+# the full path or the relative path of the masterlist has to be provided, e.g.: masterlists/masterlist.lst
 masterlistFile = masterlists/masterlist.lst
+# flag to use the masterlist which defines a restricted and predefined run of exercises
 masterlistStart = False
+# flag which ignores ALL pre, post- run conditions of exercises and masterlists. This flag should be handled with care!
+ignoreConditions = False
 exerciseFrameGeometry = 
 mainFramegeometry = 
 # font size of app
@@ -71,6 +78,8 @@ ignoreFilterFile = False
 enableShortCuts = True
 # export a setlist into a single line instead of multiple lines
 xlxsExportSLSetlistMode = True
+# xls - export path to xls export file, this entry might be changed by CICoachLab in the future in some cases
+xlsExportSLFilename = 
 
 #############################################################################
 [debug]

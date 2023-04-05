@@ -25,14 +25,14 @@ The functionality of the implemented tests is organized in exercises.
 Exercises:
 Exercises are organized as classes which contains the algorithms/code for running the exercise.
 
-The exercise main file defines the name of the exercise and points to exercise folder with the same name as the main
-file without the .py extension. In the exercise folder the following oblgatory subdirectories have to be provided:
+The exercise main file defines the name of the exercise and points to exercise directory with the same name as the main
+file without the .py extension. In the exercise directory the following oblgatory subdirectories have to be provided:
 presets, locales, results.
 Other subdirectories may be e.g.  analysis, data, signalFiles or any other subdirectories.
 
 presets: Apart from the 'default' settings the directory contains the saved settings of the function.
 locales: translations of user dialog messages will be saved here.
-results: backup results will be saved in the results folder.
+results: backup results will be saved in the results directory.
 
 The main exercise file may be supported by other source code files which have to be handled by the exercise main
 file.
@@ -252,14 +252,14 @@ UserDataDialog.py
     UserDataDialog.ui was generated with QtDesigner
 
 
-# locales folder:
-    The german translation file en_de.qm is required up to now which can be found in the subfolder locales
+# locales directory:
+    The german translation file en_de.qm is required up to now which can be found in the subdirectory locales
 
 # html
-    The folder provides the source code documentation which may be helpfull to get an overview of the CICoachLab
+    The directory provides the source code documentation which may be helpfull to get an overview of the CICoachLab
     Framework.
 
-# optional files/folder:
+# optional files/directory:
 
 #system requirements:
 ##Hardware
@@ -343,6 +343,7 @@ import os
 import importlib.util # for directory specific import of py-files
 import importlib.metadata
 
+import configobj
 import pandas as pd
 import pkg_resources
 import numpy as np
@@ -358,7 +359,7 @@ from CICoachLabMainWindowGui2 import Ui_MainWindow
 from UserDataDialogCall import UserDataDialogCall
 from CalibrationCall import CalibrationCall
 from PatientfileBackuper import PatientfileBackuper
-
+from CICoachDialog import CICoachDialog
 
 from configobj import ConfigObj
 from time import time, gmtime, strftime
@@ -402,98 +403,6 @@ globalTemp = dict()
 # The translation files are searched from the most recently installed file back to the first installed file.
 def _translate(context, text, disambig):
     return QtCore.QCoreApplication.translate(context, text, disambig)
-
-
-
-class CICoachDialog(QtWidgets.QMessageBox):
-    """!
-    CICoachDialog uses the QMessageBox dialog as base to display messages.
-    The presented Dialog is raised in the stack of frames to ensure the visibility, epecially in the windows context.
-    """
-    def __init__(self, parHandle, title, text, mode='question', infoText='', detailedText=''):
-        """!
-        parHandle:  handle to CICoachLab
-        title:      window title
-        text:       question or informative text
-        mode:       the mode defines if a question is asked, an information is provided
-                    The mode defines which buttons are displayed and which icon is provided.
-        infoText:   additional text which may be provided i
-
-        Detailed information on the different modes:
-            question:
-                buttons:    yes, no, cancel
-                icon:       question mark
-            confirmation:
-                buttons:    ok, cancel
-                icon:       question mark
-            information
-                buttons:    ok
-                icon:       none
-            warning:
-                buttons:    ok
-                icon:       warning
-            error:
-                buttons:    ok
-                icon:       error
-        """
-
-        super().__init__()
-        self.title = title
-        self.text = text
-        self.mode = mode
-        self.infoText = infoText
-        self.detailedText = detailedText
-        self.parHandle = parHandle
-        self.initUI()
-
-
-    def initUI(self):
-        '''
-        self.setWindowTitle(self.title)
-        self.buttonReply = QtWidgets.QMessageBox.question(self, self.title, self.question,
-                                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-
-        self.show()
-        '''
-
-        msg = QtWidgets.QMessageBox(self.parHandle)
-
-        msg.setText(self.text)
-        msg.setWindowTitle(self.title)
-        msg.setSizeGripEnabled(True)
-
-        if self.mode == 'question':
-            msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
-            msg.setIcon(QtWidgets.QMessageBox.Question)
-        if self.mode == 'confirmation':
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-            msg.setIcon(QtWidgets.QMessageBox.Question)
-        elif self.mode == 'information':
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        elif self.mode == 'warning':
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        elif self.mode == 'error':
-            msg.setIcon(QtWidgets.QMessageBox.Critical)
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-
-
-        if self.detailedText:
-            msg.setDetailedText(self.detailedText)
-        if self.infoText:
-            msg.setInformativeText(self.infoText)
-
-        msg.show()
-        msg.raise_()
-
-        self.buttonReply = msg.exec_()
-        return self.buttonReply
-
-
-    def returnButton(self):
-        return self.buttonReply
-
 
 class InformationDialog(QtWidgets.QDialog):
     """!
@@ -714,6 +623,11 @@ class CICoachLab(QtWidgets.QMainWindow):
         # getting system specific hardware settings and frameWork status at last shutdown
 
         success = self.readIniFile()
+
+        # documenting start time
+        msg = 'Starting of CICoachLab: ' + datetime.datetime.today().strftime('%H:%M:%S - %d.%m.%y')
+        self.dPrint(msg, 0)
+
         if not(success):
             self.__exit__(None, None, None)
             self.deleteLater()
@@ -841,6 +755,8 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.ui.menuXlsxExport.triggered.connect(self.xlsxExport)
         self.ui.menuHelpAbout.triggered.connect(self.showAboutDialog)
 
+
+
         self.ui.menuSourceCodeDocu = QtWidgets.QAction(self)
         self.ui.menuSourceCodeDocu.setObjectName("menuSourceCodeDocu")
         self.ui.menuSourceCodeDocu.triggered.connect(self.openSourceCodeDocu)
@@ -856,6 +772,17 @@ class CICoachLab(QtWidgets.QMainWindow):
                 ' At the end it will be moved to: ' + self.frameWork['settings']['debug']['debuggingFile']
                 ,0)
 
+        if len(self.frameWork['settings']['debug']['debuggingTempFile']) and \
+                not(self.frameWork['settings']['patientMode']):
+                # checking size of debugfile.
+                if os.path.isfile(self.frameWork['settings']['debug']['debuggingTempFile']):
+                    debugFileSize = os.path.getsize(self.frameWork['settings']['debug']['debuggingTempFile'])
+                    if debugFileSize > 2000000:
+                        self.dPrint(
+                            _translate("MainWindow",'Please check the size of the debug file. '
+                                                    'Consider to delete the debug file or to reduce its size.', None), 2,
+                            guiMode=True)
+
         self.frameWork['settings']['currentSessionStartTime'] = time()
 
         if not(strftime("%Y-%m-%d", gmtime(time())) == self.frameWork['settings']['lastRunEndTime']):
@@ -864,7 +791,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         if self.frameWork['settings']['dailyCumulatedRunTime'] > self.frameWork['settings']['maxDailyCumulatedRunTime']:
             msg = _translate("MainWindow", "The dayly cumulated runtime exceeded the allowed maximum time", None) + \
                     f"\n{self.frameWork['settings']['dailyCumulatedRunTime']:04.1f} > " + \
-                    f"\n{self.frameWork['settings']['maxDailyCumulatedRunTime']:04.1f}"
+                    f"{self.frameWork['settings']['maxDailyCumulatedRunTime']:04.1f}"
             self.dPrint(msg, 0, guiMode=True)
 
         self.frameWork['gui']['buttons'].append(self.ui.pbNewRun)
@@ -1070,14 +997,17 @@ class CICoachLab(QtWidgets.QMainWindow):
             question = _translate("MainWindow",
                              'The next task will be started. Press OK to continue', None)
 
-            quest = CICoachDialog(self, title, question,'question')
+            quest = CICoachDialog(self, title, question,'confirmation')
             answer = quest.returnButton()
-            if answer == QtWidgets.QMessageBox.Yes:
+            if answer == QtWidgets.QMessageBox.Ok:
                 status, msg = self.checkMasterList()
                 if status:
                     self.curMasterlist['settings']['active'] = True
 
-                    self.iniRun()
+                    iniRunStatus = self.iniRun()
+                    # A setlist could not be read, a precondition was not successfull,...
+                    if not(iniRunStatus):
+                        return
 
                     self.updateFilter(self.user['difficulty'])
                     self.updateExerciseListBox()
@@ -1088,13 +1018,33 @@ class CICoachLab(QtWidgets.QMainWindow):
                     self.dPrint(msg, 0, guiMode=True)
             else:
                 self.dPrint('Aborting masterlist and closing CICoachLab.', 0)
+                self.__exit__(None, None, None)
                 self.deleteLater()
+                return
 
         # The flag indicates if the, user input gui widgets are disabled or enabled in the functions
         # self.disableExerciseGui() or self.enableExerciseGui(). Which kinds of gui elements are disabled
         # are defined in self.checkForInputWidgets().
+
         self.blockUserInput = False
 
+        prevExerciseName = self.frameWork['settings']['lastExercise']
+        if prevExerciseName and self.runDataCounter:
+            if not(prevExerciseName in self.runData) or not(self.runDataCounter-1 in self.runData[prevExerciseName]):
+                msg = _translate("MainWindow",
+                                 "The previous exercise does not match the loaded results. "
+                                 "Check (and delete) the results file and 'lastExercise' in CICoachLab.ini. "
+                                 "No information on previous runs will be set.\n\n"
+                                 'Previous Exercise and current data index: '
+                                 , None)\
+                       + prevExerciseName + ' ' + str(self.runDataCounter-1)
+                self.dPrint(msg, 0, guiMode=True)
+            else:
+                self.curRunData['prevExerciseName'] = prevExerciseName
+                self.curRunData['prevExerciseSettingsName'] = self.frameWork['settings']['lastExerciseSettings']
+                self.curRunData['prevExerciseRunDataCounter'] = self.runDataCounter - 1
+                self.curRunData['prevExerciseRunDataGuiName'] = \
+                    self.runData[prevExerciseName][self.runDataCounter-1]['time']['endASCII']
 
         # temporary storing  place to store temporary variable
         # but first of all handles to handles of widgets of matplotlib
@@ -1155,7 +1105,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                         self.frameWork['settings']['debug']['debuggingTempFileBackup'] = ''
             except:
                 msg = _translate("MainWindow",
-                                 'Could not move the log file from {:s} to {:s}. Please contact your admininstrator.'.format(
+                                 'Could not move the log file from {:s} to {:s}. Please contact your administrator.'.format(
                                      source, destination), None)
                 self.dPrint(msg, 0, guiMode=True)
                 return False
@@ -1163,13 +1113,21 @@ class CICoachLab(QtWidgets.QMainWindow):
         if self.frameWork['settings']['fixMasterVolume']:
             self.setMasterVolume(self.oldMasterVol)
 
+        # documenting end time
+        msg = 'Closing of CICoachLab: ' + datetime.datetime.today().strftime('%H:%M:%S - %d.%m.%y')
+        self.dPrint(msg, 0)
+
+        #self.deleteLater()
         self.dPrint('Leaving __exit__()', 2)
-        return True
+        try:
+            self.close()
+        except RuntimeError:
+            print('Window has already been close')
 
 
     def setShortcuts(self):
         """!
-        This function generates the shortcut instances and connects the proper funtions
+        This function generates the shortcut instances and connects the proper functions
         """
 
         self.dPrint('setShortcuts()', 2)
@@ -1407,6 +1365,11 @@ class CICoachLab(QtWidgets.QMainWindow):
             # if a single or the last run is finished it is set to False in self.closeDownRun()
             self.frameWork['temp']['activeRun'] = False
 
+            self.frameWork['temp']['prevExerciseName'] = ''
+            self.frameWork['temp']['prevExerciseSetting'] = ''
+            self.frameWork['temp']['prevExerciseRunDataCounter'] = -1
+            self.frameWork['temp']['prevExerciseRunDataGuiName'] = ''
+
             self.frameWork['settings'] = dict()
             self.frameWork['settings']['version'] = '0.3'
             self.frameWork['settings']['iniFile'] = os.path.join(pwd, 'CICoachLab.ini')
@@ -1484,6 +1447,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.frameWork['settings']['bitlockerPathEncrypt'] = ''
             self.frameWork['settings']['studyMode'] = ''
             self.frameWork['settings']['masterlistFileConfig'] = None
+            self.frameWork['settings']['ignoreConditions'] = False
             self.frameWork['settings']['exerciseFrameGeometry'] = [160, 10, 761, 711]
             self.frameWork['settings']['mainFramegeometry'] = [160, 10, 761, 711]
             self.frameWork['settings']['lastRunEndTime'] = ''
@@ -1600,6 +1564,10 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.curExercise['gui'] = dict()
             self.curExercise['gui']['menu'] = []
             self.curExercise['gui']['exerWidgets'] = []
+            # gui items of the exerccises will be enabled at start up and disabled during play back of some audio in
+            # playQtAudio. If gui items should remain disabled because of the exercise logic the item should be listed
+            # in here.
+            self.curExercise['gui']['exerWidgetsDisabled'] = []
             self.curExercise['results'] = None
             self.curExercise['selectedRunData'] = None
 
@@ -2001,14 +1969,17 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.curRunData['calibration']['preprocessor'] = None
             self.curRunData['calibration']['player'] = None
 
-
-
             self.curRunData['setlistName'] = ''
             self.curRunData['setlistIdx'] = -1
 
             self.curRunData['masterlistName'] = ''
             self.curRunData['masterlistIdx'] = -1
 
+            # only
+            self.curRunData['prevExerciseName'] = ''
+            self.curRunData['prevExerciseSettingsName'] = ''
+            self.curRunData['prevExerciseRunDataCounter'] = -1
+            self.curRunData['prevExerciseRunDataGuiName'] = ''
 
         if mode == 'runData' or mode == 'all':
             # at the end of each run of the exercise the data will be added to runData. For each exercise a dictionary
@@ -2057,6 +2028,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.user['right']['deafeningProgress'] = ''
             self.user['right']['tinnitus'] = ''
 
+            self.user['creationDate'] = datetime.datetime.today().strftime('%H:%M:%S - %d.%m.%y')
 
             # be aware: its also defined in UserDataDialog.ui
             # possible handling of allowed limits of variable, might be useful for
@@ -2103,13 +2075,12 @@ class CICoachLab(QtWidgets.QMainWindow):
 
             self.userLimits['gender'] = dict()
             self.userLimits['gender']['mandatory'] = True
-            self.userLimits['gender']['type'] = 'date'
+            self.userLimits['gender']['type'] = 'string'
             self.userLimits['gender']['editable'] = True
             self.userLimits['gender']['range'] = ['Female', 'Male', 'Diverse']
             self.userLimits['gender']['label'] = 'Gender'
             self.userLimits['gender']['information'] = 'Official genders are "Female", "Male" and "Divers"'
 
-            
             self.userLimits['birthday'] = dict()
             self.userLimits['birthday']['mandatory'] = True
             self.userLimits['birthday']['type'] = 'date'
@@ -2117,6 +2088,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.userLimits['birthday']['range'] = ['01.01.1900', '01.01.2022']
             self.userLimits['birthday']['label'] = 'Birthday'
             self.userLimits['birthday']['information'] = 'Format of birthdate: [day.month.year/DD.MM.YYYY] Possible birthdates lie between 01.01.1900 and 01.01.2022'
+
 
             self.userLimits['comment'] = dict()
             self.userLimits['comment']['mandatory'] = False
@@ -2209,6 +2181,14 @@ class CICoachLab(QtWidgets.QMainWindow):
             # #self.userLimits['right']['deafeningProgress']['range'] = ['progredient', 'sudden']
             self.userLimits['right']['deafeningProgress']['label'] = 'Progression of hearing loss'
 
+            #
+            self.userLimits['creationDate'] = dict()
+            self.userLimits['creationDate']['mandatory'] = True
+            self.userLimits['creationDate']['type'] = 'string'
+            self.userLimits['creationDate']['editable'] = False
+            self.userLimits['creationDate']['range'] = ''
+            self.userLimits['creationDate']['label'] = 'Creation date'
+            self.userLimits['creationDate']['information'] = "Format: '%H:%M:%S - %d.%m.%y'"
 
         if mode == 'curSetlist' or mode == 'all':
             self.curSetlist = dict()
@@ -2276,6 +2256,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.curMasterlist['settings']['name'] = ''
             self.curMasterlist['settings']['information'] = ''
             self.curMasterlist['settings']['lastItemIDX'] = -1
+            self.curMasterlist['settings']['resetIDXs'] = []
 
             self.curMasterlist['settings']['items'] = []
             self.curMasterlist['settings']['runmode'] = []
@@ -2457,6 +2438,10 @@ class CICoachLab(QtWidgets.QMainWindow):
 
 
             mlIdx = self.curMasterlist['settings']['lastItemIDX']+1
+            if mlIdx>=len(self.curMasterlist['settings']['runmode']):
+                self.dPrint(
+                    _translate("MainWindow", 'The last item of the masterlist has been reached', None), 0,
+                    guiMode=True)
 
             precondition = self.curMasterlist['settings']['preconditions'][mlIdx]
             preconditionMessage = self.curMasterlist['settings']['preconditionMessages'][mlIdx]
@@ -2467,64 +2452,81 @@ class CICoachLab(QtWidgets.QMainWindow):
                 exerciseName = self.curMasterlist['settings']['items'][mlIdx]
                 settingsName = self.curMasterlist['settings']['settings'][mlIdx]
                 self.iniExercise(exerciseName, settingsName)
-                if not(precondition == 'None'):
-                    self.curExercise['settings']['prerunCondition'] = precondition
-                else:
-                    self.curExercise['settings']['prerunCondition'] = ''
-                # check will be run later
-                #if not(precondition == 'None') and not(self.checkExerciseConditions(mode='prerunCondition')):
-                #    preConditionPasser = False
 
             elif self.curMasterlist['settings']['runmode'][mlIdx] == 'setlist':
                 # prepare setlist if necessary
                 if not(self.curSetlist['active']) and self.curSetlist['stopped']:
-                    status, feebdack = self.checkMasterListCondition(precondition)
-                    if not(precondition == 'None') and not(status):
-                        preConditionPassed = False
-                    if not(preConditionPassed):
-                        self.dPrint('Masterlist item  precondition was not met! :(mlIdx: ' + str(mlIdx) + \
-                                    ', precondition: ' + precondition +
-                                    ') Canceling masterlist run!',
-                                    0, guiMode=False)
-                        msgFail = msgFail + '\n\n' + preconditionMessage
-                        self.dPrint(msgFail, 0, guiMode=True)
-                        self.curRunData['statusMessage'] = self.curRunData['statusMessage'] + msgFail
-
-                        msg = _translate("MainWindow", "CICoachLab will be closed.", None)
-                        self.dPrint(msg, 0, guiMode=True)
-
-                        self.curSetlist['active'] = False
-                        self.curSetlist['stopped'] = True
-                        self.frameWork['temp']['activeRun'] = False
-                        self.deleteLater()
-                        return
                     setlistName = self.curMasterlist['settings']['items'][mlIdx]
                     if not('.lst' in setlistName):
                         setlistName = setlistName + '.lst'
 
                     self.curSetlist['active'] = True
                     self.curSetlist['stopped'] = False
-                    self.getSetlist(event=None, setlistName=setlistName)
+                    status = self.getSetlist(event=None, setlistName=setlistName)
+                    if not(status) and self.curMasterlist['settings']['masterlistStart']:
+                        title = _translate("MainWindow",'Closing CICoachLab - No valid setlist ', None)
+                        msg = _translate("MainWindow",'The setlist could not be read '
+                                                      'and the masterlist cannot be continued. '
+                                                      'CICoachLab will be closed', None)
+                        self.frameWork['temp']['activeRun'] = False
+                        self.dPrint(msg, 0)
+                        CICoachDialog(self, title, msg, 'information')
+                        self.__exit__(None, None, None)
+                        self.deleteLater()
+                        return False
+            if not(self.frameWork['settings']['ignoreConditions']) and self.curSetlist['instanceCounter'] == 0:
+                status, feebdack, providedFeedBack = self.checkMasterListCondition(precondition)
+            else:
+                msg = "Warning: Ignoring precondition because flag 'ignoreConditions' is set to True"
+                self.dPrint(msg, 0)
+                status = True
+                feebdack = ''
+                providedFeedBack = False
+            if precondition == 'None':
+                preConditionPassed = True
+            else:
+                if status:
+                    preConditionPassed = True
+                else:
+                    preConditionPassed = False
+            if not(preConditionPassed) and not(providedFeedBack):
+                self.dPrint('Masterlist item  precondition was not met! :(mlIdx: ' + str(mlIdx) + \
+                            ', precondition: ' + precondition +
+                            ') Canceling masterlist run!',
+                            0, guiMode=False)
+                msgFail = msgFail + '\n\n' + preconditionMessage + feebdack
+                self.dPrint(msgFail, 0, guiMode=True)
+                self.curRunData['statusMessage'] = self.curRunData['statusMessage'] + msgFail
 
-
-
+                msg = _translate("MainWindow", "CICoachLab will be closed.", None)
+                self.dPrint(msg, 0, guiMode=True)
+            if not (preConditionPassed):
+                self.curSetlist['active'] = False
+                self.curSetlist['stopped'] = True
+                self.frameWork['temp']['activeRun'] = False
+                self.deleteLater()
+                return False
 
         if self.curSetlist['active'] == False:
             self.dPrint('iniRun() starting single run exercise', 3)
             # check prerunCondition if they are defined
-            if self.curExercise['settings']['prerunCondition']:
+            if self.frameWork['settings']['ignoreConditions'] and self.curExercise['settings']['prerunCondition']:
+                msg = "Warning: Ignoring prerunCondition because flag 'ignoreConditions' is set to True"
+                self.dPrint(msg, 0)
+            if self.curExercise['settings']['prerunCondition'] and not(self.frameWork['settings']['ignoreConditions']):
                 # check if run can be started
                 conditionsMet, feedback = self.checkExerciseConditions('prerunCondition')
                 if not (conditionsMet):
-                    msg = _translate("MainWindow",
-                                     "Run could not be started because prerun conditions were not met. (conditions: " +
-                                     self.curExercise['settings'][
-                                         'prerunCondition'] + ")\n Canceling start of run.\n\n ", None)
+                    msg = _translate(
+                        "MainWindow",
+                        "Exercise run could not be started in setlist because prerun conditions were not met. " +
+                        "(conditions: " + self.curExercise['settings'][
+                            'prerunCondition'] + ")\n Canceling start of run.\n\n ", None)
                     msg = msg + feedback
                     self.dPrint(msg, 0, guiMode=True)
                     self.closeDownRun()
                     self.curRunData['statusMessage'] = self.curRunData['statusMessage'] + msg
-                    return
+                    return False
             try:
                 # Start single run exercise
                 self.curExercise['functions']['prepareRun']()
@@ -2548,7 +2550,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                 else:
                     settings = ''
                 # if no generator is defined the previous generator will be unloaded.
-                self.iniSubmodule('generator', genName, settings)
+                if not(genName==None):
+                    self.iniSubmodule('generator', genName, settings)
             except:
                 msg = _translate("MainWindow",'Exception: Loading of generator  failed: ', None)\
                       + genName + ': ' + settings
@@ -2594,13 +2597,34 @@ class CICoachLab(QtWidgets.QMainWindow):
                                  'Exception: Loading of exercise  failed: ', None) + exerName + ': ' + settings
                 self.dPrint(msg, 1, guiMode=True)
             try:
+                if self.frameWork['settings']['ignoreConditions'] and self.curExercise['settings']['prerunCondition']:
+                    msg = "Warning: Ignoring prerunCondition because flag 'ignoreConditions' is set to True"
+                    self.dPrint(msg, 0)
+                if self.curExercise['settings']['prerunCondition'] \
+                        and not(self.frameWork['settings']['ignoreConditions']):
+                    # check if run can be started
+                    conditionsMet, feedback = self.checkExerciseConditions('prerunCondition')
+                    if not (conditionsMet):
+                        msg = _translate(
+                            "MainWindow",
+                            "Exercise run could not be started because prerun conditions were not met. (conditions: " +
+                            self.curExercise['settings'][
+                                'prerunCondition'] + ")\n Canceling start of run.\n\n ", None)
+                        msg = msg + feedback
+                        self.dPrint(msg, 0, guiMode=True)
+                        self.closeDownRun()
+                        self.curRunData['statusMessage'] = self.curRunData['statusMessage'] + msg
+                        return False
+
                 self.curExercise['functions']['prepareRun']()
             except:
                 self.dPrint('Exception: Could not start run in set list.', 1)
         self.ui.exerWidget.setDisabled(False)
         self.ui.exerWidget.setVisible(True)
 
+        return True
         self.dPrint('Leaving iniRun()', 2)
+
 
 
     def intraRun(self):
@@ -2635,7 +2659,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         The data will be automatically saved if defined by self.frameWork['settings']['autoBackupResults']
 
         Because the exercise class might be closed in this function self.closeDownRun() should be called
-        a the end of a class member to avoid access to non existing class members or variables.
+        at the end of a class member to avoid access to none existing class members or variables.
         """
 
         self.dPrint('closeDownRun()', 2)
@@ -2646,9 +2670,16 @@ class CICoachLab(QtWidgets.QMainWindow):
             feedback = 'The run was canceled by the user'
         else:
             # recheck if run was successfully closed by checking 'postrunCondition'
-            self.curRunData['runAccomplished'], feedback = self.checkExerciseConditions('postrunCondition')
-            if not(self.curRunData['runAccomplished']):
-                msg = _translate("MainWindow", 'The postrun conditions were not met!', None)
+            if not(self.frameWork['settings']['ignoreConditions']):
+                self.curRunData['runAccomplished'], feedback, providedFeedback = self.checkExerciseConditions('postrunCondition')
+            else:
+                msg = "Warning: Ignoring postrunCondition because flag 'ignoreConditions' is set to True"
+                self.dPrint(msg, 0)
+                self.curRunData['runAccomplished'] = True
+                feedback = ''
+                providedFeedback = False
+            if not(self.curRunData['runAccomplished']) and not(providedFeedback):
+                msg = _translate("MainWindow", 'The postrun conditions were not met!', None) + '\n\n' + feedback
                 self.dPrint(msg, 0, guiMode=True)
                 feedback = feedback + '\n' +msg
 
@@ -2692,7 +2723,6 @@ class CICoachLab(QtWidgets.QMainWindow):
         self.curRunData['setListName'] = setListName
         self.curRunData['setListIdx'] = setListIdx
 
-
         if self.curMasterlist['settings']['active']:
             fullname = self.curMasterlist['settings']['masterlistFile']
             # getting rid of fullpath to file for linux and windowscase and getting rid of extension
@@ -2703,6 +2733,16 @@ class CICoachLab(QtWidgets.QMainWindow):
             masterlistIdx = 0
         self.curRunData['masterlistName'] = masterlistName
         self.curRunData['masterlistIdx'] = masterlistIdx
+
+        self.curRunData['prevExerciseName'] = self.frameWork['temp']['prevExerciseName']
+        self.curRunData['prevExerciseSettingsName'] = self.frameWork['temp']['prevExerciseSetting']
+        self.curRunData['prevExerciseRunDataCounter'] = self.frameWork['temp']['prevExerciseRunDataCounter']
+        self.curRunData['prevExerciseRunDataGuiName'] = self.frameWork['temp']['prevExerciseRunDataGuiName']
+
+        self.frameWork['temp']['prevExerciseName'] = self.curExercise['settings']['exerciseName']
+        self.frameWork['temp']['prevExerciseSetting'] = self.curExercise['settings']['settingsName']
+        self.frameWork['temp']['prevExerciseRunDataCounter'] = self.runDataCounter
+        self.frameWork['temp']['prevExerciseRunDataGuiName'] = self.curRunData['time']['endASCII']
 
         self.runData[self.curExercise['settings']['exerciseName']][self.runDataCounter] = self.curRunData
         self.runDataCounter = self.runDataCounter + 1
@@ -2787,27 +2827,33 @@ class CICoachLab(QtWidgets.QMainWindow):
                     postcondition = self.curMasterlist['settings']['postconditions'][mlIdx]
                     postconditionMessage = self.curMasterlist['settings']['postconditionMessages'][mlIdx]
 
-                    if self.curMasterlist['settings']['runmode'][mlIdx] == 'singleRun':
-                        if not(postcondition == 'None'):
-                            self.curExercise['settings']['postrunCondition'] = postcondition
-                        # exercise conditions and masterlist conditions may be allowed. Masterlist conditions should
-                        # be priorized
-                        status, feedbackCheck = self.checkExerciseConditions(mode='postrunCondition')
-                        if not(postcondition == 'None') and not(status):
+                    # exercise conditions and masterlist conditions may be allowed alongside. The exercise condition
+                    # has been checked above
+                    if not(self.frameWork['settings']['ignoreConditions']): #\
+                            #and self.curSetlist['instanceCounter'] == len(self.curSetlist['settings']['list']) - 1:
+                        status, feedbackCheck, providedFeedBack = self.checkMasterListCondition(postcondition)
+                    else:
+                        msg = "Warning: Ignoring postcondition because flag 'ignoreConditions' is set to True"
+                        self.dPrint(msg, 0)
+                        status = True
+                        feedbackCheck = ''
+                        providedFeedBack = False
+                    if postcondition == 'None':
+                        masterItemFinished = True
+                    else:
+                        if status:
+                            masterItemFinished = True
+                        else:
                             masterItemFinished = False
-
-                    elif self.curMasterlist['settings']['runmode'][mlIdx] == 'setlist':
-                        status, feedbackCheck = self.checkMasterListCondition(postcondition)
-                        if not(postcondition == 'None') and not(status):
-                            masterItemFinished = False
-                    feedback = feedbackCheck + '\n' + feedbackCheck
-                    if not(masterItemFinished):
+                    feedback = feedback + '\n' + feedbackCheck
+                    if not(masterItemFinished) and not(providedFeedBack):
                         msg = 'Masterlist item  postconditions was not met!: (' + str(mlIdx) +\
                                     ', ' + postcondition + ') Canceling masterlist run!'
                         self.dPrint(msg, 0, guiMode=False)
                         self.curRunData['statusMessage'] = self.curRunData['statusMessage'] + '\n' + feedback
                         msgFail = msgFail + '\n\n' + postconditionMessage
                         self.dPrint(msgFail, 0, guiMode=True)
+                    if not (masterItemFinished):
                         self.curMasterlist['settings']['active'] = False
                         self.deleteLater()
                         return
@@ -2822,6 +2868,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                     self.dPrint(self.curRunData['statusMessage'], 0, guiMode=False)
                     self.curMasterlist['settings']['active'] = False
                     self.deleteLater()
+                    return
             else:
                 # doing nothing since curlist active and setlist still in progress
                 msg = ''
@@ -2838,7 +2885,10 @@ class CICoachLab(QtWidgets.QMainWindow):
 
             self.saveRunData(filename=resultsFilename)
 
-        msg = _translate("MainWindow", 'Run completed successfully.', None)
+        if self.curRunData['runAccomplished']:
+            msg = _translate("MainWindow", 'Run completed successfully.', None)
+        else:
+            msg = _translate("MainWindow", 'Run completed unaccomplished.', None)
         self.showInformation(msg)
 
         self.dPrint('Leaving closeDownRun()', 2)
@@ -2950,10 +3000,14 @@ class CICoachLab(QtWidgets.QMainWindow):
         for item in self.curExercise['gui']['exerWidgets']:
             try:
                 if self.checkForInputWidgets(item):
-                    item.blockSignals(False)
-                    item.setEnabled(True) # enabling/disabling the butttons
-                    msg = 'Unlocking signals ' + str(item)
-                    self.dPrint(msg, 4)
+                    if item in self.curExercise['gui']['exerWidgetsDisabled']:
+                        msg = 'NOT Unlocking signals because excercise wants it to remain blocked' + str(item)
+                        self.dPrint(msg, 4)
+                    else:
+                        item.blockSignals(False)
+                        item.setEnabled(True) # enabling/disabling the butttons
+                        msg = 'Unlocking signals ' + str(item)
+                        self.dPrint(msg, 4)
             except:
                 msg = 'Could not unblock signals ' + str(item)
                 self.dPrint(msg, 4)
@@ -2963,7 +3017,8 @@ class CICoachLab(QtWidgets.QMainWindow):
 
     def checkMasterListCondition(self, condition):
         """!
-        This function is called in self.iniRun() before the next run can be started.
+        This function is called in self.iniRun() before the next run can be started and in self.closeDownRun() to check
+        if the run has been accomplished sucessfully. The distinction between pre - and postrun condition happens before.
         The Masterlist conditions are defined in the masterlist file:
         self.curMasterlist['settings']['masterlistFile']
 
@@ -2972,11 +3027,11 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.dPrint('checkMasterListCondition()', 2)
 
-        conditionsPath = self.frameWork['path']['masterlists']
-        status, feedback = self.checkConditionsBase(condition, conditionsPath)
-
+        masterlistPath = self.frameWork['path']['masterlists']
+        conditionsPath = os.path.join(masterlistPath,'conditions')
+        status, feedback, providedFeedBack = self.checkConditionsBase(condition, conditionsPath)
         self.dPrint('Leaving checkMasterListCondition()', 2)
-        return status, feedback
+        return status, feedback, providedFeedBack
 
 
     def checkExerciseConditions(self, mode):
@@ -2993,10 +3048,10 @@ class CICoachLab(QtWidgets.QMainWindow):
             # ini run points to the condition of the currently selected exercise
             condition = self.curExercise['settings'][mode]
 
-        status, feedback = self.checkConditionsBase(condition, conditionsPath)
+        status, feedback, providedFeedBack = self.checkConditionsBase(condition, conditionsPath)
 
         self.dPrint('Leaving checkExerciseConditions()', 2)
-        return status, feedback
+        return status, feedback, providedFeedBack
 
     #def checkConditions(self, mode):
     def checkConditionsBase(self, condition, conditionPath):
@@ -3006,8 +3061,9 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.dPrint('checkConditionsBase()', 2)
         feedback = ''
+        providedFeedback = False
 
-        if condition == '':
+        if condition == '' or condition == 'None':
             conditionsPassed = True
         else:
             fullFilename = os.path.join(conditionPath,
@@ -3019,7 +3075,35 @@ class CICoachLab(QtWidgets.QMainWindow):
                         condition + ".py", fullFilename)
                     conditionCheck = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(conditionCheck)
-                    conditionsPassed, feedback = conditionCheck.conditionCheck(self)
+                    val = conditionCheck.conditionCheck(self)
+                    formatMismatch = False
+                    if isinstance(val, bool):
+                        conditionsPassed = val
+                        feedback = ''
+                        providedFeedback = False
+                    elif isinstance(val, tuple):
+                        if len(val) == 2:
+                            conditionsPassed = val[0]
+                            feedback = val[1]
+                            providedFeedback = False
+                        elif len(val) == 3:
+                            conditionsPassed = val[0]
+                            feedback = val[1]
+                            providedFeedback = val[2]
+                        else:
+                            formatMismatch = True
+                    else:
+                        formatMismatch = True
+
+                    if formatMismatch == True:
+                        conditionsPassed = False
+                        feedback = _translate(
+                            "MainWindow",
+                            'This should not happen. The check conditions should return 1 obligatory ' \
+                            'of the type bolean with one or two optional return values ' \
+                            'of type string and boolean, respectively. Ask your administrator!', None)
+                        providedFeedback = False
+                        self.showInformation(feedback)
                 except:
                     conditionsPassed = False
                     feedback = _translate("MainWindow", 'Could not run check of accomplishment: ', None)
@@ -3039,7 +3123,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.showInformation(feedback)
 
         self.dPrint('Leaving checkConditionsBase()', 2)
-        return conditionsPassed, feedback
+        return conditionsPassed, feedback, providedFeedback
 
 
     def selectExer(self):
@@ -3333,7 +3417,15 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.dPrint(msg, 0, guiMode=True)
             return False
         # encoding="utf8": Otherwise no writing will be possible in case of filter.ini
-        filterConfig = ConfigObj(self.frameWork['settings']['filterFile'], encoding="utf8")
+        try:
+            filterConfig = ConfigObj(self.frameWork['settings']['filterFile'], encoding="utf8")
+        except Exception as err:
+            title = _translate("MainWindow", 'Could not open filterFile', None)
+            msg = ":  " + self.frameWork['settings']['filterFile']\
+                        + _translate("MainWindow",'\n\nError message:\n', None) + str(err)
+
+            self.dPrint(msg, 0)
+            CICoachDialog(self, title, msg, 'information')
 
         moduleNamesFilt = list(filterConfig)
         # looping through ['exercises', 'generators', 'preprocessors', 'player', settings] if they are defined in filter.ini
@@ -4037,7 +4129,15 @@ class CICoachLab(QtWidgets.QMainWindow):
                                            "CICoachLab.in or retrieve the deleted file before starting CICOachLab." ,None)
             self.dPrint(msg, 0, guiMode=True)
             return False
-        iniFileConfig = ConfigObj(self.frameWork['settings']['iniFile'], encoding="utf8")
+        try:
+            iniFileConfig = ConfigObj(self.frameWork['settings']['iniFile'], encoding="utf8")
+        except Exception as err:
+            title = _translate("MainWindow", 'Could not open iniFile', None)
+            msg = ":  " + self.frameWork['settings']['iniFile']\
+                  + _translate("MainWindow", '\n\nError message:\n', None) + str(err)
+
+            self.dPrint(msg, 0)
+            CICoachDialog(self, title, msg, 'information')
         try:
             if mode == 'frameWorkSettings':
                 self.frameWork['settings']['lastSavingPath'] = iniFileConfig['DynamicSettings']['lastSavingPath']
@@ -4077,6 +4177,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.frameWork['settings']['studyMode'] = iniFileConfig['system'].as_bool('studyMode')
                 self.curMasterlist['settings']['masterlistFile'] = iniFileConfig['system']['masterlistFile']
                 self.curMasterlist['settings']['masterlistStart'] = iniFileConfig['system'].as_bool('masterlistStart')
+                self.frameWork['settings']['ignoreConditions'] = iniFileConfig['system'].as_bool('ignoreConditions')
                 self.frameWork['settings']['exerciseFrameGeometry'] = iniFileConfig['system']['exerciseFrameGeometry']
                 self.frameWork['settings']['mainFramegeometry'] = iniFileConfig['system']['mainFramegeometry']
                 self.frameWork['settings']['fontSize'] = iniFileConfig['system']['fontSize']
@@ -4085,7 +4186,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.frameWork['settings']['masterVolumeValue'] = iniFileConfig['system']['masterVolumeValue']
                 self.frameWork['settings']['ignoreFilterFile'] = iniFileConfig['system'].as_bool('ignoreFilterFile')
                 self.frameWork['settings']['enableShortCuts'] = iniFileConfig['system'].as_bool('enableShortCuts')
-                self.frameWork['settings']['xlxsExportSLSetlistMode'] = iniFileConfig['system'].as_bool('enableShortCuts')
+                self.frameWork['settings']['xlxsExportSLSetlistMode'] = iniFileConfig['system'].as_bool('xlxsExportSLSetlistMode')
+                self.frameWork['settings']['xlsExportFilename'] = iniFileConfig['system']['xlsExportFilename']
 
                 self.frameWork['settings']['debug']['mode'] = iniFileConfig['debug'].as_bool('mode')
                 self.frameWork['settings']['debug']['verbosityThreshold'] = iniFileConfig['debug'].as_int('verbosityThreshold')
@@ -4164,7 +4266,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         except Exception as e:
             msg = _translate("MainWindow", 'IniFile could not be read successfully. '
                                            'Please check content of iniFile and/or call administrator'
-                                           f"\nError: \'{e}\'"
+                                           f"\nError: \'{str(e)}\'"
                              , None)
             self.dPrint(msg, 0, guiMode=True)
             status = False
@@ -4198,21 +4300,33 @@ class CICoachLab(QtWidgets.QMainWindow):
         # just initialize exercise if it was not selected before
         if exerName != self.curExercise['settings']['exerciseName'] or enforceInit:
             # resetting exercise widget title, it will cleared at first start of a run
-            self.ui.exerWidget.setTitle(self.oldExerciseWidgetTitle)
+            try:
+                self.ui.exerWidget.setTitle(self.oldExerciseWidgetTitle)
+            except:
+                self.dPrint('The title could not be reset. The gui might have been closed already', 2)
             # save previous exercise if an old exercise exists and no setlist is active
             oldExerName = self.curExercise['settings']['exerciseName']
             if (oldExerName != '' and \
                 oldExerName != exerName) or enforceInit:    # and not(self.curSetlist['active']):
-                try:
-                    self.clearSettingsInMenu(mode='curExercise')
-                    if self.curExercise['functions']['eraseExerciseGui'] != None:
+
+                self.clearSettingsInMenu(mode='curExercise')
+                if self.curExercise['functions']['eraseExerciseGui'] != None:
+                    try:
+                        # Todo: not solving shutdown bug
                         self.curExercise['functions']['eraseExerciseGui']()
-                    else:
-                        self.dPrint('eraseExerciseGui is undefined: This may be the case if data and  settings are set from saved data', 2)
-                    if self.curExercise['functions']['destructor']:
+                    except:
+                        self.dPrint(
+                            'Exception: Could not eraseGui for  ' + self.curExercise['settings']['exerciseName'], 1)
+                else:
+                    self.dPrint(
+                        'eraseExerciseGui is undefined: This may be the case if data and  settings are set from saved data', 2)
+                if self.curExercise['functions']['destructor']:
+                    try:
                         self.curExercise['functions']['destructor']()
-                except:
-                    self.dPrint('Exception: Could not eraseGui for  ' + self.curExercise['settings']['exerciseName'], 1)
+                    except:
+                        self.dPrint(
+                            'Exception: Could not call destructor for  ' + self.curExercise['settings']['exerciseName'],
+                            1)
 
                 if self.frameWork['settings']['usePrevStates']:
                     try:
@@ -4304,39 +4418,24 @@ class CICoachLab(QtWidgets.QMainWindow):
                                  'has to be handled by exercise. Which is not recommended.  Please contact your admin.'
                                  , None)
                 self.dPrint(msg, 0, guiMode=True)
-
-            '''
-            # after the exercise settings have been updated the defined generator, preprocessor and player are loaded
-            playerSettings = self.curPlayer['settings']
-            generatorSettings = self.curGenerator['settings']
-            preprocessorSettings = self.curPreprocessor['settings']
-            
-            self.iniSubmodule('player', playerSettings['playerName'],
-                              playerSettings, enforceInit=True)
-            self.iniSubmodule('generator', generatorSettings['generatorName'],
-                              generatorSettings, enforceInit=True)
-            self.iniSubmodule('preprocessor', preprocessorSettings['preprocessorName'],
-                              preprocessorSettings, enforceInit=True)
-            '''
-
-            if not(self.initialized['player']):
-                playerName = self.curExercise['settings']['player']
-                playerSettings = self.curExercise['settings']['playerSettings']
-                self.iniSubmodule('player', playerName,
-                                  playerSettings, enforceInit=True)
-            if not(self.initialized['generator']):
-                generatorName = self.curExercise['settings']['generator']
-                generatorSettings = self.curExercise['settings']['generatorSettings']
-                self.iniSubmodule('generator', generatorName,
-                                  generatorSettings, enforceInit=True)
-            if not (self.initialized['preprocessor']):
-                preprocessorName = self.curExercise['settings']['preprocessor']
-                preprocessorSettings = self.curExercise['settings']['preprocessorSettings']
-                self.iniSubmodule('preprocessor', preprocessorName,
-                              preprocessorSettings, enforceInit=True)
-
             self.dPrint('Exercise is already selected but settings have changed. Just calling loadSetting-function', 3)
             iniSuccess = True
+
+        if not(self.initialized['player']):
+            playerName = self.curExercise['settings']['player']
+            playerSettings = self.curExercise['settings']['playerSettings']
+            self.iniSubmodule('player', playerName,
+                              playerSettings, enforceInit=True)
+        if not(self.initialized['generator']):
+            generatorName = self.curExercise['settings']['generator']
+            generatorSettings = self.curExercise['settings']['generatorSettings']
+            self.iniSubmodule('generator', generatorName,
+                              generatorSettings, enforceInit=True)
+        if not (self.initialized['preprocessor']):
+            preprocessorName = self.curExercise['settings']['preprocessor']
+            preprocessorSettings = self.curExercise['settings']['preprocessorSettings']
+            self.iniSubmodule('preprocessor', preprocessorName,
+                          preprocessorSettings, enforceInit=True)
 
         self.initialized['exercise'] = True
         if iniSuccess:
@@ -4380,7 +4479,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         if len(self.frameWork['settings']['iniFileConfig']) == 0:
             msg = _translate("MainWindow", 'Writing of ini File failed. Inifile configuration could not bee read before. '
                              'Check content of iniFile', None)
-            self.dPrint(msg, 0, guiMode = True)
+            self.dPrint(msg, 0)
         else:
             try:
                 if mode == 'frameWork':
@@ -4421,6 +4520,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                     iniFileConfig['system']['studyMode'] = self.frameWork['settings']['studyMode']
                     iniFileConfig['system']['masterlistFile'] = self.curMasterlist['settings']['masterlistFile']
                     iniFileConfig['system']['masterlistStart'] = self.curMasterlist['settings']['masterlistStart']
+                    iniFileConfig['system']['ignoreConditions'] = self.frameWork['settings']['ignoreConditions']
                     iniFileConfig['system']['exerciseFrameGeometry'] = self.frameWork['settings']['exerciseFrameGeometry']
                     iniFileConfig['system']['mainFramegeometry'] = self.frameWork['settings']['mainFramegeometry']
                     iniFileConfig['system']['fontSize'] = self.frameWork['settings']['fontSize']
@@ -4430,6 +4530,8 @@ class CICoachLab(QtWidgets.QMainWindow):
                     iniFileConfig['system']['ignoreFilterFile'] = self.frameWork['settings']['ignoreFilterFile']
                     iniFileConfig['system']['enableShortCuts'] = self.frameWork['settings']['enableShortCuts']
                     iniFileConfig['system']['xlxsExportSLSetlistMode'] = self.frameWork['settings']['xlxsExportSLSetlistMode']
+                    iniFileConfig['system']['xlsExportFilename'] = self.frameWork['settings']['xlsExportFilename']
+
                     iniFileConfig['debug']['mode'] = self.frameWork['settings']['debug']['mode']
                     iniFileConfig['debug']['verbosityThreshold'] = self.frameWork['settings']['debug']['verbosityThreshold']
                     iniFileConfig['debug']['debuggingFile'] = self.frameWork['settings']['debug']['debuggingFile']
@@ -4526,7 +4628,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                                     # open debug file for writing/appending if it wasn't before
                                     print('Open debug file for writing')
                                     self.frameWork['settings']['debug']['debuggingFileHandle'] = open(
-                                        self.frameWork['settings']['debug']['debuggingTempFile'], 'a')
+                                        self.frameWork['settings']['debug']['debuggingTempFile'], 'a', encoding='utf-8')
                             except:
                                 print('Exception: Could not open debug file for writing', 1)
                             else:
@@ -4716,20 +4818,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                     preprocessorSettings = loadStruct['preprocessor']['settings']['settingsName']
                     exerciseSettings = loadStruct['exercise']['settings']['settingsName']
 
-
-
-
                 self.user = loadStruct['user']
-
-                '''
-                
-                self.iniSubmodule('player',  loadStruct['player']['settings']['playerName'],
-                                playerSettings, enforceInit=True)
-                self.iniSubmodule('generator', loadStruct['generator']['settings']['generatorName'],
-                                  generatorSettings, enforceInit=True)
-                self.iniSubmodule('preprocessor',  loadStruct['preprocessor']['settings']['preprocessorName'],
-                                     preprocessorSettings, enforceInit=True)
-                '''
                 self.iniExercise(loadStruct['exercise']['settings']['exerciseName'],
                                  exerciseSettings, enforceInit=True)
 
@@ -4754,7 +4843,9 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.writeIniFile()
 
             except:
-                self.dPrint('Exception: Loading of data was not succesfull. Please contact your Admin.',
+                self.dPrint(
+                    _translate("MainWindow",
+                               'Exception: Loading of data was not succesfull. Please contact your Admin.', None),
                             1, guiMode=True)
         else:
             self.dPrint('Loading of data was canceled by the user', 1)
@@ -4782,24 +4873,28 @@ class CICoachLab(QtWidgets.QMainWindow):
 
 
         if self.frameWork['settings']['coachMode']:
+            '''
             title = _translate("MainWindow", 'Saving data as "coach"?', None)
             question = _translate("MainWindow",
                                   'You are currently logged in as "coach". Do you really want to save the data?\n\n' +
                                   'Please confirm the filename or even better select a new filename.'
                                   , None)
-            quest = CICoachDialog(self, title, question)
+            quest = CICoachDialog(self, title, question, 'confirmationNo')
             answer = quest.returnButton()
             if not(answer == QtWidgets.QMessageBox.Yes):
                 msg = "The user 'coach' aborted the saving process."
                 self.dPrint(msg, 0)
                 return
-            if filename:
-                lastPath = filename
-            else:
-                lastPath = self.frameWork['settings']['lastSavingPath']
+            '''
+            msg = "Aborting the saving process because use of 'coach'-mode."
+            self.dPrint(msg, 0)
+            return
 
+        if filename:
+            lastPath = filename
         else:
             lastPath = self.frameWork['settings']['lastSavingPath']
+
 
         backUpfile = ''
 
@@ -4813,7 +4908,6 @@ class CICoachLab(QtWidgets.QMainWindow):
                 _translate("MainWindow", "Result files", None)+'(*.cid)',
                 QtWidgets.QFileDialog.DontUseNativeDialog
             )
-
         
         if filename != '':
             try:
@@ -4844,9 +4938,6 @@ class CICoachLab(QtWidgets.QMainWindow):
                 saveStruct['user'] = self.user
                 saveStruct['userLimits'] = self.userLimits
                 # saveStruct['exercise']['settings']['exerciseName']
-
-
-
 
                 usingBitlocker = self.requiresBitlocker(filename)
                 if usingBitlocker:
@@ -4903,7 +4994,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         #self.dPrint('Leaving saveRunData()', 2)
 
         now = datetime.datetime.now()
-        t = now.strftime("%Y-%m-%d_%H-%M-%S")
+        t = now.strftime("%Y%m%d_%H%M%S")
         backupfilename = re.sub(ext, '_' + t + '_bu' + ext, filename)
         shutil.copyfile(filename, backupfilename)
 
@@ -5179,7 +5270,6 @@ class CICoachLab(QtWidgets.QMainWindow):
                         set = importlib.util.module_from_spec(spec)
                         spec.loader.exec_module(set)  # required for in exercise loading
                         set.defineSettings(self)
-
                         getattr(self, module)['settings']['settingsName'] = settings
                     else:
                         self.dPrint(_translate("MainWindow",'This should not happen: loadSettings failed. '
@@ -5211,6 +5301,7 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.dPrint('getSetlist()', 2)
 
+        success = True
         try:
             # do not initialize/read a setlist if the setlist mode is not active
             if self.curSetlist['active']:
@@ -5315,7 +5406,9 @@ class CICoachLab(QtWidgets.QMainWindow):
                                         'short' in setlistConfig['description']:
                                     # extract optional description from setlist file
                                     self.curSetlist['settings']['list'][section]['short'] = setlistConfig[section]['short']
-
+                        else:
+                            success = False
+                            return
                         self.curSetlist['settings']['setlistName'] = setlistName
                         self.ui.pbRunSetlist.setDisabled(False)
                         self.ui.pbNewRun.setEnabled(False)
@@ -5323,12 +5416,24 @@ class CICoachLab(QtWidgets.QMainWindow):
                         # another setlist
                         self.prevStates['setlists']['lastSetlist'] = setlistName
                         self.prevStates['srExercises']['lastSingleRunExercise'] = ''
-                    except:
-                        self.dPrint('Exception: Could not read setlist ' + setlistName, 1)
+                    except Exception as err:
+                        title = _translate("MainWindow",'Could not read setlist ', None)
+                        msg = title + ': ' +  setlistName\
+                              + _translate("MainWindow",'\n\nError message:\n', None) + str(err)
+                        self.dPrint(msg, 0)
+                        CICoachDialog(self, title, msg, 'information')
+                        success = False
             else:
                 self.dPrint('Could not read setlist because setlistMode is False: setlistName: ' + setlistName, 1)
-        except:
-            self.dPrint('Exception: Could not read setlist ' + setlistName, 1)
+                success = False
+        except Exception as err:
+            title = _translate("MainWindow", 'Could not read setlist (big fail)', None)
+            msg = title + setlistName +\
+                  _translate("MainWindow",'\n\nError message:\n', None) + str(err)
+
+            self.dPrint(msg, 0)
+            CICoachDialog(self, title, msg, 'information')
+            success = False
 
         self.ui.lwSetlistContentVal.clear()
         ii = 0
@@ -5341,7 +5446,7 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.updateInfoFields()
         self.dPrint('Leaving getSetlist()', 2)
-
+        return success
 
     def savePrevState(self, setOrExerMode, setOrExername):
         """!
@@ -5492,12 +5597,12 @@ class CICoachLab(QtWidgets.QMainWindow):
                 , None)
             windowHandle = self.showInformationDialog(msgDoxyStart)
 
-            # for the dynamical loading of all dox files which are found in the subfolders of CICoachLab the Doxyfile has to be updated at
+            # for the dynamical loading of all dox files which are found in the subdirectories of CICoachLab the Doxyfile has to be updated at
             # the first Startup of the help generation.
             doxyfile = os.path.join(self.frameWork['path']['pwd'], 'Doxyfile')
             resetAndUpdate = True
             if os.path.isfile(doxyfile):
-                # this can happen if the html folder was deleted for the regeneration of the documentation without deleting
+                # this can happen if the html directory was deleted for the regeneration of the documentation without deleting
                 # Doxyfile
                 question = _translate("MainWindow",'The file Doxyfile does already exist. Do you want to reset it to the'
                                               ' template files and update dynamically added dox files?\n\n'
@@ -6467,7 +6572,7 @@ class CICoachLab(QtWidgets.QMainWindow):
         translator.load(localization, translationPath)
         self.app.installTranslator(translator)
 
-        # providing the translation of all exercises (defined by .py files in exercise foldert)
+        # providing the translation of all exercises (defined by .py files in exercise directory)
         #   which provide a 'locales'-directory
         exercisePath  = self.frameWork['path']['exercises']
 
@@ -6521,7 +6626,10 @@ class CICoachLab(QtWidgets.QMainWindow):
         for player in self.frameWork['settings']['access']['player']['main']['available']['names']:
             self.translateBase(modulesPath=self.frameWork['path']['player'],
                                module=player, localization=localization)
-
+        # The workflow of the translation looks alike:
+        # /usr/bin/pylupdate5 /pathTo/exercises/ffmPhonemeTest.py -ts /pathTo/exercises/ffmPhonemeTest/locales/en_de.ts
+        # linguist /pathTo/exercises/ffmPhonemeTest/locales/en_de.ts
+        # lrelease /pathTo/exercises/ffmPhonemeTest/locales/en_de.ts
         cmd = '/usr/bin/pylupdate5 ' + \
                 os.path.join(self.frameWork['path']['pwd'], '') + 'CICoachLab.py ' +\
                 os.path.join(self.frameWork['path']['pwd'], '') + 'CICoachLabMainWindowGui2.py ' +\
@@ -6599,13 +6707,22 @@ class CICoachLab(QtWidgets.QMainWindow):
                 os.path.isfile(self.curMasterlist['settings']['masterlistFile']):
             try:
                 masterlistFileConfig = ConfigObj(self.curMasterlist['settings']['masterlistFile'], encoding="utf8")
-            except:
-                self.dPrint("Could not open masterListfile: " + self.curMasterlist['settings']['masterlistFile'], 2)
+            except Exception as err:
+                title = _translate("MainWindow", "Could not open masterListfile", None)
+                msg = ': ' + self.curMasterlist['settings']['masterlistFile'] + \
+                    _translate("MainWindow",'\n\nError message:\n', None) + str(err)
+
+                self.dPrint(msg, 2)
+                CICoachDialog(self, title, msg, 'information')
+
             else:
                 self.curMasterlist['settings']['name'] = masterlistFileConfig['name']
                 self.curMasterlist['settings']['information'] = masterlistFileConfig['information']
                 self.curMasterlist['settings']['lastItemIDX'] = masterlistFileConfig.as_int('lastItemIDX')
-
+                # can only be read from masterlist
+                resetIDXs = masterlistFileConfig['resetIDXs']
+                # converting the read string to integers
+                self.curMasterlist['settings']['resetIDXs'] = [int(i) for i in resetIDXs]
                 self.curMasterlist['settings']['items'] = masterlistFileConfig['items']
                 self.curMasterlist['settings']['settings'] = masterlistFileConfig['settings']
                 self.curMasterlist['settings']['runmode'] = masterlistFileConfig['runmode']
@@ -6617,6 +6734,15 @@ class CICoachLab(QtWidgets.QMainWindow):
                 self.curMasterlist['settings']['postconditionMessages'] = \
                     masterlistFileConfig['postconditionMessages']
                 self.curMasterlist['settings']['description'] = masterlistFileConfig['description']
+
+                # allowing single entries in masterlist by changing a single string to a list containing a single string
+                configFields = ['items', 'runmode', 'settings', 'preconditions', 'preconditionMessages',
+                                'postconditions', 'postconditionMessages', 'description']
+                for field in configFields:
+                    if isinstance(self.curMasterlist['settings'][field],str):
+                        self.curMasterlist['settings'][field] = [self.curMasterlist['settings'][field]]
+
+
 
                 self.frameWork['settings']['masterlistFileConfig'] = masterlistFileConfig
         else:
@@ -6639,6 +6765,8 @@ class CICoachLab(QtWidgets.QMainWindow):
             masterlistFileConfig['name'] = self.curMasterlist['settings']['name']
             masterlistFileConfig['information'] = self.curMasterlist['settings']['information']
             masterlistFileConfig['lastItemIDX'] = self.curMasterlist['settings']['lastItemIDX']
+            # can only be read from masterlist
+            #masterlistFileConfig['resetIDXs'] = self.curMasterlist['settings']['resetIDXs']
 
             masterlistFileConfig['items'] = self.curMasterlist['settings']['items']
             masterlistFileConfig['settings'] = self.curMasterlist['settings']['settings']
@@ -6655,7 +6783,8 @@ class CICoachLab(QtWidgets.QMainWindow):
             masterlistFileConfig.write_empty_values = True
             masterlistFileConfig.write()
         else:
-            pass
+            self.dPrint('Not writing to  masterlist', 2)
+
         self.dPrint('Leaving writeMasterlist()', 2)
 
 
@@ -6693,7 +6822,7 @@ class CICoachLab(QtWidgets.QMainWindow):
                     status = False
                 # checking settings
                 settingsName = self.curMasterlist['settings']['settings'][mlCounter]
-                if settingsName != 'None':
+                if settingsName != 'None' and settingsName != 'default':
                     path = os.path.join(self.frameWork['path']['exercises'], name, 'presets')
                     if not( os.path.isfile(path+os.path.sep+settingsName+'.set')):
                         # did not find a set-preset?: Try py-preset!
@@ -6812,7 +6941,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             else:
                 signal.disconnect()
         except TypeError:
-            pass
+            print('Error in reconnect')
         if newHandler is not None:
             signal.connect(newHandler)
 
@@ -6896,36 +7025,25 @@ class CICoachLab(QtWidgets.QMainWindow):
 
         self.dPrint('xlsxExport()', 2)
 
-        self.xlsxExportFilename = filename # TODO
-        self.xlsxExportFilename = '/home/daniel/Dokumente/programme/pythonSkripte/projekte/ciTrainer/testing/test.xlsx'
-        if not(self.xlsxExportFilename):
-            self.xlsxExportFilename, _ = QtWidgets.QFileDialog.getSaveFileName(
-                self,
-                _translate("MainWindow", "Export to xlsx file ... ", None),
-                self.xlsxExportFilename,
-                _translate("MainWindow", 'Xlsx-file', None) + ' (.xlsx) ;;' + \
-                _translate("MainWindow", 'All files', None) + ' (*)',
-                _translate("MainWindow", 'Xlsx-file', None) + ' (*.xlsx)',
-                QtWidgets.QFileDialog.DontUseNativeDialog
-            )
-            if not (self.xlsxExportFilename):
-                msg = 'Aborting xslx-export because no filename is provide'
-                return
+        # saving patient data in CICoachLab format to backup data.
+        self.saveRunData(filename=self.frameWork['settings']['patientSavingFile'])
 
-        if not ('.xlsx' in self.xlsxExportFilename):
-            self.xlsxExportFilename = self.xlsxExportFilename + '.xlsx'
-
-        # obligatory entries which are saved in the results file by CICLab
-        prologtitles = ['subject']
+        ## % obligatory entries which are saved in the results file by CICLab
+        prologtitles = ['subject', 'repIMeasIndex', 'SLSetlistMode']
+        # 'repMeasIDX': empty field which can be filled manually indicating time points in repeated measures
         epilogtitles = ['exercise', 'startASCII',
-                        'settingName', 'endASCII', 'duration', 'reactionTime', 'setlist', 'setlistIndex', 'masterlist',
-                        'masterlistIndex', 'runIDX', 'itemIdx', 'runCompleted', 'statusMessage', 'runAccomplished']
+                        'settingName', 'endASCII', 'duration', 'repMeasIDXExercise', 'setlist', 'setlistIndex', 'masterlist',
+                        'masterlistIndex', 'runIDX', 'itemIdx', 'runCompleted', 'statusMessage', 'runAccomplished',
+                        'prevExerciseName','prevExerciseSettingsName','prevExerciseRunDataCounter',
+                        'prevExerciseRunDataGuiName','exportMode']
+
+
 
         if not(mode):
             msg = _translate("MainWindow", 'Please select the mode you want to export the data.', None)
             options = {'allglobal': _translate("MainWindow",'all global runs', None),
-                       'allExercise': _translate("MainWindow",'all exercise runs', None),
-                       'selectedExercise': _translate("MainWindow",'selected runs', None),
+                       'selectedExercise': _translate("MainWindow",'all exercise runs', None),
+                       'selectedRuns': _translate("MainWindow",'selected runs', None),
                        'selectedSetlist': _translate("MainWindow",'selected setlist', None),
                        'masterlist': _translate("MainWindow",'masterlist', None)}
             dlg = SelectionDialog(self, msg=msg, listItems=list(options.values()))
@@ -6936,13 +7054,69 @@ class CICoachLab(QtWidgets.QMainWindow):
             msg = 'Aborting xslx-export because no mode was selected.'
             self.dPrint(msg, 0)
             return
-        #settingNames = []
+
+        if filename:
+            xlsExportFilename = filename
+        else:
+            xlsExportFilename = self.frameWork['settings']['xlsExportFilename']
+
+        # a new file name is defined for saving or existing file name (and overwriting) will be confirmed by user
+        xlsExportFilename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            _translate("MainWindow", "Export to csv file ... ", None),
+            xlsExportFilename,
+            _translate("MainWindow", 'csv-files', None) + ' (.csv) ;;' + \
+            _translate("MainWindow", 'All files', None) + ' (*)',
+            _translate("MainWindow", 'csv-files', None) + ' (*.csv)',
+            QtWidgets.QFileDialog.DontUseNativeDialog
+        )
+        if not (xlsExportFilename):
+            msg = 'Aborting xslx-export because no filename is provide'
+            self.dPrint(msg, 1)
+            return
+        dataHandlingMode = 'renewel'
+        if os.path.isfile(xlsExportFilename):
+            question = _translate("MainWindow", 'Do you want to append the new data to the existing data?', None)
+            title = _translate("MainWindow", 'Appending existing data?', None)
+            infoText = \
+                _translate("MainWindow",
+                           'If you press "No" the previous data in export file will be deleted!\n'
+                           'If you press "Cancel" no data will be written or deleted'
+                           , None)
+            quest = CICoachDialog(self, title, question, mode='question',infoText=infoText)
+            answer = quest.returnButton()
+            if answer == QtWidgets.QMessageBox.Yes:
+                msg = _translate("MainWindow", 'Appending new data to excel file.', None)
+                dataHandlingMode = 'appending'
+            elif answer == QtWidgets.QMessageBox.No:
+                msg = _translate("MainWindow", 'Saving data to excel file and deleting old file.', None)
+                dataHandlingMode = 'renewel'
+            elif answer == QtWidgets.QMessageBox.Cancel:
+                msg = 'Aborting xslx-export because no decision for appending or renewal of excel file is provide'
+                self.dPrint(msg, 0)
+                return
+
+        self.dPrint(msg, 1)
+
+        if not ('.csv' in xlsExportFilename):
+            xlsExportFilename = xlsExportFilename + '.csv'
+        # updating filename if filename has changed
+        self.frameWork['settings']['xlsExportFilename'] = xlsExportFilename
+
+        # backuping xlsx file, just to be sure
+        extsep = os.path.extsep
+        basename, ext = os.path.basename(xlsExportFilename).split(extsep)
+        dirname = os.path.dirname(xlsExportFilename)
+        bupart = datetime.datetime.today().strftime('%Y%m%d_%H%M%S')
+        xlsxBackupFile = dirname + os.path.sep + basename + bupart + extsep + ext
+        self.moveCopyFile(xlsExportFilename, xlsxBackupFile, mode='copy', backupDestination=False, logMode=True)
+
         exerciseNames = []
         if mode == options['allglobal']:
             exerciseNames = self.frameWork['settings']['access']['exercises']['main']['displayed']['names']
-        elif mode == options['allExercise'] or mode == options['selectedExercise']:
+        elif mode == options['selectedExercise'] or mode == options['selectedRuns']:
             exerciseNames = [self.curExercise['settings']['exerciseName']]
-            if mode == options['selectedExercise']:
+            if mode == options['selectedRuns']:
                 if not (self.curExercise['selectedRunData']):
                     msg = _translate("MainWindow", "No data has been selected.\n\n"
                                                    "Choose another option or select the ", None)
@@ -6952,7 +7126,7 @@ class CICoachLab(QtWidgets.QMainWindow):
             if self.curSetlist['settings']['setlistName']:
                 exerciseNames = list(set(self.curSetlist['settings']['list']['exercises']['names']))
                 #settingNames = self.curSetlist['settings']['list']['exercises']['settings']
-        elif mode == options['selectedMasterlist']:
+        elif mode == options['masterlist']:
             if self.curMasterlist['settings']['items']:
                 exerciseNames = self.curMasterlist['settings']['items']
         oldExercise = self.curExercise['settings']['exerciseName']
@@ -6966,17 +7140,42 @@ class CICoachLab(QtWidgets.QMainWindow):
                 return
 
         statusAll = []
-        exportDataFrame = pd.DataFrame()
+        if dataHandlingMode == 'renewel':
+            exportDataFrame = pd.DataFrame()
+        elif dataHandlingMode == 'appending':
+            # reading excel file data into
+            #exportDataFrame = pd.DataFrame()
+            exportDataFrame = pd.read_csv(xlsExportFilename)
+            # ignoring first row which contains index of data only
+            # if title exists and data does not contain index abort export because data has unexpected format
+            try:
+                if exportDataFrame.iloc[0, 0] and len(set(np.diff(exportDataFrame.iloc[:, 0].to_numpy()))) == 1:
+                    msg = _translate("MainWindow",
+                                     'Unexpected data in first row. Expected no title and row index.'
+                                     'Please check the data file. Aborting export of resuls.', None)
+                    self.dPrint(msg, 0, guiMode=True)
+                    return
+                else:
+                    exportDataFrame = exportDataFrame.iloc[:, 1:]
+            except:
+                msg = _translate("MainWindow",
+                                 'Unexpected data format.'
+                                 'Please check the data file. Aborting export of resuls.', None)
+                self.dPrint(msg, 0, guiMode=True)
+                return
+
         exportSeries = pd.Series()
+
         xlxsExportSLSetlistMode = self.frameWork['settings']['xlxsExportSLSetlistMode']
         allUsers = []
         allSetListIdx = []
+        runCounter = 0
         for exerciseName in exerciseNames:
             try:
                 self.iniExercise(exerciseName)
             except:
                 msg = _translate("MainWindow",
-                                 'Exercise could not be initialized for xlsx-export:', None) + exerciseName
+                                 'Exercise could not be initialized for csv-export:', None) + exerciseName
                 self.dPrint(msg, 0, guiMode=True)
                 return
 
@@ -6986,9 +7185,9 @@ class CICoachLab(QtWidgets.QMainWindow):
             else:
                 items = list(self.runData[exerciseName])
 
-                if mode == options['selectedExercise']:
+                if mode == options['selectedRuns']:
                     rows = self.curExercise['selectedRunData']
-                elif mode == options['allglobal'] or mode == options['allExercise']:
+                elif mode == options['allglobal'] or mode == options['selectedExercise']:
                     #rows = list(items)
                     rows = range(len(items))
                 elif mode == options['selectedSetlist']:
@@ -7004,19 +7203,20 @@ class CICoachLab(QtWidgets.QMainWindow):
                             rows.append(row)
                 exportDataFrameList = []
                 for row in rows:
+                    runCounter = runCounter + 1
                     if not(xlxsExportSLSetlistMode):
                         exportSeries = pd.Series()
                     data = self.runData[exerciseName][items[row]]
                     user = data['user']
                     if user:
-                        if self.user['subjectID']:
-                            subj = self.user['subjectID']
+                        if user['subjectID']:
+                            subj = user['subjectID']
                         else:
-                            if len(self.user['forname']) > 0 and len(self.user['lastname']) > 0:
-                                subj = self.user['forname'][0] + self.user['lastname'][0] + \
-                                       self.user['birthday'].replace('.', '')[0:4]
+                            if len(user['forname']) > 0 and len(user['lastname']) > 0:
+                                subj = user['forname'][0] + user['lastname'][0] + \
+                                       user['birthday'].replace('.', '')[0:4]
                             else:
-                                subj = self.user['birthday'].replace('.', '')[0:4]
+                                subj = user['birthday'].replace('.', '')[0:4]
                     else:
                         subj = 'Anonym'
 
@@ -7026,38 +7226,65 @@ class CICoachLab(QtWidgets.QMainWindow):
                         masterlistFile = ''
                     allUsers.append(subj)
                     allSetListIdx.append(data['setListIdx'])
-                    prolog = [subj]
+                    # if all data is fit into a single row and the first run is added to the exported data or if each
+                    # run is exporte into one row the prolog will be generated and added.
+                    if runCounter == 1 or not(xlxsExportSLSetlistMode):
+                        prolog = [subj, '', xlxsExportSLSetlistMode]
+                        prologSeries = pd.Series(prolog, index=prologtitles, name='prolog')
+                        exportSeries = exportSeries.append(prologSeries)
+
                     epilog = [exerciseName,
                               data['time']['startASCII'],
                               data['settings']['exercise']['settingsName'],
                               data['time']['endASCII'],
                               data['time']['duration'],
-                              data['time']['reactionTime'],
+                              '',
                               data['settings']['setlist']['setlistName'],
                               data['setListIdx'],
                               masterlistFile,
                               data['settings']['masterlist']['lastItemIDX'],
-                              data['runIDX'], #data['itemIdx']
+                              data['runIDX'],
                               data['itemIdx'],
                               data['runCompleted'],
                               data['statusMessage'],
-                              data['runAccomplished']
+                              data['runAccomplished'],
+                              data['prevExerciseName'],
+                              data['prevExerciseSettingsName'],
+                              data['prevExerciseRunDataCounter'],
+                              data['prevExerciseRunDataGuiName'],
+                              mode
                               ]
 
-                    prologSeries = pd.Series(prolog, index=prologtitles, name='prolog')
                     epilogSeries = pd.Series(epilog, index=epilogtitles, name='epilog')
                     # The returned status can be 'Valid', 'NoAnswer', 'None', 'Failed', 'Warning'
                     dataSeries, status = self.curExercise['functions']['xlsxExport'](data)
                     dataSeries.rename('results')
                     statusAll.append(status)
-                    
-                    exportSeries = exportSeries.append(prologSeries)
-                    exportSeries = exportSeries.append(epilogSeries)
+                    # if the row titles are not unique (because the same question has been asked twice in a questionaire)
+                    # the index will be unificated/be made unique.
+                    if xlxsExportSLSetlistMode:
+                        self.dPrint('Unification of row titles in dataSeries and epiloGseries', 3)
+                        indexDS = list(dataSeries.index)
+                        tempDS = data['settings']['exercise']['exerciseName'][0:5] \
+                               + data['settings']['exercise']['settingsName'][0:5] + '_'
+                        indexDSNew = [tempDS + i for i in indexDS]
+                        indexDictDS = {indexDS[i]: indexDSNew[i] for i in range(len(indexDS))}
+                        dataSeries = dataSeries.rename(indexDictDS)
 
+                        indexES = list(epilogSeries.index)
+                        tempES = data['settings']['exercise']['exerciseName'][0:5] \
+                               + data['settings']['exercise']['settingsName'][0:5] + '_'
+                        indexESNew = [tempES + i for i in indexES]
+                        indexDictES = {indexES[i]: indexESNew[i] for i in range(len(indexES))}
+                        epilogSeries = epilogSeries.rename(indexDictES)
+
+
+                    exportSeries = exportSeries.append(epilogSeries)
                     exportSeries = exportSeries.append(dataSeries)
 
-                    # if index is not unique (because the same question has been asked twice in an questionaire)
-                    # the index will unificated/be made unique
+                    # if the row titles are not unique still
+                    # the index will be unificated/be made unique even more by adding numbers to ambiguous row titles
+
                     exportSeries.index = \
                         exportSeries.index + exportSeries.groupby(level=0).cumcount().astype(
                             str).replace('0', '')
@@ -7065,13 +7292,11 @@ class CICoachLab(QtWidgets.QMainWindow):
                     # choosing format of exported setlist-data, export all found data into
                     # a single line which contains all data of the setlist or
                     # a matrix where a line contains the data of each run with its specific exercise and setting
-                    if xlxsExportSLSetlistMode:
-                        exportSeries.append(exportSeries)
-                    else:
+                    if not(xlxsExportSLSetlistMode):
                         exportDataFrameList.append(exportSeries)
-                
-                if xlxsExportSLSetlistMode:
-                    exportSeries.append(exportSeries)
+
+                #if xlxsExportSLSetlistMode:
+                #    exportSeries.append(exportSeries)
                 if exportDataFrameList and not(xlxsExportSLSetlistMode):
                     exportDataFrame = exportDataFrame.append(pd.DataFrame(exportDataFrameList))
 
@@ -7079,8 +7304,12 @@ class CICoachLab(QtWidgets.QMainWindow):
             exportSeries.index = \
                 exportSeries.index + exportSeries.groupby(level=0).cumcount().astype(
                     str).replace('0', '')
-            exportSeries = exportSeries._set_name('Setlist Export')
-            exportDataFrame = exportDataFrame.append(exportSeries)
+            # setting a unique seriesName
+            #exportSeries = exportSeries._set_name('Datasetname_' + subj + '_' + data['time']['startASCII'])
+            #exportSeries = exportSeries._set_name('Exercise_') # TODO
+            # ignore_index=True
+            # append seems to be deprecated exportDataFrame.concat will be applied in future releases
+            exportDataFrame = exportDataFrame.append(exportSeries, ignore_index=True)
         if len(set(allUsers)) > 1 and xlxsExportSLSetlistMode and mode == options['selectedSetlist']:
             question = _translate("MainWindow",
                                   'Multiple users were found. Do you want to export the data nevertheless?', None)
@@ -7104,11 +7333,17 @@ class CICoachLab(QtWidgets.QMainWindow):
             self.dPrint(question + ': OK', 0)
 
         # sorting all runs according to time
-        if not(xlxsExportSLSetlistMode and mode == options['selectedSetlist']):
-            exportDataFrame = exportDataFrame.sort_values(by='startASCII')
 
-        with pd.ExcelWriter(self.xlsxExportFilename) as writer:
-            exportDataFrame.to_excel(writer, sheet_name='CICoachLabExport')
+        if not(xlxsExportSLSetlistMode and mode == options['selectedSetlist']):
+            if not(exportDataFrame.empty):
+                exportDataFrame = exportDataFrame.sort_values(by='startASCII')
+
+        if not (exportDataFrame.empty):
+            # to allow semicolons as separator the questionnaire input widgets of normal 'text' and 'textlong'
+            # will be connected to stringvalidators which don't allow special characters
+            exportDataFrame.to_csv(xlsExportFilename, sep=';')
+            #with pd.ExcelWriter(xlsExportFilename) as writer:
+            #    exportDataFrame.to_csv(writer, sheet_name='CICoachLabExport')
 
         self.iniExercise(oldExercise, oldSettings)
 
@@ -7179,13 +7414,24 @@ class CICoachLab(QtWidgets.QMainWindow):
         sp.setRetainSizeWhenHidden(True)
         widgetObj.setSizePolicy(sp)
 
+'''
 
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    with CICoachLab(app=app) as ciTraining:
+        ciTraining.show()
+        sys.exit(app.exec())
+
+if __name__ == '__main__':
+    main()
+
+'''
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     with CICoachLab(app=app) as ciTraining:
         ciTraining.show()
         # app.exec is sufficient in PyQt5 in PyQt4 sys exit is required.
+        #app.exec, does not work
         sys.exit(app.exec())  # In interactive environments (debugging) sys.exit leads to an error, which is ok.
-
 
 

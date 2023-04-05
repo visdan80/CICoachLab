@@ -38,13 +38,12 @@ from numpy import zeros, floor
 import pandas as pd
 from numpy import array
 from inspect import currentframe, getouterframes
+import re
 import Validators
-
+import string
 # TODO: implement missing features:
 # TODO: 'multipleChoice', 'ranking'; 'noAnswer', 'allowNoAnswer', allowOther, 'orientation', 'displayTick',
 # TODO: 'addSingleComment', 'displayTicks', 'default', 'range', ,'conditions'
-# TODO: implement randomized order of responses
-# TODO: Fragegruppen nur mit gleichen antwortypen, introduce check
 # TODO: make more flexible: qtItem.setFixedWidth(qSizeMax.width())
 # TODO: wrong label above standard settings dropdown
 
@@ -102,6 +101,17 @@ class questionaire():
                 msg = 'questionaire: Could not read reactionTimeDelay from ini File'
                 self.parHandle.dPrint(msg, 2)
                 self.parHandle.frameWork['calibration'][self.parHandle.curExercise['settings']['exerciseName']]['value'] = 0
+
+            # every sign except from special characters will be allowed in 'text' and 'textlong'
+            # widget to prevent problems in cvs exports
+            # ';' will be used as separator for the exercise-result-export of cvs files
+            #charset = string.printable
+            charset = [chr(ii) for ii in range(10000)] # die ersten 10000 utf-8 Zeich: euro Zeichen: U+20AC = 8364
+            self.rejectedCharset = [';', '§', '$', '%', '&', '/', '\\', '*']
+            self.allowedCharSet = list(set(['' if x in self.rejectedCharset else x for x in charset]))
+            self.allowedCharSet = ''.join(self.allowedCharSet)
+
+            self.textlongValidator = dict()
         except:
             print('Entering exercise failed: questionaire')
         self.parHandle.dPrint('questionaire: __init__()', 2)
@@ -202,14 +212,16 @@ class questionaire():
 
             self.ui = dict()
 
-            # if no questions are asked/just providing some information the cancel button wont be added and the text
-            # of the finish button will change to continue
-            questions = [x['question'] for x in settings['items']]
-            if not(any(questions)):
+            if self.parHandle.curSetlist['active'] or self.parHandle.curMasterlist['settings']['active']:
                 pbFinishedRunText = _translate("questionaire", 'Continue', None)
-                infoColumn = 0 # a single infomrmation centralized in widget, There is no column with question numbers
             else:
                 pbFinishedRunText = _translate("questionaire", 'Finished', None)
+            # if no questions are asked/just providing some information the cancel button wont be added
+            questions = [x['question'] for x in settings['items']]
+
+            if not(any(questions)):
+                infoColumn = 0 # a single infomrmation centralized in widget, There is no column with question numbers
+            else:
                 infoColumn = 1
 
                 self.ui['pbCancelRun'] = QtWidgets.QPushButton(subWidget, text=_translate("questionaire", 'Cancel', None))
@@ -385,13 +397,14 @@ class questionaire():
 
                                 rowCounter = rowCounter + 1
                             else:
-                                msg = _translate("questionaire",
-                                                 "Check the number of points and the number of labels. "
-                                                 "\n"
-                                                 "Neither the number of labels is two"
-                                                 " to define the margins nor does the number of labels equal "
-                                                 "the number of choises  ", None)
-                                self.parHandle.dPrint(msg, 0, guiMode=True)
+                                if item['type'] == 'singleChoice':
+                                    msg = _translate("questionaire",
+                                                     "Check the number of points and the number of labels. "
+                                                     "\n"
+                                                     "Neither the number of labels is two"
+                                                     " to define the margins nor does the number of labels equal "
+                                                     "the number of choises  ", None)
+                                    self.parHandle.dPrint(msg, 0, guiMode=True)
                         if item['type'] == 'singleChoice':
                             if item['allowOther']:
                                 item['orientation'] = 'Vertical'
@@ -493,7 +506,16 @@ class questionaire():
                             txt = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
 
                             txt.editingFinished.connect(self.runButton)
+                            # setting tooltip
+                            msg = _translate("questionaire",
+                                             f"All charaters are allowed except: {self.rejectedCharset}\n\n "
+                                             , None)
 
+                            txt.setToolTip(msg)
+                            validator = Validators.StringValidator(
+                                inputRange=self.allowedCharSet,
+                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
+                            txt.setValidator(validator)
                             self.parHandle.curExercise['gui']['exerWidgets'].append(txt)
                             self.ui[objectName] = txt
                             self.gridLauyout.addWidget(txt, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
@@ -504,15 +526,20 @@ class questionaire():
                             self.question['inputObjectName'][-1].append(objectName)
 
                             txt = QtWidgets.QPlainTextEdit(parent = subWidget, objectName= objectName)
-                            txt.setSizePolicy(QtWidgets.QSizePolicy.Minimum,
+                            txt.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
                                                   QtWidgets.QSizePolicy.Minimum)
-                            txt.textChanged.connect(self.run)
-                            """
-                            txt = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
-                            txt.setMinimumHeight(txt.height() * 3)
-                            txt.editingFinished.connect(self.runButton)
+                            txt.textChanged.connect(self.runTextLong)
                             
-                            """
+                            # setting tooltip
+                            msg = _translate("questionaire",
+                                             f"All characters are allowed except: {self.rejectedCharset}\n\n "
+                                             , None)
+                            txt.setToolTip(msg)
+                            validator = Validators.StringValidator(
+                                inputRange=self.allowedCharSet,
+                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
+                            #txt.setValidator(validator)
+                            self.textlongValidator = validator
                             self.parHandle.curExercise['gui']['exerWidgets'].append(txt)
                             self.ui[objectName] = txt
                             self.gridLauyout.addWidget(txt, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
@@ -579,6 +606,8 @@ class questionaire():
                     # after all labels have been created resizing all labels to the same size qSizeMax
                     for labelItem in labelItems:
                         labelItem.setFixedWidth(qSizeMax.width())
+                    for labelItem in labelItems:
+                        labelItem.setFixedHeight(qSizeMax.height())
                 except:
                     self.parHandle.showInformation('Item of questionaire could not be set.')
                 self.question['answObjectName'] = [''] * len(self.question['requested'])
@@ -740,7 +769,7 @@ class questionaire():
         for item in items:
             # not all questionare items have question and just might provide information
             if item['question']:
-                self.parHandle.curRunData['results'][self.runIdx].loc[self.questionNo, 'Question'] = item['question']
+                self.parHandle.curRunData['results'][self.runIdx].loc[self.questionNo - 1, 'Question'] = item['question']
 
         self.parHandle.curRunData['runAccomplished'] = False
 
@@ -832,22 +861,68 @@ class questionaire():
 
         self.parHandle.dPrint('questionaire: Leaving displaySingleResults()', 2)
 
+    def runTextLong(self):
+        """!
+        This function catches the input of the input of the user of the textlong input of the QPlainTextEdit.
+        The extra function is used to enable the check of the user input with a validator.
+        In contrast to QLineEdit the QPlainTextEdit widget does not allow validators.
+        If the input passes the text the input is passed to the central input handling function self.run()
 
-    def run(self):
+        The status of the input is checked by calling self.textlongValidator.validate() with string and the cursor
+        position as input. Since the cursor position is not of interrest here it will be set to -1.
+
+        The return status may be of type
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
+        """
+
+        callingFunctionName = getouterframes(currentframe(), 2)[1][3]
+        # doing nothing if this function has been called self.runTextLong():self.ui[objectName].setPlainText(longtext)
+        if callingFunctionName == 'runTextLong':
+            return
+
+        if self.textlongValidator:
+            try:
+                objectName = self.parHandle.sender().objectName()
+                longtext = self.ui[objectName].toPlainText()
+                status, string, index = self.textlongValidator.validate(longtext, index=-1)
+            except:
+                self.parHandle.dPrint("Could not run validator of 'textlong' input",0)
+                status = 'fallback'
+
+        if status == QtGui.QValidator.Invalid:
+            msg = _translate(
+                "questionaire",
+                "Removing invalid input. Please don't use the following characters: ", None) + str(self.rejectedCharset)
+            for item in self.rejectedCharset:
+                longtext = re.sub(re.escape(item),'', longtext)
+            self.ui[objectName].setPlainText(longtext)
+
+            self.parHandle.dPrint(msg, 0, guiMode=True)
+
+        self.run(callingFunctionName=callingFunctionName)
+
+    def run(self, callingFunctionName=''):
         """!
         This function provides the logic to handle the input of the user.
 
         The data is saved. If any questions are highlighted because the user tried to finish the run with  missing data at
         the highlighting is removed.
+
+        callingFunctionName: this has to be determined sometimes in self.runTextlong() which has to be plugged in
+        betwween the user input and self.run() to check the input of the user, since QPLaintext does not
+        allow validators.
         """
 
         self.parHandle.dPrint('questionaire: run()', 2)
 
-        # if gui is reinitialized the resetting is interpreted as user input which is ignored here
-        callingFunctionName = getouterframes(currentframe(), 2)[1][3]
-        if callingFunctionName == 'iniGui':
-            self.parHandle.dPrint('self.run(): ignoring call by iniGui.', 3)
-            return
+        if callingFunctionName == '':
+            # if gui is reinitialized the resetting is interpreted as user input which is ignored here
+            callingFunctionName = getouterframes(currentframe(), 2)[1][3]
+            if callingFunctionName == 'iniGui':
+                self.parHandle.dPrint('self.run(): ignoring call by iniGui.', 3)
+                return
 
         objectName = self.parHandle.sender().objectName()
         # objectName is constructed as follows:
@@ -1074,10 +1149,9 @@ class questionaire():
                 settingsName = settings
             else:
                 settingsName = 'settings (dict)'
-
-            self.parHandle.dPrint('Could not load settings ('+settingsName+') loading default settings instead', 1)
-
-            self.parHandle.dPrint('Could not load settings (' + settingsName + ') loading default settings instead', 1)
+            self.parHandle.dPrint('Could not erase gui and load settings (' + settingsName +
+                                  ') loading default settings instead', 1,
+                                  guiMode=True)
             self.setDefaultSettings()
 
         # check if a generator, preprocessor player can be initialized, not required so far in this implemtation

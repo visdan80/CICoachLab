@@ -75,7 +75,7 @@
  \subsection sec_preconditionsCICL Preconditions
  Preconditions can be defined which have to be fulfilled before a specific excercise or setting can be run. This is usually done by the administrator which defines the exercises and settings.
 
- One Precondition is defined by the setting of the users performance level which is defined in the user dialog \ref sec_userDialogCICL and can be changed by the user.
+ One Precondition is defined by the setting of the users performance level which is defined in the user dialog \ref sec_userDialogCICL and can be changed by the user. According to this performance level the user only can see prefdefined exercises and settings. The definition of these exercise levels are defined in filter.ini. If the user performance level is lower than the exercise and settings level these cannot be seen by the user.
  \n
  Other preconditions can be defined in the exercise settings.
  This allows to run a setlist which is a series of exercises and settings as long as some predefined conditions in the exercise settings are met.
@@ -83,6 +83,16 @@
  Preconditions can alse be checked during a run of a masterlist. A masterlist defines a list of items wich can be single exercise items with the a specified settings and or a setlist item.
  Whether the preconditions are defined in the exercise settings or in the masterlist the preconditions can be checked at the start or the end of the respective item.
  The preconditions can be set in the exercise setttings or in the masterlist.
+ 
+ 
+ The prerun conditions will be checked at startup of an exercise. If a masterlist is active the masterlist prerun conditions will be checked earlier after the initialization of the the exercise.
+ If a setlist is active the setlists initiatlizes the exercise. The prerun condition of the exercise is checked after the masterlist prerun condition before the call of the exercise run.
+
+ When the exercise run is finished the postrun conditions will be checked and if the check fails the variable 'runAccomplished'  will be set to False and True otherwise.
+ If the user quits or cancels the run prematurely 'runAccomplished' will be set to False without the condition check. The canceling of the run might be disabled or not be implemented by the exercise.
+
+ 
+ 
 
  \subsection sec_setlistsCICL Setlists 
  Setlists allow to run a  set of single exercises with defined settings and in a defined order.
