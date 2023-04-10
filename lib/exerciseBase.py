@@ -113,6 +113,8 @@ class exerciseBase():
             self.parHandle.curExercise['functions']['settingsGui'] = None
             self.parHandle.curExercise['functions']['checkConditions'] = None
             self.parHandle.curExercise['functions']['calibration'] = None
+            self.parHandle.curExercise['functions']['getPlayerStatus'] = None
+            self.parHandle.curExercise['functions']['xlsxExport'] = None
 
             self.parHandle.curExercise['settings']['exerciseName'] = exerciseName
 
@@ -122,16 +124,30 @@ class exerciseBase():
                 self.loadSettings(settings)
 
 
-            # setting default generator and player if necessary
-            if self.parHandle.curPlayer['settings']['playerName'] == '' or \
-                    self.parHandle.curPlayer['settings']['playerName'] != 'playQtAudio':
-                self.parHandle.iniSubmodule('player',  'playQtAudio')
+            # setting default generator and player and their settings if necessary, since they are mandatory
+            if self.parHandle.curPlayer['settings']['playerName'] == '':
+                playerName = self.parHandle.curExercise['settings']['player']
+                playerSettings = self.parHandle.curExercise['settings']['playerSettings']
+                if not(playerName):
+                    playerName = 'playQtAudio'
+                    playerSettings = 'default'
+
+            self.parHandle.iniSubmodule('player', playerName, playerSettings)
             if self.parHandle.curGenerator['settings']['generatorName'] == '':
-                self.parHandle.iniSubmodule('generator',  'genWavreader')
-            if self.parHandle.curPreprocessor['settings']['preprocessorName'] == '':
-                self.parHandle.iniSubmodule('preprocessor',
-                                        self.parHandle.curPreprocessor['settings']['preprocessorName'],
-                                        self.parHandle.curPreprocessor['settings']['settingsName'])
+                generatorName = self.parHandle.curExercise['settings']['generator']
+                generatorSettings = self.parHandle.curExercise['settings']['generatorSettings']
+                if not(generatorName):
+                    generatorName = 'genWavreader'
+                    generatorSettings = 'default'
+            self.parHandle.iniSubmodule('generator', generatorName, generatorSettings)
+            # setting preprocessor if defined in the loaded settings.
+            if self.parHandle.curExercise['settings']['preprocessor'] != '':
+                preprocessorName = self.parHandle.curExercise['settings']['preprocessor']
+                preprocessorSettings = self.parHandle.curExercise['settings']['preprocessorSettings']
+                if preprocessorName:
+                    self.parHandle.iniSubmodule('preprocessor',
+                                            preprocessorName,
+                                            preprocessorSettings)
 
             # this function sets the default calibration values for the exercise.
             self.parHandle.setDefaultCalibration('curExercise', 'time')
@@ -172,6 +188,8 @@ class exerciseBase():
         self.parHandle.curExercise['functions']['settingsGui']      = None
         self.parHandle.curExercise['functions']['checkConditions']  = None
         self.parHandle.curExercise['functions']['calibration']      = None
+        self.parHandle.curExercise['functions']['getPlayerStatus']  = None
+        self.parHandle.curExercise['functions']['xlsxExport']       = None
 
         self.parHandle.initializeToDefaults(mode='curExerciseSettings')
 
@@ -272,10 +290,18 @@ class exerciseBase():
                 if hasattr(self.parHandle.curPlayer['handle'], 'controlbarLabel'):
                     if self.parHandle.curPlayer['handle'].controlbarLabel:
                         self.parHandle.curPlayer['handle'].controlbarLabel = ''
-
+            self.parHandle.curExercise['gui']['exerWidgetsDisabled'] = []
         except:
             self.parHandle.dPrint('Could not tidy up gui.', 2)
         self.parHandle.dPrint('exerciseBase (' + self.exerciseName + '): Leaving eraseExerciseGui()', 2)
+
+    '''
+    def xlsxExportPreparation(self, data):
+        """!
+        This function prepares the result for the export to xlsx files and provides a datasSeries .
+        The returned status can be 'Valid', 'NoAnswer', 'None', 'Failed', 'Warning'
+        """
+    '''
 
 
     def iniPath(self, exerciseName):
@@ -316,11 +342,14 @@ class exerciseBase():
 
         self.parHandle.closePath('curExercise')
 
+        delPathItems = []
         # all items in path will be set to an empty string after the removal from the path.
         for pathItem in self.parHandle.curExercise['path']:
             self.parHandle.curExercise['path'][pathItem] = ''
             if not(pathItem in ['base', 'presets', 'locales', 'results']):
-                del self.parHandle.curExercise['path'][pathItem]
+                delPathItems.append(pathItem)
+        for delPathItem in delPathItems:
+            del self.parHandle.curExercise['path'][delPathItem]
 
         self.parHandle.dPrint('exerciseBase (' + self.exerciseName + '): closePath()', 2)
 
@@ -352,6 +381,17 @@ class exerciseBase():
             self.setDefaultSettings()
         self.parHandle.curExercise['settings']['settingsName'] = settingsName
 
+        # check if a generator, preprocessor player can be initialized
+        self.parHandle.iniSubmodule('generator',  self.parHandle.curExercise['settings']['generator'],
+                                 self.parHandle.curExercise['settings']['generatorSettings'])
+        self.parHandle.iniSubmodule('preprocessor',  self.parHandle.curExercise['settings']['preprocessor'],
+                                 self.parHandle.curExercise['settings']['preprocessorSettings'])
+        self.parHandle.iniSubmodule('player',  self.parHandle.curExercise['settings']['player'],
+                                 self.parHandle.curExercise['settings']['playerSettings'])
+
+        self.parHandle.dPrint(self.exerciseName + ': Leaving loadSettings()', 2)
+
+
         self.parHandle.dPrint('exerciseBase (' + self.exerciseName + '): Leaving loadSettings()', 2)
 
 
@@ -374,7 +414,7 @@ class exerciseBase():
         self.parHandle.curExercise['settings']['playerSettings']     = ''
         self.parHandle.curExercise['settings']['preprocessor']          = ''
         self.parHandle.curExercise['settings']['preprocessorSettings']  = ''
-        self.parHandle.curExercise['settings']['generator']          = 'genWavreader'
-        self.parHandle.curExercise['settings']['generatorSettings']  = ''
+        #self.parHandle.curExercise['settings']['generator']          = 'genWavreader'
+        #self.parHandle.curExercise['settings']['generatorSettings']  = ''
 
         self.parHandle.dPrint('exerciseBase (' + self.exerciseName + '): Leaving setDefaultSettings()', 2)

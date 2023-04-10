@@ -34,17 +34,16 @@ from PyQt5 import QtCore, uic
 import os
 import importlib.util
 from PyQt5 import QtWidgets, QtGui
-from numpy import zeros
+from numpy import zeros, floor
 import pandas as pd
 from numpy import array
 from inspect import currentframe, getouterframes
+import re
 import Validators
-
+import string
 # TODO: implement missing features:
 # TODO: 'multipleChoice', 'ranking'; 'noAnswer', 'allowNoAnswer', allowOther, 'orientation', 'displayTick',
 # TODO: 'addSingleComment', 'displayTicks', 'default', 'range', ,'conditions'
-# TODO: implement randomized order of responses
-# TODO: Fragegruppen nur mit gleichen antwortypen, introduce check
 # TODO: make more flexible: qtItem.setFixedWidth(qSizeMax.width())
 # TODO: wrong label above standard settings dropdown
 
@@ -54,7 +53,7 @@ def _translate(context, text, disambig):
 
 
 class questionaire():
-    def __init__(self, parHandle = None, settings = ''):
+    def __init__(self, parHandle=None, settings=''):
         """!
         The default parameters are set or the parameters of a provided settings file are loaded.
         """
@@ -102,6 +101,17 @@ class questionaire():
                 msg = 'questionaire: Could not read reactionTimeDelay from ini File'
                 self.parHandle.dPrint(msg, 2)
                 self.parHandle.frameWork['calibration'][self.parHandle.curExercise['settings']['exerciseName']]['value'] = 0
+
+            # every sign except from special characters will be allowed in 'text' and 'textlong'
+            # widget to prevent problems in cvs exports
+            # ';' will be used as separator for the exercise-result-export of cvs files
+            #charset = string.printable
+            charset = [chr(ii) for ii in range(10000)] # die ersten 10000 utf-8 Zeich: euro Zeichen: U+20AC = 8364
+            self.rejectedCharset = [';', '§', '$', '%', '&', '/', '\\', '*']
+            self.allowedCharSet = list(set(['' if x in self.rejectedCharset else x for x in charset]))
+            self.allowedCharSet = ''.join(self.allowedCharSet)
+
+            self.textlongValidator = dict()
         except:
             print('Entering exercise failed: questionaire')
         self.parHandle.dPrint('questionaire: __init__()', 2)
@@ -202,16 +212,29 @@ class questionaire():
 
             self.ui = dict()
 
-            self.ui['pbCancelRun'] = QtWidgets.QPushButton(subWidget, text=_translate("questionaire", 'Cancel', None))
-            self.ui['pbCancelRun'].setToolTip(
-                _translate("questionaire", 'The questionaire is canceled without the check of the data.'
-            'The data might be incomplete and not be usefull for the desired purpose.',
-                           None))
-            self.ui['pbCancelRun'].clicked.connect(self.cancelRun)
+            if self.parHandle.curSetlist['active'] or self.parHandle.curMasterlist['settings']['active']:
+                pbFinishedRunText = _translate("questionaire", 'Continue', None)
+            else:
+                pbFinishedRunText = _translate("questionaire", 'Finished', None)
+            # if no questions are asked/just providing some information the cancel button wont be added
+            questions = [x['question'] for x in settings['items']]
 
-            self.ui['pbFinishedRun'] = QtWidgets.QPushButton(subWidget, text=_translate("questionaire",'Finished',None))
+            if not(any(questions)):
+                infoColumn = 0 # a single infomrmation centralized in widget, There is no column with question numbers
+            else:
+                infoColumn = 1
+
+                self.ui['pbCancelRun'] = QtWidgets.QPushButton(subWidget, text=_translate("questionaire", 'Cancel', None))
+                self.ui['pbCancelRun'].setToolTip(
+                    _translate("questionaire", 'The questionaire is canceled without the check of the data.'
+                'The data might be incomplete and not be usefull for the desired purpose.',
+                               None))
+                self.ui['pbCancelRun'].clicked.connect(self.cancelRun)
+                self.vHLayoutStartQuit.addWidget(self.ui['pbCancelRun'])
+                self.parHandle.curExercise['gui']['exerWidgets'].append(self.ui['pbCancelRun'])
+
+            self.ui['pbFinishedRun'] = QtWidgets.QPushButton(subWidget, text=pbFinishedRunText)
             self.ui['pbFinishedRun'].clicked.connect(self.checkFinishedRun)
-
             self.ui['pbFinishedRun'].setToolTip(
                 _translate("questionaire", 'The input of the data is confirmed and the data validity will be '
                                            'checked. If data is missing or the input is wrong the regarding '
@@ -220,9 +243,8 @@ class questionaire():
                                            '\n\nIf you want and are allowed to quit this questionaire without the data '
                            'check choose the Cancel button.'
                            , None))
-            self.vHLayoutStartQuit.addWidget(self.ui['pbCancelRun'])
+
             self.vHLayoutStartQuit.addWidget(self.ui['pbFinishedRun'])
-            self.parHandle.curExercise['gui']['exerWidgets'].append(self.ui['pbCancelRun'])
             self.parHandle.curExercise['gui']['exerWidgets'].append(self.ui['pbFinishedRun'])
 
             self.firstInGroup = True
@@ -234,9 +256,15 @@ class questionaire():
                 if 'noOfPoints' in item.keys():
                     groupInputWidth = max([groupInputWidth, item['noOfPoints']])
 
-            self.questionNo  = 0
+            self.questionNo = 0
             rowCounter = 0
             itemCounter = 0
+            yesNoOffset = 0
+            # for the setting to the same label size introduction of: labelItems qSizeMax, widthList, heightList
+            labelItems = []
+            qSizeMax = QtCore.QSize(0, 0)
+            widthList = []
+            heightList = []
             for item in settings['items']:
                 try:
                     if item['group'] != self.previousQuestionaireGroup:
@@ -247,12 +275,14 @@ class questionaire():
                         self.firstInGroup = False
                     if item['information'] != '':
                         objectName = f"info_{itemCounter:02d}_{item['group']:02d}{self.questionNo:03d}"
-                        qtItem = QtWidgets.QLabel(parent = subWidget, text = item['information'], objectName=objectName,
-                                                  alignment=QtCore.Qt.AlignCenter, )
+
+                        alignment = self.getAlignment(item)
+                        qtItem = QtWidgets.QLabel(parent=subWidget, text=item['information'], objectName=objectName,
+                                                  alignment=alignment)
                         qtItem.setWordWrap(True)
                         # fields:
                         # Question no., question, answer fields (depends on maximal number of answering points), comment (if necessary)
-                        self.gridLauyout.addWidget(qtItem, rowCounter, 1, 1, 4 +maxAnswerPoints-1)
+                        self.gridLauyout.addWidget(qtItem, rowCounter, infoColumn, 1, 4 +maxAnswerPoints-1)
                         self.parHandle.curExercise['gui']['exerWidgets'].append(qtItem)
                         self.ui[objectName] = qtItem
                         #self.question['inputObjectName'].append([])
@@ -267,29 +297,84 @@ class questionaire():
                             # labeling the answers of the group
                             if len(item['labels']) == 2:
 
-                                # two labels for minimum and maximum
-                                idx = 1 + inputFieldOffset
-                                objectName = f"lb_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{idx:02d}"
-                                qtItem0 = QtWidgets.QLabel(parent=subWidget, text=item['labels'][0], objectName=objectName)
-                                qtItem0.setAlignment(QtCore.Qt.AlignLeft)
-                                self.gridLauyout.addWidget(qtItem0, rowCounter, idx, \
-                                                           alignment=QtCore.Qt.AlignTrailing)
-                                self.parHandle.curExercise['gui']['exerWidgets'].append(qtItem0)
-                                self.ui[objectName] = qtItem0
+                                # two labels for minimum and maximum or just two points
+                                numOfCols = self.gridLauyout.columnCount()
+                                colCrit = 9
+                                if numOfCols < colCrit or item['noOfPoints'] > 2:
+                                    yesNoOffset = 0
+                                    colIdx = 1 + inputFieldOffset
+                                else:
+                                    yesNoOffset = int(floor((self.gridLauyout.columnCount() - inputFieldOffset - 2) / 4))
+                                    colIdx = 1 + inputFieldOffset + yesNoOffset
 
-                                idx = groupInputWidth + inputFieldOffset + 2
-                                objectName = f"lb_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{idx:02d}"
-                                qtItem1 = QtWidgets.QLabel(parent=subWidget, text=item['labels'][1], objectName=objectName)
-                                qtItem1.setAlignment(QtCore.Qt.AlignRight)
-                                self.gridLauyout.addWidget(qtItem1, rowCounter, idx, alignment=QtCore.Qt.AlignLeading)
-                                self.parHandle.curExercise['gui']['exerWidgets'].append(qtItem1)
+                                # in case of two points the label will be placed above the points
+                                if len(item['labels']) == item['noOfPoints']:
+                                    colIdx = colIdx + 1
+
+
+                                objectName = f"lb_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{colIdx:02d}"
+                                qtItem0 = QtWidgets.QLabel(parent=subWidget, text=item['labels'][0],
+                                                           objectName=objectName, alignment=QtCore.Qt.AlignCenter)
+                                #qtItem0.setAlignment(alignItem)
+                                qtItem0.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                                     QtWidgets.QSizePolicy.Fixed)
+                                # getting minimum size of qItem which depends on the used text and font
+                                fm = QtGui.QFontMetrics(qtItem0.font())
+                                qSize = QtCore.QSize(fm.width(qtItem0.text()), qtItem0.width())
+                                if qSize.width() > qSizeMax.width():
+                                    qSizeMax.setWidth(qSize.width())
+                                if qSize.height() > qSizeMax.height():
+                                    qSizeMax.setHeight(qSize.height())
+                                widthList.append(qSize.width())
+                                heightList.append(qSize.height())
+
+                                self.gridLauyout.addWidget(qtItem0, rowCounter, colIdx,
+                                                           alignment=QtCore.Qt.AlignCenter)
+
+                                #self.parHandle.curExercise['gui']['exerWidgets'].append(qtItem0)
+                                self.ui[objectName] = qtItem0
+                                labelItems.append(qtItem0)
+
+                                #qtItem0.show()
+
+                                if numOfCols < colCrit or item['noOfPoints'] > 2:
+                                    colIdx = groupInputWidth + inputFieldOffset + 2
+                                else:
+                                    # colIdx = groupInputWidth + inputFieldOffset + 2 - 4 # 2 + inputFieldOffset + 2
+                                    # taking the idex of the left label and add the two input fields and the right label
+                                    colIdx = colIdx + 3
+
+                                # in case of two points the label will be placed above the points
+                                if len(item['labels']) == item['noOfPoints']:
+                                    colIdx = colIdx - 1
+
+                                objectName = f"lb_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{colIdx:02d}"
+                                qtItem1 = QtWidgets.QLabel(parent=subWidget, text=item['labels'][1],
+                                                           objectName=objectName,alignment=QtCore.Qt.AlignCenter)
+                                #qtItem1.setAlignment(alignItem)
+                                qtItem1.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                                     QtWidgets.QSizePolicy.Fixed)
+                                fm = QtGui.QFontMetrics(qtItem0.font())
+                                qSize = QtCore.QSize(fm.width(qtItem1.text()), qtItem1.width())
+                                if qSize.width() > qSizeMax.width():
+                                    qSizeMax.setWidth(qSize.width())
+                                if qSize.height() > qSizeMax.height():
+                                    qSizeMax.setHeight(qSize.height())
+                                widthList.append(qSize.width())
+                                heightList.append(qSize.height())
+
+                                self.gridLauyout.addWidget(qtItem1, rowCounter, colIdx,
+                                                           alignment=QtCore.Qt.AlignCenter)
+                                #self.parHandle.curExercise['gui']['exerWidgets'].append(qtItem1)
                                 self.ui[objectName] = qtItem1
+                                labelItems.append(qtItem1)
+
+                                qtItem1.show()
 
                                 rowCounter = rowCounter + 1
 
                             elif len(item['labels']) == item['noOfPoints']:
-
-                                qSizeMax = QtCore.QSize(0, 0)
+                                yesNoOffset = 0
                                 # each answer gets a label
                                 labelCounter = 0
                                 for label in item['labels']:
@@ -297,33 +382,29 @@ class questionaire():
                                     objectName = f"lb_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{idx:02d}"
                                     qtItem = QtWidgets.QLabel(parent=subWidget, text=item['labels'][labelCounter], objectName=objectName,
                                                               alignment=QtCore.Qt.AlignCenter)
-
-                                    # getting minimum size of qItem which depends on the used text and font
-                                    fm = QtGui.QFontMetrics(qtItem.font())
-                                    qSize = QtCore.QSize(fm.width(qtItem.text()), qtItem.width())
-
-                                    if qSize.width() > qSizeMax.width():
-                                        qSizeMax.setWidth(qSize.width())
-                                    if qSize.height() > qSizeMax.height():
-                                        qSizeMax.setHeight(qSize.height())
-
-                                    self.gridLauyout.addWidget(qtItem, rowCounter, idx)
-                                    qtItem.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+                                    qtItem.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+                                                         QtWidgets.QSizePolicy.Fixed)
+                                    # auto adjusting size to minimum size, and resizing later on to the same size
+                                    qtItem.adjustSize()
+                                    self.gridLauyout.addWidget(qtItem, rowCounter, idx,alignment=QtCore.Qt.AlignCenter)
+                                    #qtItem.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
                                     labelCounter = labelCounter + 1
                                     self.ui[objectName] = qtItem
-
-                                # after all labels have been created resizing all labels to the same size qSizeMax
-                                for labelCounter in range(len(item['labels'])):
-                                    idx = 2 + inputFieldOffset + labelCounter
-                                    objectName = f"lb_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{idx:02d}"
-
-                                    qtItem = self.ui[objectName]
-                                    #item.setFixedWidth(fm.width(item.text()))
-                                    qtItem.setFixedWidth(qSizeMax.width())
-
+                                    labelItems.append(qtItem)
+                                    qtItem.show()
+                                    #qtItem.setStyleSheet("background:red")
+                                    #qtItem.setStyleSheet("border :3px solid black;background:red")
 
                                 rowCounter = rowCounter + 1
-
+                            else:
+                                if item['type'] == 'singleChoice':
+                                    msg = _translate("questionaire",
+                                                     "Check the number of points and the number of labels. "
+                                                     "\n"
+                                                     "Neither the number of labels is two"
+                                                     " to define the margins nor does the number of labels equal "
+                                                     "the number of choises  ", None)
+                                    self.parHandle.dPrint(msg, 0, guiMode=True)
                         if item['type'] == 'singleChoice':
                             if item['allowOther']:
                                 item['orientation'] = 'Vertical'
@@ -334,8 +415,9 @@ class questionaire():
                             bGroup.setExclusive(True)
                             pointCounter = 0
                             for point in range(item['noOfPoints']):
-                                objectName = f"sc_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val{pointCounter:02d}"
-                                button = QtWidgets.QRadioButton(parent = subWidget, objectName = objectName)
+                                objectName = f"sc_{itemCounter:02d}_{item['group']:02d}_" \
+                                             f"{self.questionNo:03d}_val{pointCounter:02d}"
+                                button = QtWidgets.QRadioButton(parent=subWidget, objectName=objectName)
                                 button.clicked.connect(self.runButton)
                                 bGroup.addButton(button)
                                 self.question['inputObjectName'][-1].append(objectName)
@@ -343,24 +425,28 @@ class questionaire():
 
                                 self.ui[objectName] = button
 
-                                self.gridLauyout.addWidget(button, rowCounter, 2 + pointCounter + inputFieldOffset, alignment=QtCore.Qt.AlignCenter)
+                                self.gridLauyout.addWidget(button, rowCounter,
+                                                           2 + pointCounter + inputFieldOffset + yesNoOffset,
+                                                           alignment=QtCore.Qt.AlignCenter)
                                 button.show()
                                 pointCounter = pointCounter + 1
                             self.parHandle.show()
                         objectName = f"questNo_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}"
-                        qtItem = QtWidgets.QLabel(parent = subWidget, text = str(self.questionNo), objectName=objectName)
+                        qtItem = QtWidgets.QLabel(parent=subWidget, text=str(self.questionNo), objectName=objectName)
                         self.gridLauyout.addWidget(qtItem, rowCounter, 0)
                         self.parHandle.curExercise['gui']['exerWidgets'].append(qtItem)
                         self.ui[objectName] = qtItem
 
+                        alignment = self.getAlignment(item)
                         questObjectName = f"quest_{itemCounter:02d}_{item['group']:02d}{self.questionNo:03d}"
-                        qtItemQ = QtWidgets.QLabel(parent = subWidget, text = item['question'], objectName=questObjectName)
+                        qtItemQ = QtWidgets.QLabel(parent=subWidget, text=item['question'], objectName=questObjectName,
+                                                   alignment=alignment)
                         qtItemQ.setWordWrap(True)
                         if 'toolTip' in item and item['toolTip']:
                             qtItemQ.setToolTip(item['toolTip'])
 
                         self.gridLauyout.addWidget(qtItemQ, rowCounter, 1, alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignHCenter)
-                        qtItemQ.setAlignment(QtCore.Qt.AlignHCenter)
+                        #qtItemQ.setAlignment(QtCore.Qt.AlignTop)
                         self.parHandle.curExercise['gui']['exerWidgets'].append(qtItemQ)
                         self.ui[questObjectName] = qtItemQ
 
@@ -385,14 +471,9 @@ class questionaire():
                                 slider.setValue(item['default'])
                             else:
                                 slider.setValue(50)
-                            #if item['displayTicks']:
-                            # if 'stepsize' in list(item) and item['stepsize'] > 0:
-                            #    slider.setTickPosition(QSlider.TicksBelow)
-                            #    slider.setTickInterval(5)
                             slider.setFixedHeight(60)
                             slider.setMinimumHeight(60)
                             slider.setMaximumHeight(60)
-                            #if 'stepsize' in list(item) and item['stepsize'] > 0:
                             slider.setSingleStep(1)
                             slider.sliderReleased.connect(self.runButton)
                             slider.sliderMoved.connect(self.runButton)
@@ -402,8 +483,6 @@ class questionaire():
 
                             self.gridLauyout.addWidget(slider, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
                             slider.show()
-
-
                         if item['type'] == 'dropdown':
                             objectName = f"dd_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val01"
                             self.question['inputObjectName'].append([])
@@ -419,7 +498,6 @@ class questionaire():
                             self.ui[objectName] = dropdown
                             self.gridLauyout.addWidget(dropdown, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
                             dropdown.show()
-
                         if item['type'] == 'text':
                             objectName = f"tt_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val01"
                             self.question['inputObjectName'].append([])
@@ -428,7 +506,16 @@ class questionaire():
                             txt = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
 
                             txt.editingFinished.connect(self.runButton)
+                            # setting tooltip
+                            msg = _translate("questionaire",
+                                             f"All charaters are allowed except: {self.rejectedCharset}\n\n "
+                                             , None)
 
+                            txt.setToolTip(msg)
+                            validator = Validators.StringValidator(
+                                inputRange=self.allowedCharSet,
+                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
+                            txt.setValidator(validator)
                             self.parHandle.curExercise['gui']['exerWidgets'].append(txt)
                             self.ui[objectName] = txt
                             self.gridLauyout.addWidget(txt, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
@@ -439,24 +526,30 @@ class questionaire():
                             self.question['inputObjectName'][-1].append(objectName)
 
                             txt = QtWidgets.QPlainTextEdit(parent = subWidget, objectName= objectName)
-                            txt.textChanged.connect(self.run)
-                            """
-                            txt = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
-                            txt.setMinimumHeight(txt.height() * 3)
-                            txt.editingFinished.connect(self.runButton)
+                            txt.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                                                  QtWidgets.QSizePolicy.Minimum)
+                            txt.textChanged.connect(self.runTextLong)
                             
-                            """
+                            # setting tooltip
+                            msg = _translate("questionaire",
+                                             f"All characters are allowed except: {self.rejectedCharset}\n\n "
+                                             , None)
+                            txt.setToolTip(msg)
+                            validator = Validators.StringValidator(
+                                inputRange=self.allowedCharSet,
+                                sysname=self.parHandle.frameWork['settings']['system']['sysname'])
+                            #txt.setValidator(validator)
+                            self.textlongValidator = validator
                             self.parHandle.curExercise['gui']['exerWidgets'].append(txt)
                             self.ui[objectName] = txt
                             self.gridLauyout.addWidget(txt, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
                             txt.show()
-
                         if item['type'] == 'int':
                             objectName = f"ti_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val01"
                             self.question['inputObjectName'].append([])
                             self.question['inputObjectName'][-1].append(objectName)
 
-                            ti = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
+                            ti = QtWidgets.QLineEdit(parent=subWidget, objectName=objectName)
                             convertFunc = int
                             validator = Validators.NumberValidator(
                                 inputRange=item['range'],
@@ -470,13 +563,12 @@ class questionaire():
                             self.ui[objectName] = ti
                             self.gridLauyout.addWidget(ti, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
                             ti.show()
-
                         if item['type'] == 'float':
                             objectName = f"tf_{itemCounter:02d}_{item['group']:02d}_{self.questionNo:03d}_val01"
                             self.question['inputObjectName'].append([])
                             self.question['inputObjectName'][-1].append(objectName)
 
-                            tf = QtWidgets.QLineEdit(parent = subWidget, objectName= objectName)
+                            tf = QtWidgets.QLineEdit(parent=subWidget, objectName= objectName)
                             convertFunc = float
                             validator = Validators.NumberValidator(
                                 inputRange=item['range'],
@@ -490,7 +582,6 @@ class questionaire():
                             self.ui[objectName] = tf
                             self.gridLauyout.addWidget(tf, rowCounter, 2 + inputFieldOffset, 1, groupInputWidth)
                             tf.show()
-
                         self.question['answered'].append(False)
                         self.question['questionNo'].append(self.questionNo)
                         self.question['questObjectName'].append(questObjectName)
@@ -499,6 +590,24 @@ class questionaire():
                             self.question['requested'].append(item['requested'])
                         else:
                             self.question['requested'].append(True)
+
+                    for qtItem in labelItems:
+                        # getting minimum size of qItem which which has been set to minimum size with autoAdjust
+                        qSize = QtCore.QSize(qtItem.width(), qtItem.height())
+                        if qSize.width() > qSizeMax.width():
+                            # qSizeMax.setWidth(int(qSize.width()*0.80))
+                            qSizeMax.setWidth(int(qSize.width()))
+                        if qSize.height() > qSizeMax.height():
+                            qSizeMax.setHeight(qSize.height())
+                        widthList.append(qSize.width())
+                        heightList.append(qSize.height())
+                    self.parHandle.app.processEvents()
+
+                    # after all labels have been created resizing all labels to the same size qSizeMax
+                    for labelItem in labelItems:
+                        labelItem.setFixedWidth(qSizeMax.width())
+                    for labelItem in labelItems:
+                        labelItem.setFixedHeight(qSizeMax.height())
                 except:
                     self.parHandle.showInformation('Item of questionaire could not be set.')
                 self.question['answObjectName'] = [''] * len(self.question['requested'])
@@ -506,7 +615,7 @@ class questionaire():
                 rowCounter = rowCounter + 1
 
                 objectName = 'spacer01'
-                qtItem = QtWidgets.QLabel(parent = subWidget, text = '', objectName=objectName)
+                qtItem = QtWidgets.QLabel(parent=subWidget, text='', objectName=objectName)
                 self.gridLauyout.addWidget(qtItem, rowCounter, 0)
 
                 self.previousQuestionaireGroup = settings['items'][itemCounter]['group']
@@ -515,18 +624,11 @@ class questionaire():
             # cleaning up previous run if required.
             self.question['answered'] = [False] * len(self.question['requested'])
 
-            #  add default value handling and type handling
-            # iniGui should be called to handle reinitialization of self.question
-            #if len(self.question['answObjectName']) > 0:
-
             for questCounter in range(len(self.question['itemNo'])):
-                #item = self.question['inputObjectName'][self.question['itemNo'][questCounter]][0]
                 item = self.question['inputObjectName'][questCounter]
                 try:
                     settingItem = settings['items'][self.question['itemNo'][questCounter]]
                     if settingItem['type'] == 'singleChoice':
-                        #self.ui[self.question['inputObjectName'][self.question['itemNo'][0]][0]].group().setExclusive(False)
-                        #for rbItem in self.question['inputObjectName'][self.question['itemNo'][questCounter]]:
                         for rbItem in item:
                             self.ui[rbItem].group().setExclusive(False)
                             self.ui[rbItem].setChecked(False)
@@ -534,12 +636,12 @@ class questionaire():
 
                     elif settingItem['type'] == 'slider':
                         if 'default' in list(settingItem):
-
                             self.ui[item[0]].setValue(settingItem['default'])
                         else:
                             self.ui[item[0]].setValue(50)
                     elif settingItem['type'] == 'text':
                         self.ui[item[0]].setText('')
+
                     elif settingItem['type'] == 'textlong':
                         'active'
                         self.ui[item[0]].setPlainText('')
@@ -547,18 +649,23 @@ class questionaire():
                     elif settingItem['type'] == 'dropdown':
                         idx = self.ui[item[0]].findText('')
                         self.ui[item[0]].setCurrentIndex(idx)
+
                     elif settingItem['type'] == 'float':
                         self.ui[item[0]].setText('')
+
                     elif settingItem['type'] == 'int':
                         self.ui[item[0]].setText('')
                 except:
                     msg = _translate("questionaire",'Result could not be displayed.', None)
-                    self.parHandle.dPrint(msg, 0, guiMode = True)
+                    self.parHandle.dPrint(msg, 0, guiMode=True)
 
 
             self.question['answObjectName'] = [''] * len(self.question['requested'])
 
             self.parHandle.ui.exerWidget.setVisible(True)
+
+        # resetting QLabels to standard fonts and colors, because highlights might remain from a previous run
+        self.resetQLabelToStdPal()
 
         for item in self.parHandle.curExercise['gui']['exerWidgets']:
             try:
@@ -593,6 +700,26 @@ class questionaire():
         self.parHandle.dPrint('questionaire: Leaving eraseExerciseGui()',
                               2)
 
+
+    def resetQLabelToStdPal(self):
+        """!
+        This function implements the brute force resetting to the standard font and pallete
+        of all QLabels found in self.ui which contains all gui elements of the questionaire exercise.
+        This is implemented to reset the highlighted QLabels of formerly unanswered questions in the run before which
+        in case of the same settings pops up quite highlighted instead with a refreshed gui.
+        """
+
+        self.parHandle.dPrint('questionaire: resetQLabelToStdPal()', 4)
+
+        for item in self.ui:
+            if isinstance(self.ui[item], QtWidgets.QLabel):
+
+                self.ui[item].setPalette(self.stdPalQLabels)
+                myFont = QtGui.QFont()
+                myFont.setBold(False)
+                self.ui[item].setFont(myFont)
+
+        self.parHandle.dPrint('questionaire: Leaving resetQLabelToStdPal()', 4)
 
     def startRun(self):
         """!
@@ -642,12 +769,12 @@ class questionaire():
         for item in items:
             # not all questionare items have question and just might provide information
             if item['question']:
-                self.parHandle.curRunData['results'][self.runIdx].loc[self.questionNo, 'Question'] = item['question']
+                self.parHandle.curRunData['results'][self.runIdx].loc[self.questionNo - 1, 'Question'] = item['question']
 
         self.parHandle.curRunData['runAccomplished'] = False
 
 
-    def determineNumberOfQuestions(self, settings = dict()):
+    def determineNumberOfQuestions(self, settings=dict()):
         """!
         This function extracts the number of questions from self.parHandle.curExercise['settings']['items']
         and sets self.numberOfQuestions.
@@ -734,22 +861,68 @@ class questionaire():
 
         self.parHandle.dPrint('questionaire: Leaving displaySingleResults()', 2)
 
+    def runTextLong(self):
+        """!
+        This function catches the input of the input of the user of the textlong input of the QPlainTextEdit.
+        The extra function is used to enable the check of the user input with a validator.
+        In contrast to QLineEdit the QPlainTextEdit widget does not allow validators.
+        If the input passes the text the input is passed to the central input handling function self.run()
 
-    def run(self):
+        The status of the input is checked by calling self.textlongValidator.validate() with string and the cursor
+        position as input. Since the cursor position is not of interrest here it will be set to -1.
+
+        The return status may be of type
+            QtGui.QValidator.Intermediate (=1)  if the input is not finished yet,
+            QtGui.QValidator.Invalid (=0) if invalid or unparsable data has been entered or
+            QtGui.QValidator.Acceptable (=2) if data is valid.
+        """
+
+        callingFunctionName = getouterframes(currentframe(), 2)[1][3]
+        # doing nothing if this function has been called self.runTextLong():self.ui[objectName].setPlainText(longtext)
+        if callingFunctionName == 'runTextLong':
+            return
+
+        if self.textlongValidator:
+            try:
+                objectName = self.parHandle.sender().objectName()
+                longtext = self.ui[objectName].toPlainText()
+                status, string, index = self.textlongValidator.validate(longtext, index=-1)
+            except:
+                self.parHandle.dPrint("Could not run validator of 'textlong' input",0)
+                status = 'fallback'
+
+        if status == QtGui.QValidator.Invalid:
+            msg = _translate(
+                "questionaire",
+                "Removing invalid input. Please don't use the following characters: ", None) + str(self.rejectedCharset)
+            for item in self.rejectedCharset:
+                longtext = re.sub(re.escape(item),'', longtext)
+            self.ui[objectName].setPlainText(longtext)
+
+            self.parHandle.dPrint(msg, 0, guiMode=True)
+
+        self.run(callingFunctionName=callingFunctionName)
+
+    def run(self, callingFunctionName=''):
         """!
         This function provides the logic to handle the input of the user.
 
         The data is saved. If any questions are highlighted because the user tried to finish the run with  missing data at
         the highlighting is removed.
+
+        callingFunctionName: this has to be determined sometimes in self.runTextlong() which has to be plugged in
+        betwween the user input and self.run() to check the input of the user, since QPLaintext does not
+        allow validators.
         """
 
         self.parHandle.dPrint('questionaire: run()', 2)
 
-        # if gui is reinitialized the resetting is interpreted as user input which is ignored here
-        callingFunctionName = getouterframes(currentframe(), 2)[1][3]
-        if callingFunctionName == 'iniGui':
-            self.parHandle.dPrint('self.run(): ignoring call by iniGui.', 3)
-            return
+        if callingFunctionName == '':
+            # if gui is reinitialized the resetting is interpreted as user input which is ignored here
+            callingFunctionName = getouterframes(currentframe(), 2)[1][3]
+            if callingFunctionName == 'iniGui':
+                self.parHandle.dPrint('self.run(): ignoring call by iniGui.', 3)
+                return
 
         objectName = self.parHandle.sender().objectName()
         # objectName is constructed as follows:
@@ -976,10 +1149,9 @@ class questionaire():
                 settingsName = settings
             else:
                 settingsName = 'settings (dict)'
-
-            self.parHandle.dPrint('Could not load settings ('+settingsName+') loading default settings instead', 1)
-
-            self.parHandle.dPrint('Could not load settings (' + settingsName + ') loading default settings instead', 1)
+            self.parHandle.dPrint('Could not erase gui and load settings (' + settingsName +
+                                  ') loading default settings instead', 1,
+                                  guiMode=True)
             self.setDefaultSettings()
 
         # check if a generator, preprocessor player can be initialized, not required so far in this implemtation
@@ -994,6 +1166,22 @@ class questionaire():
                                  self.parHandle.curExercise['settings']['playerSettings'])
 
         self.parHandle.dPrint('questionaire: Leaving loadSettings()', 2)
+
+    def getAlignment(self, item):
+        """!
+        This function returns the alignment defined in the settings and returns QtCore.Qt.AlignCenter otherwise.
+        Definition in the settings:
+        item['alignment'] = QtCore.Qt.AlignCenter
+        """
+
+        if 'alignment' in item and item['alignment'] in [QtCore.Qt.AlignCenter,
+                                                         QtCore.Qt.AlignRight,
+                                                         QtCore.Qt.AlignLeft]:
+            alignment = item['alignment']
+        else:
+            alignment = QtCore.Qt.AlignCenter
+
+        return alignment
 
 
     def xlsxExportPreparation(self, data):
@@ -1081,7 +1269,8 @@ class questionaire():
         item['displayTicks']      = False
         item['group']           = 2
         item['requested']       = True
-        item['toolTip']            = ''
+        item['toolTip']         = ''
+        item['range']           = [] #  The setting of range is obligatory for items with type of float and int
         questionaireItems.append(item)
 
         item = dict()

@@ -448,6 +448,6 @@ class Ui_MainWindow(object):
         self.actionSettingsGen1.setText(_translate("MainWindow", "&Settings"))
         self.actionSettingsPlay1.setText(_translate("MainWindow", "&Settings"))
         self.menuFileLoad.setText(_translate("MainWindow", "Loading results"))
-        self.menuXlsxExport.setText(_translate("MainWindow", "&Export selected run"))
+        self.menuXlsxExport.setText(_translate("MainWindow", "&Export results to cvs file"))
         self.menuFileUserData.setText(_translate("MainWindow", "User data"))
         self.menuFileAppend.setText(_translate("MainWindow", "Appending results"))

@@ -324,8 +324,9 @@ class trainer():
         if self.parHandle.curPlayer['settings']['playerName'] == 'playQtAudio':
             label = self.parHandle.curPlayer['functions']['getControlbarCaller'](self.parHandle.sender())
             itemNo = self.itemList.index(label)
+            print(itemNo)
             self.parHandle.curPlayer['functions']['setControlbarLabel'](label)
-
+            #print('')
         elif self.parHandle.curPlayer['settings']['playerName'] == 'playAudio':
             objectName = self.parHandle.sender().objectName()
             label = 'item'+objectName.split('_')[1]

@@ -95,8 +95,13 @@ def getListOfFiles(searchPath='/', depthOfDir=2, namePart=[], nameIgnore=[], ful
     if isinstance(namePart, str):
         namePart = [namePart]
 
-    if isinstance(nameIgnore, str):
+    if isinstance(nameIgnore, str) and nameIgnore:
         nameIgnore = [nameIgnore]
+    else:
+        # an empty string is passed, which will be interpreted as nothing to ignore
+        nameIgnore = []
+
+
 
     # files that can be found in the current directory
     try:

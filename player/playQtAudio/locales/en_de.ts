@@ -36,47 +36,47 @@ Bitte ändern Sie nicht die Lautstärkeeinstellung während der Nutzung von CICo
         <translation>Audiosignal wir abgespielt ... </translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="645"/>
+        <location filename="../../playQtAudio.py" line="653"/>
         <source>End of audio.</source>
         <translation>Ende von Audiosignal.</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="709"/>
+        <location filename="../../playQtAudio.py" line="717"/>
         <source>Play</source>
         <translation>Abspielen</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="710"/>
+        <location filename="../../playQtAudio.py" line="718"/>
         <source>Pause</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="711"/>
+        <location filename="../../playQtAudio.py" line="719"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="912"/>
+        <location filename="../../playQtAudio.py" line="920"/>
         <source>sampling rate</source>
         <translation>Abtastrate</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="921"/>
+        <location filename="../../playQtAudio.py" line="929"/>
         <source>level</source>
         <translation>Pegel</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="931"/>
+        <location filename="../../playQtAudio.py" line="939"/>
         <source>Visual preparation</source>
         <translation>Visuelle Vorbereitung</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="940"/>
+        <location filename="../../playQtAudio.py" line="948"/>
         <source>Preparation time</source>
         <translation>Vorbereitungszeit</translation>
     </message>
     <message>
-        <location filename="../../playQtAudio.py" line="949"/>
+        <location filename="../../playQtAudio.py" line="957"/>
         <source>Wait for audio end</source>
         <translation>Warten auf Signalende</translation>
     </message>

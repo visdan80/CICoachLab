@@ -1,7 +1,13 @@
+# The setlist defines a set of exercises with specified settings which will be run in serie
+# automatically as long the exercises have been finished successfully. 
+# The sussessfull run can be defined by pre or post conditions in 
+# separate the entries by colons
+# default settings can be defined by by an empty value or 'default'
+#
 # If the same exercise, generator, preProc, or player are used for different 
 # settings respectively it is sufficient to  define a single name. Otherwise  
 # ensure that the number of items in name and settings are the same within the
-# sections.# The entries of preProcs can be empty since the use of preProcs is
+# sections.# The entries of preprocessors can be empty since the use of preprocessors is
 # not mandatory. Otherwise enter None, if no preProc should be used, especially 
 # if in one instance of settings a preProc should be used and in other 
 # instances no preProc is used.
@@ -10,11 +16,6 @@
 # If a preProcessor is defined in the exercise setting the exercise setttings
 # overrule the definitions in the set list.
 # The same applies for the  generator and player settings.
-# In this case you should define those submodules as 'None'.
-# For the usage of the default settings define the settings as 'default'
-#
-# If an exercise item does not end with an accomplished run the setlist will
-# stopp after the run and the setlist has to be restarted.
 ##############################################################################
 
 [exercises]
@@ -22,7 +23,7 @@ names = questionaire, quiz, questionaire, scaling
 settings = studyInstruction, default, slider, fatigue.py
 
 [generators]
-names = None, None, None, None
+names = genWavreader, genWavreader, genWavreader, genWavreader 
 settings = default, default, default, default
 
 [preprocessors]
@@ -30,8 +31,8 @@ names = None, None, None, None
 settings = default, default, default, default
 
 [player]
-names = None, playQtAudio, None, None
-settings = default, higLevel, default, default
+names = playQtAudio, playQtAudio, playQtAudio, playQtAudio
+settings = default, default, default, default
 
 ['description']
-short = Introduction,  Some exercise, Questionare, Scaling
+short = Inttroduction,  Some exercise, Questionare, Scaling

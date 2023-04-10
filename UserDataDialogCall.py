@@ -56,31 +56,40 @@ class UserDataDialogCall(QtWidgets.QDialog):
         for item in list(self.parHandle.user):
             #ignoring 'left' and 'right' which contain the attributes describing the hearings status
             if not (item == 'left' or item == 'right'):
-                # writing the values into the different types of widgets
-                if isinstance(getattr(self.uiUser, item), QtWidgets.QDateEdit):
-                    if getattr(self.uiUser, item).date():
-                        self.parHandle.user[item] = getattr(self.uiUser, item).date().toString('dd.MM.yyyy')
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QLineEdit):
-                    self.parHandle.user[item] = getattr(self.uiUser, item).text()
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QTextEdit):
-                    self.parHandle.user[item] = getattr(self.uiUser, item).toPlainText()
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QComboBox):
-                    self.parHandle.user[item] = getattr(self.uiUser, item).currentText()
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QCheckBox):
-                    if getattr(self.uiUser, item).isChecked():
-                        self.parHandle.user[item] = 'checked'
+                if hasattr(self.uiUser, item):
+                    # writing the values into the different types of widgets
+                    if isinstance(getattr(self.uiUser, item), QtWidgets.QDateEdit):
+                        if getattr(self.uiUser, item).date():
+                            self.parHandle.user[item] = getattr(self.uiUser, item).date().toString('dd.MM.yyyy')
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QLineEdit):
+                        self.parHandle.user[item] = getattr(self.uiUser, item).text()
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QTextEdit):
+                        self.parHandle.user[item] = getattr(self.uiUser, item).toPlainText()
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QComboBox):
+                        self.parHandle.user[item] = getattr(self.uiUser, item).currentText()
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QCheckBox):
+                        if getattr(self.uiUser, item).isChecked():
+                            self.parHandle.user[item] = 'checked'
+                        else:
+                            self.parHandle.user[item] = 'unchecked'
                     else:
-                        self.parHandle.user[item] = 'unchecked'
+                        print(f"We got some problem: Cannot save field data {item}")
                 else:
-                    print(f"We got some problem: Cannot save field data {item}")
+                    msg = 'Not reading hidden user data: ' + item
+                    self.parHandle.dPrint(msg, 0)
+
         for side in ['left', 'right']:
             # assumption: left and right have the same attributes
             for item in list(self.parHandle.user['left']):
-                # all fields are dropdown boxex
-                if isinstance(getattr(self.uiUser, side + '_' + item), QtWidgets.QComboBox):
-                    self.parHandle.user[side][item] = getattr(self.uiUser, side + '_' + item).currentText()
+                if hasattr(self.uiUser, side + '_' + item):
+                    # all fields are dropdown boxex
+                    if isinstance(getattr(self.uiUser, side + '_' + item), QtWidgets.QComboBox):
+                        self.parHandle.user[side][item] = getattr(self.uiUser, side + '_' + item).currentText()
+                    else:
+                        print(f"We got some problem: Cannot save field data: {side + '_' + item}")
                 else:
-                    print(f"We got some problem: Cannot save field data: {item}")
+                    msg = 'Not reading hidden user data: ' + side + '_' + item
+                    self.parHandle.dPrint(msg, 0)
         self.close()
 
     def cancel(self):
@@ -98,29 +107,39 @@ class UserDataDialogCall(QtWidgets.QDialog):
         for item in list(self.parHandle.user):
             # ignoring 'left' and 'right' which contain the attributes describing the hearings status
             if not( item == 'left' or item == 'right' ):
-                # writing the values into the different types of widgets
-                if isinstance(getattr(self.uiUser, item), QtWidgets.QDateEdit):
-                    getattr(self.uiUser, item).setDateTime(getattr(self.uiUser, item).dateTimeFromText(self.parHandle.user[item]))
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QLineEdit):
-                    getattr(self.uiUser, item).setText(self.parHandle.user[item])
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QTextEdit):
-                    getattr(self.uiUser, item).setText(self.parHandle.user[item])
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QComboBox):
-                    idx = getattr(self.uiUser, item).findText(self.parHandle.user[item])
-                    getattr(self.uiUser, item).setCurrentIndex(idx)
-                elif isinstance(getattr(self.uiUser, item), QtWidgets.QCheckBox):
-                    if self.parHandle.user[item] == 'checked':
-                        getattr(self.uiUser, item).setChecked(True)
+                # checking for hidden user data
+                if hasattr(self.uiUser, item):
+                    # writing the values into the different types of widgets
+                    if isinstance(getattr(self.uiUser, item), QtWidgets.QDateEdit):
+                        getattr(self.uiUser, item).setDateTime(getattr(self.uiUser, item).dateTimeFromText(self.parHandle.user[item]))
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QLineEdit):
+                        getattr(self.uiUser, item).setText(self.parHandle.user[item])
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QTextEdit):
+                        getattr(self.uiUser, item).setText(self.parHandle.user[item])
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QComboBox):
+                        idx = getattr(self.uiUser, item).findText(self.parHandle.user[item])
+                        getattr(self.uiUser, item).setCurrentIndex(idx)
+                    elif isinstance(getattr(self.uiUser, item), QtWidgets.QCheckBox):
+                        if self.parHandle.user[item] == 'checked':
+                            getattr(self.uiUser, item).setChecked(True)
+                        else:
+                            getattr(self.uiUser, item).setChecked(False)
                     else:
-                        getattr(self.uiUser, item).setChecked(False)
+                        print(f"We got some problem: Cannot save field data: {item}")
                 else:
-                    print(f"We got some problem: Cannot save field data: {item}")
+                    msg = 'Not showing hidden user data: ' + item
+                    self.parHandle.dPrint(msg, 0)
         for side in ['left', 'right']:
             # assumption: left and right have the same attributes
             for item in list(self.parHandle.user['left']):
-                # all fields are dropdown boxex
-                if isinstance(getattr(self.uiUser, side+'_'+item), QtWidgets.QComboBox):
-                    idx = getattr(self.uiUser, side+'_'+item).findText(self.parHandle.user[side][item])
-                    getattr(self.uiUser, side+'_'+item).setCurrentIndex(idx)
+                # checking for hidden user data
+                if hasattr(self.uiUser, side+'_'+item):
+                    # all fields are dropdown boxex
+                    if isinstance(getattr(self.uiUser, side+'_'+item), QtWidgets.QComboBox):
+                        idx = getattr(self.uiUser, side+'_'+item).findText(self.parHandle.user[side][item])
+                        getattr(self.uiUser, side+'_'+item).setCurrentIndex(idx)
+                    else:
+                        print(f"We got some problem: Cannot save field data: {side+'_'+item}")
                 else:
-                    print(f"We got some problem: Cannot save field data: {item}")
+                    msg = 'Not showing hidden user data: ' + side+'_'+item
+                    self.parHandle.dPrint(msg, 0)

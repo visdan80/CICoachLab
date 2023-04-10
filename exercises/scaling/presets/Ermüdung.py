@@ -10,9 +10,15 @@ def defineSettings(parHandle):
     parHandle.curExercise['settings']['comment'] = 'This is a template setting'
     parHandle.curExercise['settings']['settingsName']       = 'Ermüdung.py'
 
-    parHandle.curExercise['settings']['Question'] = 'Wie anstrengend fanden Sie die Übung?'
+    parHandle.curExercise['settings']['Question'] = 'Wie anstrengend fanden Sie die Hör-Übung?'
     parHandle.curExercise['settings']['noAnswer'] = 'Unhörbar'
     parHandle.curExercise['settings']['items'] = dict()
+    parHandle.curExercise['settings']['player'] = ''
+    parHandle.curExercise['settings']['playerSettings'] = ''
+    parHandle.curExercise['settings']['generator'] = ''
+    parHandle.curExercise['settings']['generatorSettings'] = ''
+    parHandle.curExercise['settings']['preprocessor'] = ''
+    parHandle.curExercise['settings']['preprocessorSettings'] = ''
     # if the first item is not empty a separat item is provided on top
     parHandle.curExercise['settings']['items']['values'] = [
                                                                  'Extrem anstrengend',

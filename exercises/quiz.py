@@ -24,9 +24,14 @@ from PyQt5.Qt import QBrush, QPalette
 import re
 import numpy as np
 import pandas as pd
+from copy import deepcopy
+from time import time
+import datetime
+
 from exerciseBase import exerciseBase
 import multiprocessing as mp
 from CICoachLab import Worker
+from CICoachDialog import CICoachDialog
 
 # TODO: check implemenation of multithreading
 
@@ -260,8 +265,8 @@ class quiz(exerciseBase):
         objectName = 'pbFinish'
         pbFinish = QtWidgets.QPushButton(exerciseWidget, text=_translate("quiz", 'Quit run', None), objectName=objectName)
         pbFinish.clicked.connect(self.finishRun)
-        pbFinish.setMaximumSize(100, 50)
-        pbFinish.setMinimumSize(100, 50)
+        #pbFinish.setMaximumSize(100, 50)
+        #pbFinish.setMinimumSize(100, 50)
         self.vBLayout.addWidget(pbFinish, alignment=QtCore.Qt.AlignRight)
         self.parHandle.curExercise['gui']['exerWidgets'].append(pbFinish)
         self.ui[objectName] = pbFinish
@@ -291,34 +296,39 @@ class quiz(exerciseBase):
 
         self.parHandle.dPrint(self.exerciseName + ': iniAudio()', 2)
 
-        msg = _translate("quiz", "Initializing signal: ", None)
 
-        # adding some comments where the multiprocessing might be enabled in future versions.
-        # pool = mp.Pool(processes=mp.cpu_count() - 1)
-        # looping through setting to load signals of data and signal solution if necessary
-        for itemNo in range(len(self.parHandle.curExercise['settings']['list'])):
+        if self.parHandle.curPreprocessor['settings']['useBuffer']:
+            msg = _translate("quiz", "Initializing all signals: ", None)
 
-            signalfileName = self.parHandle.curExercise['settings']['list'][itemNo]['soundfile']
-            assistanceFilename = self.parHandle.curExercise['settings']['list'][itemNo]['assistance']['audio'][
-                'signalfile']
-            self.parHandle.showInformation(msg + signalfileName)
+            # adding some comments where the multiprocessing might be enabled in future versions.
+            # pool = mp.Pool(processes=mp.cpu_count() - 1)
+            # looping through setting to load signals of data and signal solution if necessary
+            for itemNo in range(len(self.parHandle.curExercise['settings']['list'])):
 
-            #pool.apply_async(generateAndPreprocess, args=(self, signalfileName, assistanceFilename,))
-            if self.multiThreading['active']:
-                print('multithreading')
+                signalfileName = self.parHandle.curExercise['settings']['list'][itemNo]['soundfile']
+                assistanceFilename = self.parHandle.curExercise['settings']['list'][itemNo]['assistance']['audio'][
+                    'signalfile']
+                self.parHandle.showInformation(msg + signalfileName)
 
-                worker = Worker(self.generateAndPreprocess, [signalfileName, assistanceFilename])  # Any other args, kwargs are passed to the run function
-                #worker.signals.result.connect(self.print_output)
-                #worker.signals.finished.connect(self.thread_complete)
-                #worker.signals.vocFilenameprogress.connect(self.progress_fn)
+                #pool.apply_async(generateAndPreprocess, args=(self, signalfileName, assistanceFilename,))
+                if self.multiThreading['active']:
+                    print('multithreading')
 
-                # Execute
-                self.threadpool.start(worker)
-            else:
-                self.generateAndPreprocess(signalfileName, assistanceFilename)
-        #pool.close()
-        #pool.join()
+                    worker = Worker(self.generateAndPreprocess, [signalfileName, assistanceFilename])  # Any other args, kwargs are passed to the run function
+                    #worker.signals.result.connect(self.print_output)
+                    #worker.signals.finished.connect(self.thread_complete)
+                    #worker.signals.vocFilenameprogress.connect(self.progress_fn)
 
+                    # Execute
+                    self.threadpool.start(worker)
+                else:
+                    self.generateAndPreprocess(signalfileName, assistanceFilename)
+            #pool.close()
+            #pool.join()
+            msg = _translate("quiz", "All Signals have been initilized: ", None)
+        else:
+            msg = _translate("quiz", "Signals will been initilized just in time ", None)
+            self.parHandle.showInformation(msg)
         self.parHandle.dPrint(self.exerciseName + ': Leaving iniAudio()', 2)
 
 
@@ -332,17 +342,24 @@ class quiz(exerciseBase):
         signalfile = os.path.join(self.parHandle.curExercise['path']['data'],
                                   signalfileName)
         signal = self.parHandle.curGenerator['functions']['run'](signalfile)
-        self.signalContainer['test'][signalfileName] = signal
-        self.parHandle.curPlayer['functions']['applyPreprocessor'](signal)
+
+
+        if self.parHandle.curPreprocessor['functions']['run']:
+            signalPreprocessed  = self.parHandle.curPlayer['functions']['applyPreprocessor'](signal)
+            self.signalContainer['test'][signalfileName] = deepcopy(signalPreprocessed)
+            self.signalContainer['assistance'][signalfileName] = deepcopy(signal)
+        else:
+            self.signalContainer['test'][signalfileName] = deepcopy(signal)
+            #self.parHandle.curExercise['settings']['preprocessor']
 
         if assistanceFilename:
             assistancefile = os.path.join(self.parHandle.curExercise['path']['dataSolution'], assistanceFilename)
             assistanceSignal = self.parHandle.curGenerator['functions']['run'](assistancefile)
             # applying preprocessor for perbuffering of signal within player buffer
             self.parHandle.curPlayer['functions']['applyPreprocessor'](assistanceSignal)
-            self.signalContainer['assistance'][assistanceFilename] = assistanceSignal
-        else:
-            self.signalContainer['assistance'][assistanceFilename] = None
+            self.signalContainer['assistance'][assistanceFilename] = deepcopy(assistanceSignal)
+        #else:
+        #    self.signalContainer['assistance'][assistanceFilename] = None
 
 
     def presentSignal(self):
@@ -366,8 +383,9 @@ class quiz(exerciseBase):
             # if the audio player is not paused the required signal will be loaded
             signalfileName = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['soundfile']
             if self.audioSolutionFlag:
-                if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['signalfile']:
-                    signal = self.signalContainer['assistance'][self.itemOrder[self.presentationNo]]
+                # if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['signalfile']:
+                if signalfileName in self.signalContainer['assistance']:
+                    signal = self.signalContainer['assistance'][signalfileName]
                 else:
                     signal = self.signalContainer['test'][signalfileName]
                 if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['preprocessing']:
@@ -454,54 +472,43 @@ class quiz(exerciseBase):
                 not(isinstance(curItem['assistance']['text']['text'][self.itemQuestNumber], str)):
             self.ui['teSolutionText'].setText('')
 
-        ah = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['enable']
-        th = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['text']['enable']
-        if ah or th:
+        if curItem['assistance']['audio']['enable'] or curItem['assistance']['text']['enable']:
             self.ui['lbSolutionText'].show()
         else:
             self.ui['lbSolutionText'].hide()
 
-        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['audio']['enable']:
-            #self.ui['pbSolutionAudio'].clicked.connect(self.toggleAudioSolution)
+        if curItem['assistance']['audio']['enable']:
             self.parHandle.reconnect(self.ui['pbSolutionAudio'].clicked, self.toggleAudioSolution)
             self.ui['pbSolutionAudio'].setDisabled(False)
             self.ui['pbSolutionAudio'].setCheckable(True)
             self.ui['pbSolutionAudio'].show()
-            #self.ui['pbSolutionAudio'].setPalette(QPalette())
         else:
-            # self.ui['pbSolutionAudio'].clicked.disconnect()
             self.parHandle.reconnect(self.ui['pbSolutionAudio'].clicked)
             self.ui['pbSolutionAudio'].setDisabled(True)
             self.ui['pbSolutionAudio'].setCheckable(False)
             self.ui['pbSolutionAudio'].hide()
-            #tb = QBrush(QtCore.Qt.transparent)
-            #self.ui['pbSolutionAudio'].setPalette(QPalette(tb, tb, tb, tb, tb, tb, tb, tb, tb))
 
-
-        if self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['assistance']['text']['enable']:
-            #self.ui['pbSolutionText'].clicked.connect(self.showTextSolution)
+        if curItem['assistance']['text']['enable'] and \
+                ((isinstance(curItem['assistance']['text']['text'], str) and  curItem['assistance']['text']['text']) or \
+                 (isinstance(curItem['assistance']['text']['text'], list) and all(i[0] for i in curItem['assistance']['text']['text']))):
             self.parHandle.reconnect(self.ui['pbSolutionText'].clicked, self.showTextSolution)
             self.ui['pbSolutionText'].setDisabled(False)
             self.ui['pbSolutionText'].setCheckable(True)
             self.ui['pbSolutionText'].show()
-            #self.ui['pbSolutionText'].setPalette(QPalette())
         else:
-            #self.ui['pbSolutionText'].clicked.disconnect()
             self.parHandle.reconnect(self.ui['pbSolutionText'].clicked)
             self.ui['pbSolutionText'].setDisabled(True)
             self.ui['pbSolutionText'].setCheckable(False)
             self.ui['pbSolutionText'].hide()
-            #tb = QBrush(QtCore.Qt.transparent)
-            #self.ui['pbSolutionText'].setPalette(QPalette(tb, tb, tb, tb, tb, tb, tb, tb, tb))
 
         self.ui['pbSolutionAudio'].setChecked(False)
 
-        quest = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['quests'][self.itemQuestNumber]
+        quest = curItem['quests'][self.itemQuestNumber]
         self.ui['lbQuest'].setText(quest)
 
         # deleting old option, because the number of options has changed
         if not(len(self.itemOptions) ==
-               len(self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['options'][self.itemQuestNumber])):
+               len(curItem['options'][self.itemQuestNumber])):
             for ii in reversed(range(self.hOptionLayout.count())):
                 widgetToRemove = self.hOptionLayout.itemAt(ii).widget()
                 # remove it from the layout list
@@ -509,7 +516,7 @@ class quiz(exerciseBase):
                 # remove it from the gui
                 widgetToRemove.setParent(None)
             self.itemOptions = []
-            options = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['options'][self.itemQuestNumber]
+            options = curItem['options'][self.itemQuestNumber]
             # randomizing order of presentated options if required
             if self.parHandle.curExercise['settings']['randomizedOptions']:
                 np.random.shuffle(options)
@@ -523,7 +530,7 @@ class quiz(exerciseBase):
 
         # setting options
         for ii in range(len(self.itemOptions)):
-            optionText = self.parHandle.curExercise['settings']['list'][self.itemOrder[self.presentationNo]]['options'][self.itemQuestNumber][ii]
+            optionText = curItem['options'][self.itemQuestNumber][ii]
             self.itemOptions[ii].setText(optionText)
 
         self.parHandle.dPrint(self.exerciseName + ': Leaving iniItem()', 2)
@@ -536,6 +543,8 @@ class quiz(exerciseBase):
         """
 
         self.audioSolutionFlag = False
+
+        self.closingFlag = False
 
         self.parHandle.dPrint(self.exerciseName + ': nextItem()', 2)
         # documenting prious sequenceNo for resetting of text hint
@@ -555,14 +564,29 @@ class quiz(exerciseBase):
                     self.parHandle.curPlayer['functions']['stopHandler']()
             else:
                 # end of items reached
-                presentSignalFlag = False
+
+                # checking minimum time limit and informing user
+                status = self.checkMinimumTime()
+
+                # check time  condition
+                if not(status):
+                    presentSignalFlag = False
+                    self.closingFlag = False
+                else:
+                    # time condition met
+                    presentSignalFlag = False
+                    self.parHandle.closeDownRun()
+                    self.closingFlag = True
+
         else:
             presentSignalFlag = False
             self.itemQuestNumber = self.itemQuestNumber + 1
             self.globalQuestNumber = self.globalQuestNumber + 1
-        self.iniItem()
-        if presentSignalFlag:
-            self.presentSignal()
+
+        if not(self.closingFlag):
+            self.iniItem()
+            if presentSignalFlag:
+                self.presentSignal()
 
         self.parHandle.dPrint(self.exerciseName + ': Leaving nextItem()', 2)
 
@@ -600,8 +624,36 @@ class quiz(exerciseBase):
 
         self.parHandle.dPrint(self.exerciseName + ': Leaving previousItem()', 2)
 
+    def checkMinimumTime(self):
+        """!
+        This function checks if the exercise ran the minimum aamount of the required time as defined in
+        self.parHandle.curExercise['settings']['minPresentationTime']
 
-    
+        If this check fails the user is informed that more time within the exercise is required.
+        """
+        self.parHandle.dPrint(self.exerciseName + ': checkMinimumTime()', 2)
+
+        now = time()
+        startDate = self.parHandle.curRunData['time']['startASCII']  # format '06:02:59 - 06.03.23'
+        minTime = self.parHandle.curExercise['settings']['minPresentationTime']
+        timeDiff = now - self.parHandle.curRunData['time']['start']
+        if timeDiff < minTime:
+            status = False
+            minTimeMinutes = minTime / 60
+            timeDiffMinutes = timeDiff / 60
+            msg = _translate(
+                "quiz", f"You you should at least spent {minTimeMinutes:1.1f} minutes in this exercise.\n"
+                        f"Your achieved {timeDiffMinutes:1.1f} minutes up to now.", None)
+            title = _translate("quiz", 'Minimum presentation time not achieved', None)
+            CICoachDialog(self.parHandle, title, msg, mode='information')
+            self.parHandle.dPrint(msg, 0)
+        else:
+            status = True
+
+        self.parHandle.dPrint(self.exerciseName + ': Leaving checkMinimumTime()', 2)
+        return status
+
+
     def run(self):
         """!
         This function handles the user input.
@@ -685,7 +737,8 @@ class quiz(exerciseBase):
             if isinstance(curItem['assistance']['text']['text'][0],str):
                 if self.solutionTextCounter >= 0 and self.solutionTextCounter < len(curItem['assistance']['text']['text']):
                     solution = curItem['assistance']['text']['text'][self.solutionTextCounter]
-            elif isinstance(curItem['assistance']['text']['text'][self.presentationNo], list):
+            #elif isinstance(curItem['assistance']['text']['text'][self.presentationNo], list):
+            elif isinstance(curItem['assistance']['text']['text'][0], list):
                 if self.presentationNo >= 0 and self.presentationNo < len(curItem['assistance']['text']['text'][self.presentationNo])\
                         and self.solutionTextCounter >= 0 and \
                         self.solutionTextCounter < len(curItem['assistance']['text']['text'][self.itemQuestNumber]):
@@ -750,7 +803,19 @@ class quiz(exerciseBase):
         self.iniItem()
         #self.presentSignal()
 
+    def finishRun(self):
+        """!
+        Close the exercise if possible
+        """
 
+        status = self.checkMinimumTime()
+
+        if status:
+            # This function handles the closing with the CICoachlab.py basics.
+            super().finishRun()
+        else:
+            msg = 'The exercise cannot be close, because the minimum Time was not achieved.'
+            self.parHandle.dPrint(msg, 0)
 
 
     def runButton(self, temp, forcedInput=''):
@@ -838,7 +903,7 @@ class quiz(exerciseBase):
         self.parHandle.curExercise['settingLimits']['randomizedItems']['type'] = 'bool'
         self.parHandle.curExercise['settingLimits']['randomizedItems']['mandatory'] = True
         self.parHandle.curExercise['settingLimits']['randomizedItems']['comboBoxStyle'] = True
-        self.parHandle.curExercise['settingLimits']['randomizedItems']['range'] = [True, False] #TODO: fill preselection with availabel players
+        self.parHandle.curExercise['settingLimits']['randomizedItems']['range'] = [True, False]
         self.parHandle.curExercise['settingLimits']['randomizedItems']['editable'] = True
         self.parHandle.curExercise['settingLimits']['randomizedItems']['default'] = True
 
@@ -846,7 +911,7 @@ class quiz(exerciseBase):
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['type'] = 'bool'
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['mandatory'] = True
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['comboBoxStyle'] = True
-        self.parHandle.curExercise['settingLimits']['randomizedOptions']['range'] = [True, False] #TODO: fill preselection with availabel players
+        self.parHandle.curExercise['settingLimits']['randomizedOptions']['range'] = [True, False]
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['editable'] = True
         self.parHandle.curExercise['settingLimits']['randomizedOptions']['default'] = True
 
@@ -854,15 +919,28 @@ class quiz(exerciseBase):
         self.parHandle.curExercise['settingLimits']['list']['type'] = 'list'
         self.parHandle.curExercise['settingLimits']['list']['mandatory'] = True
         self.parHandle.curExercise['settingLimits']['list']['comboBoxStyle'] = False
-        self.parHandle.curExercise['settingLimits']['list']['range'] = [True, False] #TODO: fill preselection with availabel players
+        self.parHandle.curExercise['settingLimits']['list']['range'] = [True, False]
         self.parHandle.curExercise['settingLimits']['list']['editable'] = False
         self.parHandle.curExercise['settingLimits']['list']['label'] = 'List of entries'
         self.parHandle.curExercise['settingLimits']['list']['toolTip'] = 'List of entries'
         self.parHandle.curExercise['settingLimits']['list']['function'] = self.loadList
         self.parHandle.curExercise['settingLimits']['list']['default'] = []
 
+        self.parHandle.curExercise['settingLimits']['minPresentationTime'] = self.parHandle.setSettingLimitsTemplate()
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['type'] = 'float'
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['mandatory'] = True
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['comboBoxStyle'] = False
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['range'] = [0, 999999]
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['editable'] = True
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['label'] = 'Zeitminimum'
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['toolTip'] = \
+            'Zeit die mindestens seit dem Start dieser Übung vergangen sein muss.'
+        self.parHandle.curExercise['settingLimits']['minPresentationTime']['default'] = 300 # 5 Minuten
+
+
         self.parHandle.curExercise['settings']['randomizedItems']     = True
         self.parHandle.curExercise['settings']['randomizedOptions']   = True
+        self.parHandle.curExercise['settings']['minPresentationTime'] = 300
 
         self.parHandle.curExercise['settings']['list']              = []
 
@@ -889,9 +967,7 @@ class quiz(exerciseBase):
         item['assistance']['audio']['preprocessing'] = False
         item['assistance']['audio']['signalfile'] = ''
 
-
-
-
+        self.parHandle.curExercise['settings']['list'].append(item)
 
         item = dict()
         item['soundfile'] = '0136_Summen.mp3'

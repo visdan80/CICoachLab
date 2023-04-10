@@ -505,7 +505,10 @@ class playQtAudio():
             self.player.stop()
             self.parHandle.showInformation(self.oldInfoMsg)
             if self.controlbarLabel:
-                pos = self.player.position()/self.player.duration()*100
+                if self.player.duration():
+                    pos = self.player.position()/self.player.duration()*100
+                else:
+                    pos = 0
                 self.providePlayerFeedBack(status='stopped', position=pos)
 
         self.parHandle.dPrint('playQtAudio: Leaving stateChanged()', 2)
@@ -562,7 +565,8 @@ class playQtAudio():
 
             if 'durationChanged' in dir(self.parHandle.curExercise['handle']):
                 self.player.durationChanged.connect(self.parHandle.curExercise['handle'].durationChanged)
-            if self.parHandle.curExercise['handle'].controlbars:
+            # checks if the exercise has implemented some interaction toolbars
+            if hasattr(self.parHandle.curExercise['handle'], 'controlbars') and self.parHandle.curExercise['handle'].controlbars:
                 guiHandlingFailed = False
                 # defining the calling controlbar, if several controlbars might exist in exercise
                 if self.controlbarLabel:
@@ -584,7 +588,7 @@ class playQtAudio():
                     self.durationChanged(durationT)
             #self.playHandler()
             self.providePlayerFeedBack(status='waiting', position=0)
-            return QtMultimedia.QMediaPlayer.BufferedMedia
+            status = QtMultimedia.QMediaPlayer.BufferedMedia
         elif self.player.mediaStatus() == QtMultimedia.QMediaPlayer.EndOfMedia:
             # enabling exercise gui elements again after disabling after the playing of the signal
             if self.parHandle.curPlayer['settings']['waitFlag']:
@@ -594,11 +598,15 @@ class playQtAudio():
             self.parHandle.showInformation(feedback)
 
             self.providePlayerFeedBack(status='stopped', position=100)
-            return QtMultimedia.QMediaPlayer.EndOfMedia
+            status = QtMultimedia.QMediaPlayer.EndOfMedia
         else:
-            return -1
+            status =  -1
+        if 'getPlayerStatus' in self.parHandle.curExercise['functions'] and \
+                self.parHandle.curExercise['functions']['getPlayerStatus']:
+            self.parHandle.curExercise['functions']['getPlayerStatus'](status)
 
         self.parHandle.dPrint('playQtAudio: Leaving mediaStatusChanged()', 2)
+        return status
 
 
     def bufferStatusChanged(self):

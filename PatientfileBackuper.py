@@ -59,7 +59,12 @@ class PatientfileBackuper(QtWidgets.QDialog):
         self.parHandle = parHandle
 
         self.filenameBase = ''
-        userFilename = self.user['lastname'] + ', ' + self.user['forname']
+        userFilename = self.user['subjectID']
+        if not(userFilename):
+            userFilename = self.user['lastname'] + ', ' + self.user['forname']
+            if userFilename == ', ':
+                userFilename = ''
+
 
         super().__init__()
         self.window = QtWidgets.QWidget(self)
@@ -83,6 +88,7 @@ class PatientfileBackuper(QtWidgets.QDialog):
                 pass
 
         layout = QtWidgets.QVBoxLayout()
+        msgTitle = _translate("MainWindow", 'CICoach Mode - Data backup?', None)
         msgQuest = _translate("MainWindow", 'Do you want to copy the patient file to the server?', None)
         msgInfo = _translate("MainWindow", 'Please select or enter the correct patient name.', None)
 
@@ -149,13 +155,12 @@ class PatientfileBackuper(QtWidgets.QDialog):
         Copying the patient file to the new file defined by self.savingPath and self.filenameBase.
         """
 
-        ext = '.cid'
-        outputname = os.path.join(self.savingPath, self.filenameBase + ext)
 
-        if os.path.isfile(outputname):
-            now = datetime.datetime.now()
-            t = now.strftime("%Y-%m-%d_%H-%M-%S")
-            outputname = os.path.join(self.savingPath, self.filenameBase + '_' + t + '.cid')
+        ext = '.cid'
+
+        now = datetime.datetime.now()
+        t = now.strftime("%Y-%m-%d_%H-%M-%S")
+        outputname = os.path.join(self.savingPath, self.filenameBase + '_' + t + '.cid')
 
         if outputname != ext:
             try:

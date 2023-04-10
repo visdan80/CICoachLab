@@ -14,7 +14,7 @@ To install the CICOachLab-framework download source code in any directory.
 Install python with its standard packages and PyQt5.
 
 CICoachlab depends on 
-- Python 3.8 or higher
+- Python 3.8 or higher but not higher than  but not higher than 3.8.XX
 - PyQt5
 - Windows 7 or Windows10 if the bitlocker mode is used.
 

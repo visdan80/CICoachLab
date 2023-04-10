@@ -10,13 +10,18 @@
 
 name = Setlist title
 information = This is an example of a setlist
-# item which will be run at next start, it allows the running of different items across seperated sessions of CITrainer, while CITrainer can be closed between sessions .
+# the index of the last item defines which item will be run at next start, it allows the running of different items across seperated sessions of CITrainer, while CITrainer can be closed between sessions .
+# At the begining of a masterlist 'lastItemIDX' is set to -1
 lastItemIDX = -1
+# list of indices to which the user can jump back if the masterlist crashes or canceled the run
+resetIDXs = 
+
 
 # An item can be a single run exercise or a setlist which are defined by the respective filenames without the file extension '.py'/'.set' or '.lst'
 items = setlist1, singleRun1, setlist2
-# In case of a single run exercise a setting can be provided by its repective filename with 
+# In case of a single run exercise a setting can be provided by its repective filename with the following line. Default settings will be loaded in case of 'None' or 'default'
 settings = None, singleRunSetting1, None
+# the runmode can be either setlist or singleRun
 runmode = setlist, singleRun, setlist
 preconditions = None, None, None
 preconditionMessages = '''''','''''',''''''

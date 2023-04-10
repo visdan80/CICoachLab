@@ -10,6 +10,13 @@ def defineSettings(parHandle):
     parHandle.curExercise['settings']['comment'] = 'This is a template setting'
     parHandle.curExercise['settings']['settingsName']       = 'fatigue.py'
 
+    parHandle.curExercise['settings']['player'] = ''
+    parHandle.curExercise['settings']['playerSettings'] = ''
+    parHandle.curExercise['settings']['generator'] = ''
+    parHandle.curExercise['settings']['generatorSettings'] = ''
+    parHandle.curExercise['settings']['preprocessor'] = ''
+    parHandle.curExercise['settings']['preprocessorSettings'] = ''
+    
     parHandle.curExercise['settings']['Question'] = 'How exhausting was the exercise?'
     parHandle.curExercise['settings']['noAnswer'] = 'Inaudible'
     parHandle.curExercise['settings']['items'] = dict()

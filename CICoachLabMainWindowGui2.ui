@@ -723,7 +723,10 @@ set-list</string>
   </action>
   <action name="menuXlsxExport">
    <property name="text">
-    <string>&amp;Export selected run</string>
+    <string>&amp;Export results</string>
+   </property>
+   <property name="toolTip">
+    <string>Export results to cvs file</string>
    </property>
   </action>
   <action name="menuFileUserData">
